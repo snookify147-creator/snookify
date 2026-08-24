@@ -17273,9 +17273,12 @@
        DASHBOARD & UI PRIVACY CONTROLS (BLUR MODE)
        ---------------------------------------------------------------------------------------
        Every individual dashboard KPI card + the Live Status widget/modal, each with its own
-       independent Lock (isFeatureLocked, shared with the system above) and Blur
-       (isFeatureBlurred) toggle. `selector` points at the specific value element to mask, not
-       the whole card, so only the sensitive number/text gets blurred — labels stay visible.
+       independent Lock (isFeatureLocked, shared with the system above), Blur (isFeatureBlurred)
+       and Hide (isFeatureHidden) toggle. `selector` points at the specific value element —
+       Blur masks just that element in place (labels/icon stay visible, only the sensitive
+       number is filtered). Hide is different: applyPrivacyMask() walks up from `selector` to
+       the nearest .metric-card / .live-status-widget wrapper and hides THAT whole element, so
+       the entire card disappears from the grid instead of leaving an empty box behind.
        ===================================================================================== */
     const PRIVACY_ITEMS = [
       { id: 'kpiLiveTables',        label: 'Live Tables',                 selector: '#mActiveTables' },
@@ -17289,6 +17292,7 @@
       { id: 'kpiOnlineCollections', label: "Today's Online Collections",  selector: '#mOnlineCollections' },
       { id: 'kpiUdhaarToday',       label: "Today's Udhaar Given",        selector: '#mUdhaarToday' },
       { id: 'kpiUdhaarOutstanding', label: 'Udhaar Outstanding',          selector: '#mUdhaar' },
+      { id: 'kpiAdvanceFramesSold', label: 'Advance Frames Sold Today',   selector: '#mAdvanceRevenue' },
       { id: 'kpiPoolBalance',       label: 'Partners Pool Balance',       selector: '#mPoolBalance' },
       // No `selector` — like 'cancelSessionButton' below, this covers a whole page section (the
       // Expense History filters, summary stat cards, and table together), not one static value
@@ -17311,16 +17315,31 @@
     // Tags the target element with .blur-target (once) and syncs .blur-active with the current
     // Lock/Blur toggle state. Safe to call repeatedly — updateMetrics() only ever touches
     // innerText on these same elements, so the classes/tagging survive every metric refresh.
+    //
+    // Hide vs. Blur target DIFFERENT elements on purpose: Blur only ever masks the single value
+    // element (`el`) so the card's label/icon stay put and the tap-to-reveal blur reads as a
+    // masked number, not a broken card. Hide instead needs to unmount the WHOLE card — label,
+    // icon and all — so no empty gray box is left sitting in the grid. So `card` (the nearest
+    // .metric-card / .live-status-widget wrapper, falling back to `el` itself if neither wraps
+    // it) is what actually gets .privacy-hidden toggled. Since .metrics-grid is a CSS grid with
+    // auto-placement (see .metrics-grid rule), display:none-ing the card is enough on its own
+    // for the remaining visible cards to reflow with no leftover gap — no extra grid bookkeeping
+    // needed here.
     function applyPrivacyMask(item) {
       const el = item.el = (item.el && document.body.contains(item.el)) ? item.el : document.querySelector(item.selector);
       if (!el) return; // element not in this build/screen yet — skip quietly
       el.classList.add('blur-target');
       el.dataset.privacyId = item.id;
       const hidden = isFeatureHidden(item.id);
-      el.classList.toggle('privacy-hidden', hidden);
       const masked = !hidden && isMasked(item.id);
       el.classList.toggle('blur-active', masked);
       if (!masked) el.classList.remove('blur-revealed');
+
+      const card = item.cardEl = (item.cardEl && document.body.contains(item.cardEl))
+        ? item.cardEl
+        : (el.closest('.metric-card') || el.closest('.live-status-widget') || el);
+      card.classList.add('blur-target'); // needed for the .blur-target.privacy-hidden CSS rule to apply
+      card.classList.toggle('privacy-hidden', hidden);
     }
     function applyAllPrivacyMasks() {
       PRIVACY_ITEMS.forEach(applyPrivacyMask);
