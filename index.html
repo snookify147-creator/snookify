@@ -5564,10 +5564,12 @@
 
     /* ---------- Staff Login/Logout & Location History — read-only viewer, RBAC-gated ---------- */
     function requestStaffAuthHistoryAccess(el) {
-      guardFeatureAction('staffAuthHistory', 'Staff Login/Logout & Location History', () => {
-        showTab('staffAuthHistory', el);
-        renderStaffAuthHistoryScreen();
-      });
+      // See requestAuditLogAccess() above — identical fix. wrapLockable() (via the
+      // 'staffAuthHistory' entry in LOCKABLE_FEATURES) already applies the PIN/lock gate to
+      // this nav item, so calling guardFeatureAction() here too used to double-prompt for the
+      // PIN and made this screen feel stuck/unresponsive whenever the feature was locked.
+      showTab('staffAuthHistory', el);
+      renderStaffAuthHistoryScreen();
     }
 
     function staffAuthLocationCell(rec) {
@@ -17046,10 +17048,17 @@
     }
 
     function requestAuditLogAccess(el) {
-      guardFeatureAction('auditLog', 'Audit Log', () => {
-        showTab('auditLog', el);
-        renderAuditLogScreen();
-      });
+      // PIN/lock gating for this nav item is already applied by wrapLockable() (see
+      // initFeatureLocker() + the 'auditLog' entry in LOCKABLE_FEATURES) — same single source
+      // of truth used by Setup/Rates, Reports, Master Summary, etc. Wrapping this handler in
+      // guardFeatureAction() too used to double-gate it: when the feature was locked,
+      // wrapLockable() would show the PIN modal, and a correct PIN would run this original
+      // handler — which called guardFeatureAction() again, and since isFeatureLocked() was
+      // still true, it reopened the very same #featurePinModal a second time before the
+      // Activity Log ever rendered. That read as a frozen, unresponsive modal: the "success"
+      // tap appeared to do nothing but reset the PIN field.
+      showTab('auditLog', el);
+      renderAuditLogScreen();
     }
 
     function renderAuditLogScreen() {
