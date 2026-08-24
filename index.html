@@ -84,7 +84,22 @@
     html, body { transition: background-color .2s ease, color .2s ease; }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Inter, sans-serif; }
-    body { background-color: var(--bg-dark); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; font-size: 13px; }
+    html {
+      height: 100%;
+      background-color: var(--bg-dark); /* prevents the browser-default gap from ever showing black/white */
+    }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;        /* fallback for older browsers */
+      height: 100dvh;        /* real, live visual viewport — tracks the address bar on mobile */
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: hidden;
+      overscroll-behavior: none; /* stops iOS "rubber-band" scroll from revealing the page behind body */
+      font-size: 13px;
+    }
 
     /* Sidebar — frosted glass panel. Background uses the sidebar color at partial
        opacity plus a backdrop blur so content behind it (page scroll, other panels)
@@ -234,8 +249,14 @@
     .logout-btn:hover { background: var(--danger); color: #fff; }
 
     /* ===== Staff Shift Login & Shutdown System ===== */
-    .shift-login-overlay { display: none; position: fixed; inset: 0; background: rgba(5,10,15,0.94); align-items: center; justify-content: center; z-index: 900; padding: 20px; }
+    .shift-login-overlay { display: none; position: fixed; inset: 0; height: 100vh; height: 100dvh; background: rgba(5,10,15,0.94); align-items: center; justify-content: center; z-index: 900; padding: 20px; }
     .shift-login-overlay.open { display: flex; }
+    .shift-login-exit-btn {
+      background: transparent; border: none; color: var(--text-muted);
+      font-size: 0.75rem; font-weight: 700; cursor: pointer;
+      margin-bottom: 10px; padding: 6px 0; text-align: left;
+    }
+    .shift-login-exit-btn:hover { color: var(--accent-green); }
     .shift-login-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 30px; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
     .shift-login-box h2 { margin: 0 0 4px; font-size: 1.3rem; }
     .shift-login-box .sl-sub { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 20px; }
@@ -569,7 +590,7 @@
        closed overlay (no .open class) can never intercept clicks even if some other rule ever
        forces it visible, and everything inside an open modal is always clickable regardless of
        what else is on the page. */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); align-items: center; justify-content: center; z-index: 1000; padding: 20px; pointer-events: none; }
+    .modal-overlay { display: none; position: fixed; inset: 0; height: 100vh; height: 100dvh; background: rgba(0,0,0,0.65); align-items: center; justify-content: center; z-index: 1000; padding: 20px; pointer-events: none; }
     .modal-overlay.open { display: flex; pointer-events: auto; }
     .modal-overlay.open .modal-box, .modal-overlay.open .modal-box * { pointer-events: auto; }
 
@@ -616,9 +637,9 @@
     .btn-attach[disabled], #expenseSaveBtn[disabled] { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
     #expenseBillViewOpenLink { display: inline-block; margin-top: 10px; }
     #expenseBillViewModal .modal-box { max-width: 520px; text-align: center; }
-    #expenseBillViewModal img { max-width: 100%; max-height: 70vh; border-radius: 8px; border: 1px solid var(--border-color); }
-    #expenseBillViewModal iframe { width: 100%; height: 70vh; border: 1px solid var(--border-color); border-radius: 8px; background: #fff; }
-    .modal-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto; }
+    #expenseBillViewModal img { max-width: 100%; max-height: 70vh; max-height: 70dvh; border-radius: 8px; border: 1px solid var(--border-color); }
+    #expenseBillViewModal iframe { width: 100%; height: 70vh; height: 70dvh; border: 1px solid var(--border-color); border-radius: 8px; background: #fff; }
+    .modal-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; width: 100%; max-width: 420px; max-height: 90vh; max-height: 90dvh; overflow-y: auto; }
     .modal-box h3 { margin-bottom: 14px; }
     .checkout-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px dashed var(--border-color); font-size: 0.85rem; }
     .checkout-row .sub { color: var(--text-muted); font-size: 0.7rem; }
@@ -3087,7 +3108,7 @@
 
     <!-- Lightbox for viewing / downloading / printing one archived report image -->
     <div id="raViewerOverlay" style="display:none; position:fixed; inset:0; background:rgba(5,10,15,0.94); z-index:950; align-items:center; justify-content:center; padding:20px;">
-      <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:14px; padding:20px; max-width:92vw; max-height:92vh; display:flex; flex-direction:column; gap:12px;">
+      <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:14px; padding:20px; max-width:92vw; max-height:92vh; max-height:92dvh; display:flex; flex-direction:column; gap:12px;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
           <div id="raViewerTitle" style="font-weight:800;"></div>
           <div style="display:flex; gap:8px;">
@@ -4091,6 +4112,7 @@
        startShift() in the script below. -->
   <div id="shiftLoginOverlay" class="shift-login-overlay">
     <div class="shift-login-box">
+      <button type="button" class="shift-login-exit-btn" onclick="handleLogout()">← Back to Sign In</button>
       <h2 data-i18n="shift.title">🔒 Start Your Shift</h2>
       <p class="sl-sub" data-i18n="shift.subtitle">Select your name to open the counter. Every sale, expense and session recorded from here on will be tagged to you until you shut down the shift.</p>
 
@@ -4663,8 +4685,24 @@
       }
 
       window.handleLogin = submitLogin;
+
+      // Snaps the UI back to the sign-in screen synchronously — does not wait on the async
+      // Firebase round trip. Closes the Start-Shift PIN screen and any open modal so the
+      // person is never stuck looking at a screen with no way back to sign-in.
+      function forceReturnToSignIn() {
+        const shiftOverlay = document.getElementById('shiftLoginOverlay');
+        if (shiftOverlay) shiftOverlay.classList.remove('open');
+        document.querySelectorAll('.modal-overlay.open').forEach((m) => m.classList.remove('open'));
+        overlay.classList.remove('hidden');
+        if (emailLabel) emailLabel.textContent = '';
+        if (typeof unbindTenantFirestoreRefs === 'function') unbindTenantFirestoreRefs();
+      }
+
       window.handleLogout = function () {
-        auth.signOut().catch((err) => console.error('Snookify: sign out failed.', err));
+        forceReturnToSignIn();
+        if (auth) {
+          auth.signOut().catch((err) => console.error('Snookify: sign out failed.', err));
+        }
       };
 
       [emailInput, passwordInput].forEach((el) => {
