@@ -17835,7 +17835,16 @@
     pointer-events: none;
     transition: opacity var(--te-anim-speed) ease, filter var(--te-anim-speed) ease;
   }
-  .sidebar, .main-content { position: relative; z-index: 1; }
+  /* Scoped to .main-content only — it needs to be promoted above the body::before wallpaper
+     layer (position:fixed; z-index:0). .sidebar already manages its own position/z-index across
+     breakpoints (relative/z:10 docked on desktop, fixed/z:1000 as a slide-over drawer on mobile —
+     see the MOBILE RESPONSIVE LAYOUT block and MOBILE NAVIGATION DRAWER script). Including
+     .sidebar here used to override those mobile values back to position:relative/z-index:1
+     (same-specificity selector, later in source order = wins the cascade), which knocked the
+     drawer out of position:fixed (so it stayed in normal flow and pushed .main-content off-screen
+     — blank Dashboard) and dropped it below the .mobile-nav-overlay backdrop's z-index:999 (so
+     taps on nav items hit the backdrop instead and just closed the drawer — "frozen" nav). */
+  .main-content { position: relative; z-index: 1; }
 
   /* Glassmorphism + rounded corners, applied to the app's own panel-like
      elements (matched by the naming convention already used in this
