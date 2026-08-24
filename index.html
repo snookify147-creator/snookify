@@ -295,7 +295,7 @@
        udhaar) — wrap it so it scrolls horizontally on narrower screens instead of squeezing
        every column unreadably thin. min-width keeps each column legible; the wrapper is the
        only thing that scrolls, so the filter bar and headers above stay put. */
-    .table-scroll-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-scroll-wrap { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
     .table-scroll-wrap table { margin-top: 0; }
     #shiftArchiveTable { min-width: 1500px; }
     #shiftArchiveTable th, #shiftArchiveTable td { white-space: nowrap; }
@@ -499,6 +499,16 @@
     .toggle-btn { flex: 1; border: none; background: transparent; color: var(--text-muted); padding: 5px; font-size: 0.75rem; font-weight: 700; border-radius: 4px; cursor: pointer; text-align: center; min-height: 44px; display: flex; align-items: center; justify-content: center; }
     .toggle-btn.active { background: var(--border-color); color: var(--info); }
 
+    /* Date-range style filter bar (Receipts, etc.) with more buttons than a simple 2-3 way
+       segmented toggle. Unlike the base .mode-toggle (equal-width .toggle-btn flex:1 children,
+       meant to stay on one line), this variant wraps cleanly onto multiple lines on narrow
+       viewports: each button sizes to its own label instead of being stretched/forced into a
+       fixed-width row, which is what was pushing "Custom Range" etc. off the right edge of
+       mobile screens. */
+    .date-range-toggle { flex-wrap: wrap; gap: 6px; padding: 0; background: none; }
+    .date-range-toggle .toggle-btn { flex: 0 1 auto; padding: 6px 12px; white-space: nowrap; min-height: 38px; background: var(--bg-dark); border-radius: 20px; }
+    .date-range-toggle .toggle-btn.active { background: var(--border-color); }
+
     /* Free-table pre-session Single/Double pill + Live-card mult badge. The live badge is now
        an interactive one-tap toggle (not just a read-only tag) — tapping it flips
        Single ⇄ Double directly on the card, no Summary modal needed; setMultiplier() re-renders
@@ -572,6 +582,202 @@
     .zr-time-picker select:last-child { width: 62px; }
     .zr-time-picker span { color: var(--text-muted); font-weight: 700; }
     .filter-row input, .filter-row select { min-width: 160px; }
+
+    /* Active Table screen: table wrapped so it scrolls horizontally rather than clipping if the
+       columns ever don't fit the viewport (belt-and-braces for narrow tablet widths); the
+       .active-table-cards stacked-card view below is the preferred layout on phones and takes
+       over entirely there — see the max-width:768px override further down. */
+    .table-responsive-wrap { width: 100%; overflow-x: auto; border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+    .table-responsive-wrap table { min-width: 760px; }
+    .active-table-cards { display: none; }
+    .active-table-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 15px; margin-bottom: 10px; }
+    .active-table-card .atc-header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); }
+    .active-table-card .atc-title { font-weight: 800; font-size: 0.95rem; }
+    .active-table-card .atc-branch { color: var(--text-muted); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+    .active-table-card .atc-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 3px 0; font-size: 0.8rem; }
+    .active-table-card .atc-label { color: var(--text-muted); }
+    .active-table-card .atc-val { font-weight: 700; text-align: right; }
+    .active-table-card .atc-bill { color: var(--accent-gold); }
+    .active-table-card .btn-row { margin-top: 10px; }
+
+    /* Reports & Expenses filter row: a dedicated responsive GRID (not the shared .filter-row
+       flex layout other screens use) so "Filter Date", "Search Customer Name", "Filter by
+       Table", "Filter by Mode", etc. never squeeze into each other or run off the right edge.
+       Mobile-first: 1 column (fully stacked) by default, 2 columns from 640px, 4 columns from
+       768px — mirrors grid-cols-1 sm:grid-cols-2 md:grid-cols-4. The #id selector's specificity
+       cleanly overrides the base .filter-row flex rules without touching other screens. */
+    #reportsFilterRow {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+    #reportsFilterRow .form-group { width: 100%; min-width: 0; }
+    #reportsFilterRow .form-group input,
+    #reportsFilterRow .form-group select { min-width: 0; }
+    /* Export button: full width on mobile (w-full), auto width from sm up (sm:w-auto). */
+    .filter-export-btn { width: 100%; }
+    @media (min-width: 640px) {
+      #reportsFilterRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 768px) {
+      #reportsFilterRow { grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; }
+      .filter-export-btn { width: auto; }
+    }
+
+    /* Master Summary — Custom Date Range: same dedicated responsive-grid treatment as
+       #reportsFilterRow above, so "From Date" / "To Date" / "Group Chart By" / "Staff Member" /
+       "Table" never collide or spill past the mobile viewport. Mobile-first: 1 column, 2 from
+       640px, 3 from 768px — mirrors grid-cols-1 sm:grid-cols-2 md:grid-cols-3. */
+    .ms-filter-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+    .ms-filter-grid .form-group { width: 100%; min-width: 0; margin: 0; }
+    .ms-filter-grid .form-group input,
+    .ms-filter-grid .form-group select { min-width: 0; }
+    .ms-filter-grid .btn { width: 100%; }
+    @media (min-width: 640px) {
+      .ms-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 768px) {
+      .ms-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; }
+      .ms-filter-grid .btn { width: auto; }
+    }
+    /* Quick Range presets (Today / This Week / This Month / Custom): the shared .mode-toggle
+       component is normally a fixed-width segmented control (inline min-width:340px here), which
+       is wider than most phone screens and was what pushed this field past the container edge.
+       Let it shrink and wrap its 4 buttons onto two rows on narrow screens instead. */
+    .ms-quick-range-toggle { flex-wrap: wrap; }
+    @media (max-width: 480px) {
+      .ms-quick-range-toggle { min-width: 0 !important; width: 100%; }
+      .ms-quick-range-toggle .toggle-btn { flex: 1 1 45%; }
+    }
+
+    /* Udhaar Ledger filters: same dedicated responsive-grid treatment as #reportsFilterRow /
+       .ms-filter-grid, so "Search by Name" / "Search by Phone" / "Filter by Date" / "Filter by
+       Status" / "Sort By" never collide or spill past the mobile viewport. Mobile-first: 1
+       column, 2 from 640px, 3 from 768px — mirrors grid-cols-1 sm:grid-cols-2 md:grid-cols-3. */
+    .udhaar-filter-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+    .udhaar-filter-grid .form-group { width: 100%; min-width: 0; margin: 0; }
+    .udhaar-filter-grid .form-group input,
+    .udhaar-filter-grid .form-group select { min-width: 0; }
+    .udhaar-filter-grid .btn { width: 100%; }
+    @media (min-width: 640px) {
+      .udhaar-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 768px) {
+      .udhaar-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; }
+      .udhaar-filter-grid .btn { width: auto; }
+    }
+    /* "+ Add Udhaar Entry" carries an inline width:auto for its desktop layout (sits inline next
+       to the "Udhaar Ledger" title). .section-header already wraps it onto its own line on
+       narrow screens (flex-wrap: wrap), but left at its auto content width it was still an
+       awkward small tap target pinned to one side; stretch it to the full row once wrapped. */
+    @media (max-width: 480px) {
+      #udhaarSectionHeader .btn { width: 100%; }
+    }
+
+    /* Player Profiles filters: same dedicated responsive-grid treatment as the other screens'
+       filter rows, so "Search by Name" / "Search by Phone" / "Tier" / "Clear Filters" never
+       collide or spill past the mobile viewport. Mobile-first: 1 column, 2 from 640px, 4 from
+       768px — mirrors grid-cols-1 sm:grid-cols-2 md:grid-cols-4. */
+    .player-filter-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+    .player-filter-grid .form-group { width: 100%; min-width: 0; margin: 0; }
+    .player-filter-grid .form-group input,
+    .player-filter-grid .form-group select { min-width: 0; }
+    .player-filter-grid .btn { width: 100%; }
+    @media (min-width: 640px) {
+      .player-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 768px) {
+      .player-filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; }
+      .player-filter-grid .btn { width: auto; }
+    }
+    /* Player Profiles sub-header: title and "+ Create New Player Profile" already sit in the
+       shared .section-header (flex, wraps, space-between). On narrow screens, stack them into
+       their own full-width rows instead of leaving the button pinned to its auto content width
+       on one side once it wraps below the title. */
+    @media (max-width: 480px) {
+      #playersSectionHeader { flex-direction: column; align-items: stretch; }
+      #playersSectionHeader .btn { width: 100%; }
+    }
+
+    /* Partners Ledger — Contribution History filters: same dedicated responsive-grid treatment
+       as the other screens' filter rows, so "Filter by Partner" / "Filter by Date" / "Clear
+       Filters" never overlap or spill past the mobile viewport. Mobile-first: 1 column, 3 from
+       640px — mirrors grid-cols-1 sm:grid-cols-3. (The "Log Partner Contribution" form fields
+       alongside it already inherit width:100% from the base .form-group input/select rule, so
+       no separate change is needed there.) */
+    .partner-history-filter-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+    .partner-history-filter-grid .form-group { width: 100%; min-width: 0; margin: 0; }
+    .partner-history-filter-grid .form-group input,
+    .partner-history-filter-grid .form-group select { min-width: 0; }
+    .partner-history-filter-grid .btn { width: 100%; }
+    @media (min-width: 640px) {
+      .partner-history-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; }
+      .partner-history-filter-grid .btn { width: auto; }
+    }
+
+    /* Bin (Audit Trail) filters: same dedicated responsive-grid treatment as the other screens'
+       filter rows, so "Source" / "Action" / "Date" / "Search" / "Clear Filters" never collide or
+       spill past the mobile viewport. Mobile-first: 1 column, 2 from 640px, 4 from 768px —
+       mirrors grid-cols-1 sm:grid-cols-2 md:grid-cols-4. */
+    .bin-filter-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+    .bin-filter-grid .form-group { width: 100%; min-width: 0; margin: 0; }
+    .bin-filter-grid .form-group input,
+    .bin-filter-grid .form-group select { min-width: 0; }
+    .bin-filter-grid .btn { width: 100%; }
+    @media (min-width: 640px) {
+      .bin-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 768px) {
+      .bin-filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; }
+      .bin-filter-grid .btn { width: auto; }
+    }
+
+    /* Activity Log ("Audit Log" screen) & Login/Logout & Location History: both tables were
+       previously rendered bare (no scroll wrapper), so on mobile the row's natural width just
+       pushed past the screen edge and long cell text (e.g. the ACTION column, or a long
+       Device/Location string) looked "sliced off" instead of being reachable by scrolling.
+       Now wrapped in the shared .table-scroll-wrap. Cells are forced to nowrap (same treatment
+       already used for #shiftArchiveTable) so columns keep their full readable width and the
+       user swipes to see the rest, rather than every column being squeezed and word-wrapped
+       into an unreadable narrow strip. */
+    #auditLogTable th, #auditLogTable td,
+    #staffAuthHistoryTable th, #staffAuthHistoryTable td { white-space: nowrap; }
+    /* Trim the outer card's side padding on mobile so the scrollable table gets the maximum
+       width to work with — mirrors w-full px-2 sm:px-4. */
+    @media (max-width: 480px) {
+      .audit-table-panel { padding-left: 8px; padding-right: 8px; }
+    }
+    /* Login/Logout & Location History screen: hard safety net so no descendant (table or
+       otherwise) can ever force this screen's own box wider than the viewport — the table
+       itself already scrolls internally via .table-scroll-wrap, so this only guards against
+       the outer screen container being pushed wide, not the table's intended horizontal swipe. */
+    #staffAuthHistory { width: 100%; max-width: 100%; overflow-x: hidden; }
 
     /* Modals */
     /* Every standard modal (Assign Player, Canteen, Checkout, Link Player, Match Win, etc.)
@@ -1206,7 +1412,9 @@
        ============================================================ */
     .mobile-header { display: none; }
     .mobile-nav-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      -webkit-backdrop-filter: blur(2px);
+      backdrop-filter: blur(2px);
       z-index: 999; opacity: 0; transition: opacity 0.2s ease;
     }
     .mobile-nav-overlay.show { display: block; opacity: 1; }
@@ -1224,6 +1432,19 @@
         width: 82vw; max-width: 300px; padding: 18px 15px 15px;
         transform: translateX(-100%); transition: transform 0.25s ease;
         box-shadow: 10px 0 40px rgba(0,0,0,0.45);
+        /* Fix: as a mobile drawer the sidebar is no longer a frosted panel floating over the
+           dashboard — it's a full opaque menu that must fully occlude whatever is behind it.
+           The desktop rule above (rgba(...,0.82) + backdrop-filter blur) is a "glass" look meant
+           for a panel that's always docked alongside visible page content; on an overlay drawer
+           that same partial alpha let dashboard headers/buttons/cards show through and muddy the
+           menu text. Override with a fully solid, zero-alpha color and drop the blur filter so
+           the drawer itself needs no blending — dimming the dashboard behind it is handled
+           entirely by .mobile-nav-overlay instead. */
+        background: var(--sidebar-bg);
+        background-color: var(--sidebar-bg);
+        opacity: 1;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
       }
       .sidebar.mobile-open { transform: translateX(0); }
       [dir="rtl"] .sidebar, [dir="rtl"] .sidebar.collapsed { transform: translateX(100%); }
@@ -1282,8 +1503,32 @@
       .main-content { width: 100%; padding: 8px 16px 20px; }
       .top-header { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 16px; }
       .branch-select-wrap, .staff-select-wrap { flex-wrap: wrap; row-gap: 8px; }
-      .branch-select-wrap > *, .staff-select-wrap > * { width: 100%; }
+      /* Fix: "Manage Branches" / "Setup Mode" / "Manage Staff" / "Shutdown Shift" carry an
+         inline style="width:auto" (set in the markup for their desktop layout), which beats
+         this rule's width:100% by specificity of origin (inline always wins over a stylesheet
+         class selector) — so on mobile they kept their intrinsic content width and overflowed
+         off the right edge of the screen instead of stacking. !important is required here
+         specifically to out-rank that inline style. */
+      .branch-select-wrap > *, .staff-select-wrap > * { width: 100% !important; }
       .branch-select-wrap select, .staff-select-wrap select { min-width: 0; }
+
+      /* ---- Shift Closing (Z-Report): filter row + time pickers + action buttons ---- */
+      /* Each Shift Date / Start Time / End Time / Staff Member field stacks to full width
+         instead of the desktop side-by-side layout. */
+      #zReport .filter-row .form-group { width: 100%; }
+      /* Fix: .filter-row input, .filter-row select carries a global min-width:160px meant for
+         normal single filter fields. It was also reaching the 3 small hour/minute/AM-PM
+         selects inside .zr-time-picker (each otherwise sized to ~62px), forcing every one of
+         those 6 selects to at least 160px wide — around 960px total across the two time
+         pickers alone, which is what caused them to collide with each other and run off the
+         mobile viewport. Overriding min-width back to 0 here and letting them share the row
+         via flex lets each time picker scale to the screen instead. */
+      .zr-time-picker { width: 100%; }
+      .zr-time-picker select { min-width: 0; width: auto; flex: 1 1 0; }
+      /* Action buttons (Clear / Generate Report / Print Closing Slip / Export to CSV / Export
+         to PDF / Print Report) wrap onto as many rows as needed and grow to fill them, rather
+         than staying pinned to their desktop auto-width and being clipped. */
+      #zReport .filter-row .btn { flex: 1 1 140px; width: auto; }
 
       /* Typography scales down slightly on small screens. */
       .page-title { font-size: 1.2rem; }
@@ -1298,6 +1543,20 @@
 
       /* Sidebar nav rows and the logout button pick up the same 44px minimum tap target. */
       .nav-item, .logout-btn { min-height: 44px; }
+
+      /* Receipts filter bar: date-range pills already wrap (see .date-range-toggle above); the
+         remaining controls (Staff Member, Category, Reset Filters) go full-width and stack
+         vertically so nothing is left squeezed to its content width or clipped at the screen
+         edge. */
+      #receiptsFilterRow { flex-direction: column; align-items: stretch; }
+      #receiptsFilterRow .form-group { width: 100%; min-width: 0; }
+      #receiptsFilterRow .btn { width: 100%; }
+
+      /* Active Table screen: swap the wide table for the stacked card view below 768px so no
+         column (Table/Customer/Mode/Multiplier/Elapsed/Running Bill/Canteen Added/Actions) is
+         ever cut off at the phone's screen edge. */
+      #activeTableTableWrap { display: none; }
+      .active-table-cards { display: block; }
     }
   </style>
 </head>
@@ -1536,21 +1795,33 @@
     <!-- ACTIVE TABLE SCREEN -->
     <div id="activeTables" class="screen">
       <div class="section-header">Currently Running Sessions</div>
-      <table>
-        <thead>
-          <tr id="activeTableHeadRow">
-            <th>Table</th>
-            <th>Customer</th>
-            <th>Mode</th>
-            <th>Multiplier</th>
-            <th>Elapsed</th>
-            <th>Running Bill (Rs)</th>
-            <th>Canteen Added</th>
-            <th style="min-width:180px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="activeTableBody"></tbody>
-      </table>
+
+      <!-- Desktop/tablet: full table, wrapped so it can scroll horizontally instead of clipping
+           at the viewport edge if the columns ever don't fit (e.g. narrow tablet widths). Hidden
+           outright below 768px in favor of the card view underneath, which is the preferred
+           mobile layout — see .active-table-cards. -->
+      <div class="table-responsive-wrap" id="activeTableTableWrap">
+        <table>
+          <thead>
+            <tr id="activeTableHeadRow">
+              <th>Table</th>
+              <th>Customer</th>
+              <th>Mode</th>
+              <th>Multiplier</th>
+              <th>Elapsed</th>
+              <th>Running Bill (Rs)</th>
+              <th>Canteen Added</th>
+              <th style="min-width:180px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="activeTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Mobile (<=768px): each live session as its own stacked card instead of a wide table
+           row, so no column ever gets cut off at the screen edge. Populated by the same
+           renderActiveTableList() that fills the table above. -->
+      <div class="active-table-cards" id="activeTableCards"></div>
     </div>
 
     <!-- CAFE & STOCK SCREEN -->
@@ -1654,7 +1925,7 @@
       <div class="filter-row" id="receiptsFilterRow">
         <div class="form-group" style="margin:0;">
           <label>Date Range</label>
-          <div class="mode-toggle" style="min-width:480px; flex-wrap:wrap;">
+          <div class="mode-toggle date-range-toggle" id="receiptsDateToggle">
             <button type="button" id="receiptsViewAll" class="toggle-btn active" onclick="setReceiptsView('all')">All Time</button>
             <button type="button" id="receiptsViewToday" class="toggle-btn" onclick="setReceiptsView('today')">Today</button>
             <button type="button" id="receiptsViewYesterday" class="toggle-btn" onclick="setReceiptsView('yesterday')">Yesterday</button>
@@ -1858,7 +2129,7 @@
       <div class="branch-scope-note" id="reportsBranchScopeNote">
         👑 You're in the consolidated <b>All Branches View</b>. The Dashboard and Z-Report already total everything across branches. The detailed ledgers below (Completed Sessions, Cafe Sales, Cue Shop Sales) show one branch's line-by-line entries at a time — pick a specific branch from the top-right selector to view or edit them.
       </div>
-      <div class="filter-row">
+      <div class="filter-row" id="reportsFilterRow">
         <div class="form-group" style="margin:0;">
           <label>Report View</label>
           <div class="mode-toggle">
@@ -1890,51 +2161,59 @@
             <option value="frame">Frame</option>
           </select>
         </div>
-        <button class="btn" style="width: auto;" onclick="exportLedgerCSV()">📥 Export Daily Ledger CSV</button>
+        <button class="btn filter-export-btn" onclick="exportLedgerCSV()">📥 Export Daily Ledger CSV</button>
       </div>
 
       <div id="dailyReportViews">
         <h3>Completed Sessions Ledger</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Table</th>
-              <th>Customer</th>
-              <th>Mode</th>
-              <th>Bill Details</th>
-              <th>Canteen</th>
-              <th>Discount</th>
-              <th>Total (Rs)</th>
-              <th>Payment</th>
-              <th>Staff</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="reportsTableBody"></tbody>
-          <tfoot id="reportsTableFoot"></tfoot>
-        </table>
+        <div class="table-responsive-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Table</th>
+                <th>Customer</th>
+                <th>Mode</th>
+                <th>Bill Details</th>
+                <th>Canteen</th>
+                <th>Discount</th>
+                <th>Total (Rs)</th>
+                <th>Payment</th>
+                <th>Staff</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTableBody"></tbody>
+            <tfoot id="reportsTableFoot"></tfoot>
+          </table>
+        </div>
 
         <h3 style="margin-top: 18px;">Cafe Walk-In Sales</h3>
-        <table>
-          <thead><tr><th>Time</th><th>Customer</th><th>Items</th><th>Qty</th><th>Gross (Rs)</th><th>Discount</th><th>Net (Rs)</th><th>Payment</th><th>Staff</th><th>Actions</th></tr></thead>
-          <tbody id="walkInTableBody"></tbody>
-          <tfoot id="walkInTableFoot"></tfoot>
-        </table>
+        <div class="table-responsive-wrap">
+          <table>
+            <thead><tr><th>Time</th><th>Customer</th><th>Items</th><th>Qty</th><th>Gross (Rs)</th><th>Discount</th><th>Net (Rs)</th><th>Payment</th><th>Staff</th><th>Actions</th></tr></thead>
+            <tbody id="walkInTableBody"></tbody>
+            <tfoot id="walkInTableFoot"></tfoot>
+          </table>
+        </div>
 
         <h3 style="margin-top: 18px;">🎱 Cue Shop / Accessories Sales</h3>
-        <table>
-          <thead><tr><th>Time</th><th>Customer</th><th>Items</th><th>Qty</th><th>Gross (Rs)</th><th>Discount</th><th>Net (Rs)</th><th>Payment</th><th>Staff</th><th>Actions</th></tr></thead>
-          <tbody id="cueWalkInTableBody"></tbody>
-          <tfoot id="cueWalkInTableFoot"></tfoot>
-        </table>
+        <div class="table-responsive-wrap">
+          <table>
+            <thead><tr><th>Time</th><th>Customer</th><th>Items</th><th>Qty</th><th>Gross (Rs)</th><th>Discount</th><th>Net (Rs)</th><th>Payment</th><th>Staff</th><th>Actions</th></tr></thead>
+            <tbody id="cueWalkInTableBody"></tbody>
+            <tfoot id="cueWalkInTableFoot"></tfoot>
+          </table>
+        </div>
 
         <h3 style="margin-top: 18px;">🧾 All Sales Transactions (Cafe + Cue Shop + Table Sessions)</h3>
-        <table>
-          <thead><tr><th>Time</th><th>Source</th><th>Customer</th><th>Items / Details</th><th>Qty</th><th>Gross (Rs)</th><th>Discount</th><th>Net (Rs)</th><th>Payment</th><th>Staff</th><th>Actions</th></tr></thead>
-          <tbody id="allTransactionsTableBody"></tbody>
-          <tfoot id="allTransactionsTableFoot"></tfoot>
-        </table>
+        <div class="table-responsive-wrap">
+          <table>
+            <thead><tr><th>Time</th><th>Source</th><th>Customer</th><th>Items / Details</th><th>Qty</th><th>Gross (Rs)</th><th>Discount</th><th>Net (Rs)</th><th>Payment</th><th>Staff</th><th>Actions</th></tr></thead>
+            <tbody id="allTransactionsTableBody"></tbody>
+            <tfoot id="allTransactionsTableFoot"></tfoot>
+          </table>
+        </div>
       </div>
 
       <div id="monthlySummaryContainer" style="display:none;">
@@ -2022,10 +2301,10 @@
         <h3>🧮 Master Summary — Custom Date Range</h3>
         <p class="page-sub" style="margin: 4px 0 14px;">Aggregated totals across Completed Sessions, Cafe & Cue Shop sales, Expenses and Udhaar — pick a range (or a quick preset) and optionally narrow by staff member or table.</p>
 
-        <div class="filter-row" style="margin-bottom: 10px;">
+        <div class="filter-row ms-filter-grid" id="msFilterRow1">
           <div class="form-group" style="margin:0;">
             <label>Quick Range</label>
-            <div class="mode-toggle" style="min-width:340px;">
+            <div class="mode-toggle ms-quick-range-toggle" id="msQuickRangeToggle" style="min-width:340px;">
               <button type="button" id="msRangeToday" class="toggle-btn" onclick="setMasterSummaryQuickRange('today')">Today</button>
               <button type="button" id="msRangeWeek" class="toggle-btn" onclick="setMasterSummaryQuickRange('week')">This Week</button>
               <button type="button" id="msRangeMonth" class="toggle-btn active" onclick="setMasterSummaryQuickRange('month')">This Month</button>
@@ -2049,7 +2328,7 @@
             </select>
           </div>
         </div>
-        <div class="filter-row">
+        <div class="filter-row ms-filter-grid" id="msFilterRow2">
           <div class="form-group" style="margin:0;">
             <label>Staff Member</label>
             <select id="msStaffFilter" onchange="renderMasterSummary()">
@@ -2062,11 +2341,11 @@
               <option value="">All Tables</option>
             </select>
           </div>
-          <button class="btn btn-secondary" style="width:auto; align-self:flex-end;" onclick="clearMasterSummaryFilters()">✕ Clear Filters</button>
-          <button class="btn" style="width:auto; align-self:flex-end;" onclick="renderMasterSummary()">🔄 Generate</button>
-          <button class="btn btn-canteen" style="width:auto; align-self:flex-end;" onclick="printMasterSummaryReport()">🖨️ Print Summary Report</button>
-          <button class="btn" style="width:auto; align-self:flex-end; background:var(--danger);" onclick="downloadMasterSummaryPDF()">📄 Download PDF Report</button>
-          <button class="btn btn-secondary" style="width:auto; align-self:flex-end;" onclick="exportMasterSummaryCSV()">📥 Export Data (CSV)</button>
+          <button class="btn btn-secondary" onclick="clearMasterSummaryFilters()">✕ Clear Filters</button>
+          <button class="btn" onclick="renderMasterSummary()">🔄 Generate</button>
+          <button class="btn btn-canteen" onclick="printMasterSummaryReport()">🖨️ Print Summary Report</button>
+          <button class="btn" style="background:var(--danger);" onclick="downloadMasterSummaryPDF()">📄 Download PDF Report</button>
+          <button class="btn btn-secondary" onclick="exportMasterSummaryCSV()">📥 Export Data (CSV)</button>
         </div>
         <p class="empty-note" id="msRangeLabel" style="position:static; padding:6px 0 0;"></p>
       </div>
@@ -2543,12 +2822,12 @@
         </div>
       </div>
 
-      <div class="section-header">
+      <div class="section-header" id="udhaarSectionHeader">
         <span>💳 Udhaar Ledger</span>
         <button class="btn btn-canteen" style="width: auto; padding: 8px 16px;" onclick="openAddUdhaarModal()">+ Add Udhaar Entry</button>
       </div>
 
-      <div class="filter-row">
+      <div class="filter-row udhaar-filter-grid" id="udhaarFilterRow">
         <div class="form-group" style="margin:0;">
           <label>Search by Name</label>
           <input type="text" id="udhaarNameFilter" placeholder="Customer name" oninput="renderUdhaar()">
@@ -2578,25 +2857,27 @@
             <option value="amount_asc">Amount: Low to High</option>
           </select>
         </div>
-        <button class="btn btn-secondary" style="width: auto;" onclick="clearUdhaarFilters()">Clear Filters</button>
+        <button class="btn btn-secondary" onclick="clearUdhaarFilters()">Clear Filters</button>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Customer</th>
-            <th>Phone</th>
-            <th>Source</th>
-            <th>Note</th>
-            <th>Amount (Rs)</th>
-            <th>Due Date</th>
-            <th>Status</th>
-            <th>Payment</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="udhaarTableBody"></tbody>
-      </table>
+      <div class="table-scroll-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Source</th>
+              <th>Note</th>
+              <th>Amount (Rs)</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Payment</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="udhaarTableBody"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ADD UDHAAR ENTRY MODAL -->
@@ -2679,7 +2960,7 @@
 
     <!-- PLAYER PROFILES SCREEN (unified member & customer directory) -->
     <div id="players" class="screen">
-      <div class="section-header">
+      <div class="section-header" id="playersSectionHeader">
         <span>🏆 Player Profiles</span>
         <button class="btn btn-canteen" style="width: auto; padding: 8px 16px;" onclick="openCreatePlayerModal()">+ Create New Player Profile</button>
       </div>
@@ -2706,7 +2987,7 @@
         </div>
       </div>
 
-      <div class="cust-search-row">
+      <div class="cust-search-row player-filter-grid" id="playerFilterRow">
         <div class="form-group" style="margin:0;">
           <label>Search by Name</label>
           <input type="text" id="playerNameFilter" placeholder="Player name" oninput="renderPlayersScreen()">
@@ -2724,27 +3005,29 @@
             <option value="bronze">🥉 Bronze</option>
           </select>
         </div>
-        <button class="btn btn-secondary" style="width: auto;" onclick="clearPlayerFilters()">Clear Filters</button>
+        <button class="btn btn-secondary" onclick="clearPlayerFilters()">Clear Filters</button>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Tier</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Frames Played</th>
-            <th title="Frames awarded when an opponent conceded mid-series — see Concede / End Series Early">🏆 Walkover Frames</th>
-            <th>Highest Break</th>
-            <th>Total Spending (Rs)</th>
-            <th>Advance Frames</th>
-            <th>Member Since</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="playersTableBody"></tbody>
-      </table>
+      <div class="table-scroll-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Tier</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Frames Played</th>
+              <th title="Frames awarded when an opponent conceded mid-series — see Concede / End Series Early">🏆 Walkover Frames</th>
+              <th>Highest Break</th>
+              <th>Total Spending (Rs)</th>
+              <th>Advance Frames</th>
+              <th>Member Since</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="playersTableBody"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- RESOURCE VAULT / QUICK LINKS SCREEN — CRUD list of external reference links (social media,
@@ -3034,7 +3317,7 @@
           <div class="section-header" style="margin-bottom: 10px;">
             Contribution History
           </div>
-          <div class="filter-row">
+          <div class="filter-row partner-history-filter-grid" id="partnerHistoryFilterRow">
             <div class="form-group" style="margin:0;">
               <label>Filter by Partner</label>
               <select id="pcHistoryFilter" onchange="renderPartnersLedgerScreen()"><option value="">All Partners</option></select>
@@ -3043,14 +3326,16 @@
               <label>Filter by Date</label>
               <input type="date" id="pcHistoryDateFilter" onchange="renderPartnersLedgerScreen()">
             </div>
-            <button class="btn btn-secondary" style="width: auto;" onclick="clearPartnerHistoryFilters()">Clear Filters</button>
+            <button class="btn btn-secondary" onclick="clearPartnerHistoryFilters()">Clear Filters</button>
           </div>
-          <table>
-            <thead>
-              <tr><th>Date</th><th>Partner</th><th>Category</th><th>Description</th><th>Amount (Rs)</th><th></th></tr>
-            </thead>
-            <tbody id="partnerContributionsBody"></tbody>
-          </table>
+          <div class="table-scroll-wrap">
+            <table>
+              <thead>
+                <tr><th>Date</th><th>Partner</th><th>Category</th><th>Description</th><th>Amount (Rs)</th><th></th></tr>
+              </thead>
+              <tbody id="partnerContributionsBody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -3133,7 +3418,7 @@
         </div>
       </div>
 
-      <div class="filter-row">
+      <div class="filter-row bin-filter-grid" id="binFilterRow">
         <div class="form-group" style="margin:0;">
           <label>Source</label>
           <select id="binSourceFilter" onchange="renderBinScreen()">
@@ -3157,20 +3442,22 @@
           <label>Date</label>
           <input type="date" id="binDateFilter" onchange="renderBinScreen()">
         </div>
-        <div class="form-group" style="margin:0; min-width: 200px;">
+        <div class="form-group" style="margin:0;">
           <label>Search (customer, table, item...)</label>
           <input type="text" id="binSearchFilter" placeholder="Search summary..." oninput="renderBinScreen()">
         </div>
-        <button class="btn btn-secondary" style="width: auto;" onclick="clearBinFilters()">Clear Filters</button>
+        <button class="btn btn-secondary" onclick="clearBinFilters()">Clear Filters</button>
       </div>
 
       <div class="section-header">Audit Log <span id="binCountLabel" style="color: var(--text-muted); font-weight: 600; font-size: 0.75rem;"></span></div>
-      <table>
-        <thead>
-          <tr><th>Timestamp</th><th>Source</th><th>Action</th><th>Record Summary</th><th>Performed By</th><th></th></tr>
-        </thead>
-        <tbody id="binTableBody"></tbody>
-      </table>
+      <div class="table-scroll-wrap">
+        <table>
+          <thead>
+            <tr><th>Timestamp</th><th>Source</th><th>Action</th><th>Record Summary</th><th>Performed By</th><th></th></tr>
+          </thead>
+          <tbody id="binTableBody"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- SECURITY & PERMISSIONS SCREEN — this tab is ALWAYS PIN-gated on the way in
@@ -3339,20 +3626,22 @@
         even if this device's storage is cleared.
       </div>
     </div>
-    <div class="panel">
+    <div class="panel audit-table-panel">
       <div class="section-header" style="margin-bottom: 10px;" data-i18n="audit.title">Activity Log</div>
-      <table>
-        <thead>
-          <tr>
-            <th data-i18n="audit.col.time">Time</th>
-            <th data-i18n="audit.col.staff">Staff</th>
-            <th data-i18n="audit.col.branch">Branch</th>
-            <th data-i18n="audit.col.action">Action</th>
-            <th data-i18n="audit.col.details">Details</th>
-          </tr>
-        </thead>
-        <tbody id="auditLogBody"></tbody>
-      </table>
+      <div class="table-scroll-wrap">
+        <table id="auditLogTable">
+          <thead>
+            <tr>
+              <th data-i18n="audit.col.time">Time</th>
+              <th data-i18n="audit.col.staff">Staff</th>
+              <th data-i18n="audit.col.branch">Branch</th>
+              <th data-i18n="audit.col.action">Action</th>
+              <th data-i18n="audit.col.details">Details</th>
+            </tr>
+          </thead>
+          <tbody id="auditLogBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -3374,23 +3663,25 @@
         comments) and should not be treated as tamper-proof without a server-side capture.
       </div>
     </div>
-    <div class="panel">
+    <div class="panel audit-table-panel">
       <div class="section-header" style="margin-bottom: 10px;">Login / Logout Log</div>
-      <table>
-        <thead>
-          <tr>
-            <th>Staff</th>
-            <th>Branch</th>
-            <th>Login At</th>
-            <th>Logout At</th>
-            <th>Location</th>
-            <th>Device</th>
-            <th>IP Address</th>
-            <th>Logout Method</th>
-          </tr>
-        </thead>
-        <tbody id="staffAuthHistoryBody"></tbody>
-      </table>
+      <div class="table-scroll-wrap">
+        <table id="staffAuthHistoryTable">
+          <thead>
+            <tr>
+              <th>Staff</th>
+              <th>Branch</th>
+              <th>Login At</th>
+              <th>Logout At</th>
+              <th>Location</th>
+              <th>Device</th>
+              <th>IP Address</th>
+              <th>Logout Method</th>
+            </tr>
+          </thead>
+          <tbody id="staffAuthHistoryBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -10039,6 +10330,7 @@
 
     function renderActiveTableList() {
       const body = document.getElementById('activeTableBody');
+      const cards = document.getElementById('activeTableCards');
       const isAll = state.activeBranch === ALL_BRANCHES_ID;
       const headRow = document.getElementById('activeTableHeadRow');
       if (headRow) {
@@ -10053,6 +10345,7 @@
 
       if (liveTables.length === 0) {
         body.innerHTML = `<tr><td colspan="${isAll ? 9 : 8}" class="empty-note">No tables are currently active.</td></tr>`;
+        if (cards) cards.innerHTML = `<div class="empty-note">No tables are currently active.</div>`;
         return;
       }
       body.innerHTML = liveTables.map(t => `
@@ -10075,6 +10368,32 @@
           </td>
         </tr>
       `).join('');
+
+      // Same rows, restyled as stacked cards for the mobile layout (see .active-table-cards /
+      // #activeTableTableWrap in the max-width:768px block). Timer/bill cells share the same
+      // once-a-second refresh as the table via id="atl-timer-card-*"/"atl-bill-card-*" — see
+      // updateActiveTableListLiveValues().
+      if (cards) {
+        cards.innerHTML = liveTables.map(t => `
+          <div class="active-table-card">
+            <div class="atc-header">
+              <span class="atc-title">${t.name}${t.customerName ? ' · ' + t.customerName : ''}</span>
+              ${isAll ? `<span class="atc-branch">${branchLabel(t._branch)}</span>` : ''}
+            </div>
+            <div class="atc-row"><span class="atc-label">Mode</span><span class="atc-val">${t.billType}</span></div>
+            <div class="atc-row"><span class="atc-label">Multiplier</span><span class="atc-val">${t.mult}</span></div>
+            <div class="atc-row"><span class="atc-label">Elapsed</span><span class="atc-val" id="atl-timer-card-${t.id}">${elapsedStr(t)}</span></div>
+            <div class="atc-row"><span class="atc-label">Running Bill</span><span class="atc-val atc-bill" id="atl-bill-card-${t.id}">Rs ${money(computeRunningBill(t))}</span></div>
+            <div class="atc-row"><span class="atc-label">Canteen Added</span><span class="atc-val">Rs ${money(t.canteenTotal)}</span></div>
+            ${isAll ? `<div class="atc-row"><span class="auth-note">🔒 Switch to ${branchLabel(t._branch)} to manage</span></div>` : `
+            <div class="btn-row">
+              ${t.billType === 'frame' ? `<button class="btn btn-secondary" style="margin:0;" onclick="openAddFrameModal(${t.id})">+Frame</button>` : ''}
+              <button class="btn btn-canteen" style="margin:0;" onclick="openCanteenModal(${t.id})">+Item</button>
+              <button class="btn btn-stop" style="margin:0;" onclick="openCheckoutModal(${t.id})">Stop</button>
+            </div>`}
+          </div>
+        `).join('');
+      }
     }
 
     /* ---------- Cafe & Stock ---------- */
@@ -16185,6 +16504,11 @@
         const billEl = document.getElementById('atl-bill-' + t.id);
         if (timerEl) timerEl.textContent = elapsedStr(t);
         if (billEl) billEl.textContent = 'Rs ' + money(computeRunningBill(t));
+        // Mobile card view mirrors the same two cells — see renderActiveTableList().
+        const cardTimerEl = document.getElementById('atl-timer-card-' + t.id);
+        const cardBillEl = document.getElementById('atl-bill-card-' + t.id);
+        if (cardTimerEl) cardTimerEl.textContent = elapsedStr(t);
+        if (cardBillEl) cardBillEl.textContent = 'Rs ' + money(computeRunningBill(t));
       });
     }
 
