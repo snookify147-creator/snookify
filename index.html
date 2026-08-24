@@ -1280,6 +1280,11 @@
     .visibility-mode-toggle button.vm-visible { background: rgba(0, 230, 118, 0.2); color: var(--accent-green); }
     .visibility-mode-toggle button.vm-blurred { background: rgba(255, 179, 0, 0.2); color: var(--accent-gold); }
     .visibility-mode-toggle button.vm-hidden { background: rgba(255, 82, 82, 0.2); color: var(--danger); }
+    .visibility-mode-toggle button:disabled { opacity: 0.35; cursor: not-allowed; }
+    /* Essential-feature safeguard badge (see ESSENTIAL_FEATURES / isProtectedVisibility in the
+       Dynamic UI Visibility Modes module) — flags rows where Blurred/Hidden can't be set for
+       this role because the feature is essential to it. */
+    .sec-protected-note { font-size: 0.6rem; font-weight: 800; color: var(--info); background: rgba(41,182,246,0.14); border: 1px solid var(--info); border-radius: 10px; padding: 2px 8px; white-space: nowrap; }
 
     /* ---------- Dynamic Parent-Child Sidebar Mapping (Feature Locker add-on) ---------- */
     .nav-hier-row.disabled { opacity: 0.55; }
@@ -16936,6 +16941,31 @@
     const VISIBILITY_MODES = ['visible', 'blurred', 'hidden'];
     const DEFAULT_VISIBILITY_MODE = 'visible';
 
+    /* ---------- Essential-feature safeguard ----------
+       Bug being fixed: nothing previously stopped an Admin/Manager role from being switched to
+       'blurred' or 'hidden' for its own essential administrative screens (Setup Rates, Partners
+       Ledger, Bin, Audit Log) — whether from a misclick in this panel, a stale/bad localStorage
+       value, or a Firestore sync pulling in another device's bad config. Once that happened,
+       the feature's nav item vanished or got PIN-walled for every elevated-role session, with no
+       in-app way to recover it (would need to hand-edit localStorage/Firestore directly).
+
+       Fix: any feature id in ESSENTIAL_FEATURES is force-'visible' for any role that carries the
+       'security' permission tier (Admin + Manager today — "elevated roles"), no matter what is
+       stored. This is enforced at the single read function (getFeatureVisibility) that every
+       other part of the system already calls — the sidebar renderer, the guard-action checks,
+       and the settings panel all go through it — so it self-heals a bad value everywhere at
+       once, including one that just arrived from another device's Firestore write, without
+       needing a separate migration/repair pass over storage. setFeatureVisibility() below also
+       refuses to persist a disallowed change in the first place, so a bad payload is never even
+       written to localStorage/Firestore for these role+feature combinations. */
+    const ESSENTIAL_FEATURES = ['setupRates', 'partnersLedger', 'bin', 'auditLog'];
+    function isElevatedRole(role) {
+      return !!(ROLES[role] && ROLES[role].permissions.includes('security'));
+    }
+    function isProtectedVisibility(role, featureId) {
+      return isElevatedRole(role) && ESSENTIAL_FEATURES.includes(featureId);
+    }
+
     function getVisibilityState() {
       try { return JSON.parse(localStorage.getItem(tenantStorageKey(FEATURE_VISIBILITY_KEY))) || {}; }
       catch (e) { return {}; }
@@ -16958,19 +16988,41 @@
         const data = snap.data() || {};
         if (data._lastWriter === getDeviceId()) return; // our own write echoing back
         const { _lastWriter, ...roleMap } = data;
+        // A bad hidden/blurred value for an essential feature+elevated-role combo is harmless
+        // to store as-is here — getFeatureVisibility() below refuses to honor it on read — but
+        // we still don't want it lingering in the synced payload, so it gets scrubbed back to
+        // 'visible' before it's written to this device's own localStorage.
+        Object.keys(roleMap).forEach(role => {
+          if (!isElevatedRole(role) || !roleMap[role]) return;
+          ESSENTIAL_FEATURES.forEach(fid => {
+            if (roleMap[role][fid] && roleMap[role][fid] !== 'visible') roleMap[role][fid] = 'visible';
+          });
+        });
         localStorage.setItem(tenantStorageKey(FEATURE_VISIBILITY_KEY), JSON.stringify(roleMap));
         if (typeof renderFeatureVisibilityPanel === 'function') renderFeatureVisibilityPanel();
         if (typeof applySidebarVisibility === 'function') applySidebarVisibility();
       }, err => console.error('Snookify: feature visibility sync listener error', err));
     }
-    // role/featureId -> 'visible' | 'blurred' | 'hidden' (defaults to 'visible' if unset)
+    // role/featureId -> 'visible' | 'blurred' | 'hidden' (defaults to 'visible' if unset).
+    // Essential features always report 'visible' for elevated roles — see the safeguard above —
+    // regardless of whatever was actually persisted for that role/featureId combination.
     function getFeatureVisibility(role, featureId) {
+      if (isProtectedVisibility(role, featureId)) return 'visible';
       const stateObj = getVisibilityState();
       const roleState = stateObj[role];
       return (roleState && VISIBILITY_MODES.includes(roleState[featureId])) ? roleState[featureId] : DEFAULT_VISIBILITY_MODE;
     }
     function setFeatureVisibility(role, featureId, mode) {
       if (!VISIBILITY_MODES.includes(mode)) return;
+      // Refuse to lock an elevated role out of its own essential administrative screens — see
+      // the safeguard note above. Nothing is written to localStorage/Firestore for this
+      // role+featureId combination, so no bad payload ever reaches another active session.
+      if (isProtectedVisibility(role, featureId) && mode !== 'visible') {
+        const feature = LOCKABLE_FEATURES.find(f => f.id === featureId);
+        logAudit({ action: 'FEATURE_VISIBILITY_CHANGE_BLOCKED', feature: featureId, label: feature ? feature.label : featureId, role, attemptedMode: mode });
+        renderFeatureVisibilityPanel();
+        return;
+      }
       const stateObj = getVisibilityState();
       stateObj[role] = stateObj[role] || {};
       stateObj[role][featureId] = mode;
@@ -17080,13 +17132,15 @@
         html += `<div class="sec-group-title">${groupName}</div>`;
         groups[groupName].forEach(f => {
           const mode = getFeatureVisibility(role, f.id);
+          const protectedRow = isProtectedVisibility(role, f.id);
+          const lockedNote = protectedRow ? '<span class="sec-protected-note" title="Essential for this role — always stays Visible">🛡️ Protected</span>' : '';
           html += `
             <div class="sec-feature-row sec-visibility-row">
-              <div class="sec-feature-label"><span class="lb-icon">${mode === 'hidden' ? '🚫' : mode === 'blurred' ? '🌫️' : '✅'}</span> ${f.label}</div>
+              <div class="sec-feature-label"><span class="lb-icon">${mode === 'hidden' ? '🚫' : mode === 'blurred' ? '🌫️' : '✅'}</span> ${f.label} ${lockedNote}</div>
               <div class="visibility-mode-toggle">
                 <button type="button" class="${mode === 'visible' ? 'vm-visible' : ''}" onclick="setFeatureVisibility('${role}','${f.id}','visible')">Visible</button>
-                <button type="button" class="${mode === 'blurred' ? 'vm-blurred' : ''}" onclick="setFeatureVisibility('${role}','${f.id}','blurred')">Blurred</button>
-                <button type="button" class="${mode === 'hidden' ? 'vm-hidden' : ''}" onclick="setFeatureVisibility('${role}','${f.id}','hidden')">Hidden</button>
+                <button type="button" class="${mode === 'blurred' ? 'vm-blurred' : ''}" ${protectedRow ? 'disabled title="Essential for this role — cannot be blurred"' : ''} onclick="setFeatureVisibility('${role}','${f.id}','blurred')">Blurred</button>
+                <button type="button" class="${mode === 'hidden' ? 'vm-hidden' : ''}" ${protectedRow ? 'disabled title="Essential for this role — cannot be hidden"' : ''} onclick="setFeatureVisibility('${role}','${f.id}','hidden')">Hidden</button>
               </div>
             </div>`;
         });
