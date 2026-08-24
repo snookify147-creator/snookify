@@ -817,10 +817,23 @@
        handles narrow screens, not column-squeezing. */
     #auditLogTable { min-width: 720px; }
     #staffAuthHistoryTable { min-width: 900px; }
+    /* Master Summary: Table Utilization & Revenue (6 cols) and Staff Performance (5 cols) were
+       previously bare (no scroll wrapper), so their columns got clipped on the right on mobile
+       instead of being reachable by a horizontal swipe. */
+    #msTableStatsTable { min-width: 780px; }
+    #msStaffStatsTable { min-width: 680px; }
+    /* Cash Denomination Count (Closing Shift Report): only 3 columns, but "Denomination (Rs)"
+       as a nowrap header plus the Count input's own width still doesn't comfortably fit the
+       ~280-300px of usable content width on small phones — this min-width is what the wrapper
+       above scrolls to reveal, rather than the Count input's number field getting squeezed or
+       clipped past the screen edge. */
+    #zrDenomTable { min-width: 360px; }
+    #zrDenomTable .zr-denom-input { max-width: 100%; }
     /* Trim the outer card's side padding on mobile so the scrollable table gets the maximum
        width to work with — mirrors w-full px-2 sm:px-4. */
     @media (max-width: 480px) {
       .audit-table-panel { padding-left: 8px; padding-right: 8px; }
+      .ledger-history-panel { padding-left: 8px; padding-right: 8px; }
     }
     /* Login/Logout & Location History screen: hard safety net so no descendant (table or
        otherwise) can ever force this screen's own box wider than the viewport — the table
@@ -1082,6 +1095,13 @@
     .pool-sub-row b { color: var(--text-main); }
 
     .partner-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 22px; }
+    /* min-width:0 overrides the CSS Grid default of min-width:auto on grid items — the same
+       flexbox-style sizing bug fixed earlier on .main-content, but here for grid tracks: without
+       it, a wide descendant (a partner card's own content, or — more importantly, in
+       .ledger-panels below — the Contribution History table's min-width) can force its grid
+       track wider than the 1fr it was allocated, pushing the whole Partners Ledger screen wider
+       than the viewport and clipping the right edge instead of the inner table just scrolling. */
+    .partner-grid > .partner-card { min-width: 0; }
     .partner-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; position: relative; }
     .partner-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius: 10px 10px 0 0; background: linear-gradient(90deg, var(--accent-green), var(--accent-gold)); }
     .partner-card .p-name { font-weight: 800; font-size: 0.95rem; margin-bottom: 2px; padding-right: 30px; }
@@ -1092,7 +1112,17 @@
     .partner-card .p-edit:hover { color: var(--accent-gold); }
 
     .ledger-panels { display: grid; grid-template-columns: 340px 1fr; gap: 18px; align-items: start; }
+    /* Same grid-item min-width fix as .partner-grid above — this is the specific case that was
+       causing "Log Partner Contribution" / "Contribution History" to clip on the right: the
+       Contribution History table's own min-width (650px) was forcing its .panel wider than the
+       1fr track, forcing .ledger-panels — and #partnersLedger with it — past the viewport. */
+    .ledger-panels > .panel { min-width: 0; }
     @media (max-width: 900px) { .ledger-panels { grid-template-columns: 1fr; } }
+    /* Hard safety net so no descendant of the Partners Ledger screen (cards, form panels, the
+       Contribution History table) can ever force this screen's own box wider than the viewport
+       — same pattern already used for #staffAuthHistory. The table itself keeps scrolling
+       internally via .table-scroll-wrap; this only guards the outer screen container. */
+    #partnersLedger { width: 100%; max-width: 100%; overflow-x: hidden; }
 
     /* ================= REPORTS: INVESTMENT ANALYTICS ================= */
     .analytics-grid { display: grid; grid-template-columns: minmax(220px, 320px) 1fr; gap: 22px; align-items: start; }
@@ -1583,6 +1613,12 @@
          to PDF / Print Report) wrap onto as many rows as needed and grow to fill them, rather
          than staying pinned to their desktop auto-width and being clipped. */
       #zReport .filter-row .btn { flex: 1 1 140px; width: auto; }
+
+      /* Cash Denomination Count: tighten cell padding and let the Count input shrink so the
+         3-column table fits (or comes close to fitting) inside the viewport before the
+         .table-scroll-wrap horizontal scroll is even needed. */
+      #zrDenomTable th, #zrDenomTable td { padding: 8px 8px; }
+      #zrDenomBody .zr-denom-input { width: 72px !important; }
 
       /* Typography scales down slightly on small screens. */
       .page-title { font-size: 1.2rem; }
@@ -2614,22 +2650,26 @@
       <div class="panel" style="margin-top:20px;">
         <div class="section-header"><span>🎯 Table Utilization & Revenue</span></div>
         <p class="page-sub" style="margin-bottom: 12px;">Per-table breakdown for the selected range. Utilization % is time-billed play hours as a share of total hours in the range (24h/day) — an approximate occupancy gauge, not tied to actual club opening hours.</p>
-        <table>
-          <thead><tr><th>Table</th><th>Sessions</th><th>Frames Played</th><th>Hours Played (Time mode)</th><th>Revenue (Rs)</th><th>Utilization %</th></tr></thead>
-          <tbody id="msTableStatsBody"></tbody>
-          <tfoot id="msTableStatsFoot"></tfoot>
-        </table>
+        <div class="table-scroll-wrap">
+          <table id="msTableStatsTable">
+            <thead><tr><th>Table</th><th>Sessions</th><th>Frames Played</th><th>Hours Played (Time mode)</th><th>Revenue (Rs)</th><th>Utilization %</th></tr></thead>
+            <tbody id="msTableStatsBody"></tbody>
+            <tfoot id="msTableStatsFoot"></tfoot>
+          </table>
+        </div>
         <div class="empty-note" id="msTableStatsEmpty" style="display:none;"></div>
       </div>
 
       <div class="panel" style="margin-top:20px;">
         <div class="section-header"><span>🧑‍💼 Staff Performance</span></div>
         <p class="page-sub" style="margin-bottom: 12px;">Sessions closed, sales revenue generated, and expenses logged per staff member for the selected range.</p>
-        <table>
-          <thead><tr><th>Staff</th><th>Sessions Closed</th><th>Cafe/Cue Sales</th><th>Sales Revenue (Rs)</th><th>Expenses Logged (Rs)</th></tr></thead>
-          <tbody id="msStaffStatsBody"></tbody>
-          <tfoot id="msStaffStatsFoot"></tfoot>
-        </table>
+        <div class="table-scroll-wrap">
+          <table id="msStaffStatsTable">
+            <thead><tr><th>Staff</th><th>Sessions Closed</th><th>Cafe/Cue Sales</th><th>Sales Revenue (Rs)</th><th>Expenses Logged (Rs)</th></tr></thead>
+            <tbody id="msStaffStatsBody"></tbody>
+            <tfoot id="msStaffStatsFoot"></tfoot>
+          </table>
+        </div>
         <div class="empty-note" id="msStaffStatsEmpty" style="display:none;"></div>
       </div>
     </div>
@@ -2749,22 +2789,24 @@
 
       <div class="panel">
         <div class="section-header"><span>🧾 Cash Denomination Count (Physical Count at Closing)</span></div>
-        <table>
-          <thead><tr><th>Denomination (Rs)</th><th>Count</th><th>Subtotal</th></tr></thead>
-          <tbody id="zrDenomBody"></tbody>
-          <tfoot>
-            <tr style="font-weight:800;">
-              <td colspan="2">
-                Total Physical Cash Counted
-                <div style="font-weight:400; font-size:0.68rem; opacity:0.7; margin-top:2px;">⚡ Quick Cash Entry — short on time? Type the total straight in. Otherwise fill in the rows above and this fills in automatically.</div>
-              </td>
-              <td>
-                <span style="opacity:0.8;">Rs</span>
-                <input type="number" min="0" step="1" id="zrPhysicalTotalInput" class="zr-denom-input" oninput="onPhysicalTotalChange()" placeholder="0" style="width:110px; font-weight:800;">
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+        <div class="table-scroll-wrap">
+          <table id="zrDenomTable">
+            <thead><tr><th>Denomination (Rs)</th><th>Count</th><th>Subtotal</th></tr></thead>
+            <tbody id="zrDenomBody"></tbody>
+            <tfoot>
+              <tr style="font-weight:800;">
+                <td colspan="2">
+                  Total Physical Cash Counted
+                  <div style="font-weight:400; font-size:0.68rem; opacity:0.7; margin-top:2px;">⚡ Quick Cash Entry — short on time? Type the total straight in. Otherwise fill in the rows above and this fills in automatically.</div>
+                </td>
+                <td>
+                  <span style="opacity:0.8;">Rs</span>
+                  <input type="number" min="0" step="1" id="zrPhysicalTotalInput" class="zr-denom-input" oninput="onPhysicalTotalChange()" placeholder="0" style="width:110px; font-weight:800;">
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
         <div class="zreport-grid" style="margin-top:12px;">
           <div class="zreport-card">
             <div class="zr-label" title="Opening Float + Net Cash Expected in Drawer">🧮 Expected Physical Cash</div>
@@ -3398,7 +3440,7 @@
           <button class="btn" onclick="addPartnerContribution()">💾 Log Contribution</button>
         </div>
 
-        <div class="panel">
+        <div class="panel ledger-history-panel">
           <div class="section-header" style="margin-bottom: 10px;">
             Contribution History
           </div>
