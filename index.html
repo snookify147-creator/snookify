@@ -323,6 +323,14 @@
        widths and let .table-scroll-wrap handle any narrower overflow locally, rather than the
        columns squeezing unreadably thin or forcing the page itself to widen. */
     #expensesTable { min-width: 760px; }
+    /* Udhaar Ledger, Player Profiles and Partners Ledger contribution history: same treatment —
+       an explicit min-width stops the table from being squeezed down to its scroll container's
+       width (which, combined with white-space:nowrap, is what was forcing header text like
+       "AMOUNT (RS)" or "PARTNER" into an unreadably narrow, vertically-stacked column). Below
+       these widths the table now scrolls horizontally inside .table-scroll-wrap instead. */
+    #udhaarTable { min-width: 920px; }
+    #playersTable { min-width: 1040px; }
+    #partnerContributionsTable { min-width: 650px; }
     #shiftArchiveTable th, #shiftArchiveTable td { white-space: nowrap; }
 
     /* Active Staff Selector (Shift Tracker) */
@@ -584,12 +592,16 @@
     .panel h3 { margin-bottom: 12px; }
 
     /* Tables */
-    /* A bare table with no .table-scroll-wrap/.table-responsive-wrap ancestor still defaults to
-       width:100% of its parent, but long unbreakable cell content (a long expense Description,
-       a long category name, etc.) could still force the table — and everything around it —
-       wider than the viewport. break-word lets those cells wrap instead of expanding the table. */
+    /* Universal table typography/whitespace fix: word-break/overflow-wrap (added for a previous
+       overflow fix) was the actual cause of headers and cell text violently breaking
+       letter-by-letter — e.g. "TIME" rendering as a vertical T/I/M/E stack — because any table
+       squeezed narrower than its natural content width by a rigid flex/scroll container will
+       force a mid-word break under overflow-wrap, even where white-space:nowrap is also set.
+       white-space:nowrap alone (with no break-word fighting it) keeps every header/cell on a
+       single legible line; any table that's genuinely wider than its container now scrolls
+       horizontally instead of squeezing or breaking — see .table-scroll-wrap / min-width below. */
     table { width: 100%; max-width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid var(--border-color); padding: 9px; text-align: left; word-break: break-word; overflow-wrap: break-word; }
+    th, td { border: 1px solid var(--border-color); padding: 10px 14px; text-align: left; white-space: nowrap; }
     th { background: var(--card-bg); color: var(--accent-gold); font-size: 0.75rem; text-transform: uppercase; }
     input, select { padding: 8px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main); }
 
@@ -801,6 +813,10 @@
        into an unreadable narrow strip. */
     #auditLogTable th, #auditLogTable td,
     #staffAuthHistoryTable th, #staffAuthHistoryTable td { white-space: nowrap; }
+    /* Staff Log (5 and 8 columns respectively): explicit min-width so the scroll wrapper is what
+       handles narrow screens, not column-squeezing. */
+    #auditLogTable { min-width: 720px; }
+    #staffAuthHistoryTable { min-width: 900px; }
     /* Trim the outer card's side padding on mobile so the scrollable table gets the maximum
        width to work with — mirrors w-full px-2 sm:px-4. */
     @media (max-width: 480px) {
@@ -2273,10 +2289,12 @@
 
       <div id="monthlySummaryContainer" style="display:none;">
         <h3>Monthly Summary — <span id="monthlySummaryLabel"></span></h3>
-        <table style="max-width: 480px;">
-          <thead><tr><th>Metric</th><th>Amount (Rs)</th></tr></thead>
-          <tbody id="monthlySummaryBody"></tbody>
-        </table>
+        <div class="table-scroll-wrap">
+          <table style="max-width: 480px;">
+            <thead><tr><th>Metric</th><th>Amount (Rs)</th></tr></thead>
+            <tbody id="monthlySummaryBody"></tbody>
+          </table>
+        </div>
       </div>
 
       <div class="panel" style="margin-top: 25px;">
@@ -2312,11 +2330,13 @@
             <canvas id="partnerShareChart"></canvas>
             <div class="empty-note" id="partnerShareEmpty" style="display:none; position:static;"></div>
           </div>
-          <table>
-            <thead><tr><th>Partner</th><th>Total Contributed (Rs)</th><th>Share</th><th># Entries</th></tr></thead>
-            <tbody id="partnerContribReportBody"></tbody>
-            <tfoot id="partnerContribReportFoot"></tfoot>
-          </table>
+          <div class="table-scroll-wrap">
+            <table>
+              <thead><tr><th>Partner</th><th>Total Contributed (Rs)</th><th>Share</th><th># Entries</th></tr></thead>
+              <tbody id="partnerContribReportBody"></tbody>
+              <tfoot id="partnerContribReportFoot"></tfoot>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -2332,15 +2352,19 @@
             <div class="empty-note" id="expenseTypeEmpty" style="display:none; position:static;"></div>
           </div>
           <div>
-            <table style="max-width: 460px;">
-              <thead><tr><th>Type</th><th>Amount (Rs)</th><th>% of Total</th></tr></thead>
-              <tbody id="expenseTypeSummaryBody"></tbody>
-            </table>
+            <div class="table-scroll-wrap">
+              <table style="max-width: 460px;">
+                <thead><tr><th>Type</th><th>Amount (Rs)</th><th>% of Total</th></tr></thead>
+                <tbody id="expenseTypeSummaryBody"></tbody>
+              </table>
+            </div>
             <h3 style="margin-top: 16px; font-size: 0.85rem;">By Category</h3>
-            <table>
-              <thead><tr><th>Category</th><th>Type</th><th>Amount (Rs)</th></tr></thead>
-              <tbody id="expenseCategoryBreakdownBody"></tbody>
-            </table>
+            <div class="table-scroll-wrap">
+              <table>
+                <thead><tr><th>Category</th><th>Type</th><th>Amount (Rs)</th></tr></thead>
+                <tbody id="expenseCategoryBreakdownBody"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -2498,9 +2522,11 @@
       <!-- Compact quick-metrics summary table -->
       <div class="panel" style="margin-top:18px;">
         <div class="section-header" style="margin-bottom:8px;"><span>🧾 Quick Metrics Summary</span></div>
-        <table class="compact-summary-table">
-          <tbody id="msQuickSummaryBody"></tbody>
-        </table>
+        <div class="table-scroll-wrap">
+          <table class="compact-summary-table">
+            <tbody id="msQuickSummaryBody"></tbody>
+          </table>
+        </div>
       </div>
 
       <!-- ================= MIDDLE SECTION: Sales breakdown + Expenses breakdown ================= -->
@@ -2525,11 +2551,13 @@
             <span class="bsr-val" id="msExpensesBigVal">Rs 0</span>
           </div>
           <p class="page-sub" style="margin-bottom: 12px;">Operational vs. Capital spend, by category — for the selected date range / staff / table filter.</p>
-          <table>
-            <thead><tr><th>Category</th><th>Type</th><th>Amount (Rs)</th><th>% of Total</th></tr></thead>
-            <tbody id="msExpenseCategoryBody"></tbody>
-            <tfoot id="msExpenseCategoryFoot"></tfoot>
-          </table>
+          <div class="table-scroll-wrap">
+            <table>
+              <thead><tr><th>Category</th><th>Type</th><th>Amount (Rs)</th><th>% of Total</th></tr></thead>
+              <tbody id="msExpenseCategoryBody"></tbody>
+              <tfoot id="msExpenseCategoryFoot"></tfoot>
+            </table>
+          </div>
           <div class="empty-note" id="msExpenseCategoryEmpty" style="display:none;"></div>
         </div>
       </div>
@@ -2761,9 +2789,11 @@
 
       <div class="panel">
         <div class="section-header"><span>Breakdown</span></div>
-        <table>
-          <tbody id="zReportBreakdownBody"></tbody>
-        </table>
+        <div class="table-scroll-wrap">
+          <table>
+            <tbody id="zReportBreakdownBody"></tbody>
+          </table>
+        </div>
         <p class="page-sub" style="margin-top: 10px;">Net Cash Expected in Drawer = Cash Collections (table + canteen + cue shop) for the selected date/time-slot/staff − Cash Expenses over the same window. Expenses are counted as cash unless recorded as "Online / Bank" in the Expenses screen. Add the Opening Float to get the physical cash you should count at closing.</p>
       </div>
 
@@ -2915,7 +2945,7 @@
         <button class="btn btn-secondary" onclick="clearUdhaarFilters()">Clear Filters</button>
       </div>
       <div class="table-scroll-wrap">
-        <table>
+        <table id="udhaarTable">
           <thead>
             <tr>
               <th>Date</th>
@@ -3064,7 +3094,7 @@
       </div>
 
       <div class="table-scroll-wrap">
-        <table>
+        <table id="playersTable">
           <thead>
             <tr>
               <th>Name</th>
@@ -3384,7 +3414,7 @@
             <button class="btn btn-secondary" onclick="clearPartnerHistoryFilters()">Clear Filters</button>
           </div>
           <div class="table-scroll-wrap">
-            <table>
+            <table id="partnerContributionsTable">
               <thead>
                 <tr><th>Date</th><th>Partner</th><th>Category</th><th>Description</th><th>Amount (Rs)</th><th></th></tr>
               </thead>
