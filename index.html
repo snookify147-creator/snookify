@@ -8964,6 +8964,12 @@
       openFrame.cost = rates.frameRate * mult;
       openFrame.mult = mult === 2 ? 'double' : 'single'; // locked in per-frame — the mode active on the table AT THIS INSTANT, independent of whatever mode is active later
       openFrame.seriesTarget = t.matchTarget || null; // locked in per-frame too — whatever Match Target was active (or none) when THIS frame closed, so a mid-session series toggle never mislabels earlier/later frames (see the receipt's per-row BOx tag)
+      // FIX (tag spilling into later frames): a Series Tag is a one-off flag for the single
+      // frame it's consumed by, not a lasting mode like Single/Double. Once it's been locked
+      // onto THIS frame above, clear it from the table immediately — otherwise it would still
+      // be sitting there selected the next time a frame closes and silently tag that one too,
+      // even though the user never touched the selector again for it.
+      t.matchTarget = 0;
       openFrame.playerName = loserName;
       openFrame.playerPhone = loserPhone || '';
       openFrame.playerId = loserId || null;
@@ -9052,6 +9058,14 @@
         if (!openFrameAlreadyHadOwnName) {
           openFrame.mult = mult === 2 ? 'double' : 'single'; // locked in per-frame — see closeFrameNow()
           openFrame.seriesTarget = t.matchTarget || null; // locked in per-frame too — see closeFrameNow()
+          // FIX (tag spilling into later frames): the screenshot showed BO3 landing on BOTH
+          // the frame it was picked for AND the very next one, because the Series Tag stayed
+          // selected on the table after being consumed here — so whenever that next frame
+          // later closed (a separate Add Frame confirm, or checkout), it read the same
+          // leftover t.matchTarget and got tagged too, with no reselection by staff. A Series
+          // Tag is a one-off flag for the one frame it's applied to, not a lasting mode like
+          // Single/Double, so clear it the instant it's locked in above.
+          t.matchTarget = 0;
           openFrame.playerName = nameInput || t.customerName || 'Walk-in';
           openFrame.playerPhone = phoneInput || t.customerPhone || '';
           openFrame.playerId = selectedPlayerId;
@@ -9853,6 +9867,7 @@
           openFrame.cost = rates.frameRate * mult;
           openFrame.mult = mult === 2 ? 'double' : 'single'; // locked in per-frame — see closeFrameNow()
           openFrame.seriesTarget = t.matchTarget || null; // locked in per-frame too — see closeFrameNow()
+          t.matchTarget = 0; // one-off tag, now consumed — see the FIX comment in confirmAddFrame()
           // If staff never assigned a loser/payer to this last frame before checkout,
           // fall back to whoever the checkout is being billed to rather than leaving it blank.
           if (!openFrame.assigned) {
