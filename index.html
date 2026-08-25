@@ -64,7 +64,7 @@
       --sidebar-bg: #14161c;
       --sidebar-bg-rgb: 20, 22, 28;
       --sidebar-border: rgba(255, 255, 255, 0.08);
-      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-subtle: rgba(255, 255, 255, 0.05);
       --card-bg: #1a1d26;
       --card-bg-rgb: 26, 29, 38;
       --border-color: rgba(255, 255, 255, 0.08);
@@ -194,8 +194,9 @@
        row nudges the toggle down away from the logo mark and gives it breathing room on every
        side, so it never visually clips the brand text next to it. */
     .sidebar-header {
-      display: flex; align-items: center; justify-content: space-between; gap: 18px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
       margin-bottom: 30px; min-height: 44px; padding-top: 6px; padding-right: 4px;
+      min-width: 0;
       transition: justify-content 0.2s ease, flex-direction 0.2s ease;
     }
     .sidebar-header .brand { margin-bottom: 0; flex: 1; min-width: 0; overflow: visible; }
@@ -232,6 +233,11 @@
        clickable at every width. */
     .sidebar.collapsed .sidebar-header { justify-content: center; margin-bottom: 22px; }
     .sidebar.collapsed .sidebar-header .brand { display: none; }
+    /* Belt-and-suspenders: guarantee the toggle stays a visible, centered, on-top
+       click target in the collapsed rail regardless of anything else in this row. */
+    .sidebar.collapsed .sidebar-collapse-btn {
+      display: flex; position: relative; z-index: 5; margin: 0 auto;
+    }
 
     .sidebar.collapsed { width: 68px; padding-left: 10px; padding-right: 10px; }
     .sidebar.collapsed .nav-title,
@@ -290,7 +296,7 @@
       background: var(--brand-badge-bg);
       border: 1px solid var(--brand-badge-border);
       border-radius: 8px;
-      padding: 6px 10px;
+      padding: 6px 8px;
       /* Still safe to keep: now only clips the logo image itself (see .brand-logo-img),
          since the badge can no longer be squeezed smaller than the wordmark. */
       overflow: hidden;
@@ -316,7 +322,7 @@
       align-items: center;
       font-weight: 800;
       font-size: 1.05rem;
-      letter-spacing: 1.5px;
+      letter-spacing: 0.5px;
       line-height: 28px; /* matches icon height so icon + text share a baseline */
       white-space: nowrap;
       flex-shrink: 0;
