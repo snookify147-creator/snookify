@@ -196,7 +196,7 @@
       margin-bottom: 30px; min-height: 44px; padding-top: 6px;
       transition: justify-content 0.2s ease, flex-direction 0.2s ease;
     }
-    .sidebar-header .brand { margin-bottom: 0; flex: 1; min-width: 0; }
+    .sidebar-header .brand { margin-bottom: 0; flex: 1; min-width: 0; overflow: visible; }
 
     /* Collapse/expand toggle button. Toggling adds/removes .collapsed on .sidebar; state
        persists via localStorage (see initSidebarCollapse() near the end of the script). Sized to
@@ -281,12 +281,18 @@
       align-items: center;
       gap: 10px;
       width: fit-content;
+      max-width: 100%;
+      /* Fix: without this, flexbox was allowed to compress the badge narrower than its
+         content (the ancestor .brand / .mobile-header-brand both have min-width:0), and the
+         overflow:hidden below then clipped whatever didn't fit — the trailing "Y" in
+         SNOOKIFY. flex-shrink:0 keeps the badge pinned to its natural fit-content width. */
+      flex-shrink: 0;
       background: var(--brand-badge-bg);
       border: 1px solid var(--brand-badge-border);
       border-radius: 8px;
       padding: 6px 10px;
-      /* Fix: never let logo content (or anything else unexpectedly wide) escape the badge and
-         overlap sibling controls like the sidebar collapse button. */
+      /* Still safe to keep: now only clips the logo image itself (see .brand-logo-img),
+         since the badge can no longer be squeezed smaller than the wordmark. */
       overflow: hidden;
     }
     /* Fix: this image's source PNG has "SNOOKIFY" baked into it right next to the icon mark
@@ -306,11 +312,14 @@
       flex-shrink: 0;
     }
     .brand-name {
+      display: flex;
+      align-items: center;
       font-weight: 800;
       font-size: 1.05rem;
       letter-spacing: 1.5px;
       line-height: 28px; /* matches icon height so icon + text share a baseline */
       white-space: nowrap;
+      flex-shrink: 0;
     }
     .brand-name-primary { color: var(--brand-text-primary); }
     .brand-name-accent { color: var(--brand-text-accent); }
@@ -321,9 +330,9 @@
 
     /* Mobile top header: badge sits inline with the hamburger/shift-status, so it drops its
        own bottom margin and outer padding (the parent .mobile-header already provides spacing). */
-    .mobile-header-brand .brand-badge { padding: 5px 9px; }
+    .mobile-header-brand .brand-badge { padding: 5px 9px; flex-shrink: 0; }
     .mobile-header-brand .brand-logo-img { height: 24px; width: 24px; }
-    .mobile-header-brand .brand-name { font-size: 0.92rem; letter-spacing: 1.2px; line-height: 24px; }
+    .mobile-header-brand .brand-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 0.05em; line-height: 24px; }
 
     .nav-section { margin-bottom: 20px; }
     .nav-title { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; padding-left: 10px; }
@@ -1777,7 +1786,7 @@
         background: transparent; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;
       }
       .hamburger-btn span { display: block; width: 18px; height: 2px; background: var(--text-main); border-radius: 2px; }
-      .mobile-header-brand { display: flex; align-items: center; flex: 1; min-width: 0; overflow: hidden; }
+      .mobile-header-brand { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; overflow: visible; }
       .mobile-header-shift {
         display: flex; align-items: center; gap: 6px; flex-shrink: 0;
         background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px;
