@@ -1187,6 +1187,32 @@
       .receipt-thermal .r-qr-block img { width: 90px; height: 90px; }
     }
 
+    /* ---- Reports → Export to PDF (browser print / "Save as PDF") ----
+       Same isolation trick as #receiptContent above: #reportsPrintArea sits hidden in
+       normal view (built fresh from the *currently filtered* ledger tables right before
+       printing) and only this element is made visible when @media print is active, so
+       the OS print dialog's "Save as PDF" produces a clean A4 ledger with no sidebar,
+       filter controls, or Actions column. */
+    #reportsPrintArea { display: none; }
+    #reportsPrintArea h1 { font-size: 1.1rem; margin: 0 0 2px; }
+    #reportsPrintArea .rp-meta { font-size: 0.78rem; color: #444; margin-bottom: 14px; }
+    #reportsPrintArea h3 { font-size: 0.92rem; margin: 16px 0 6px; }
+    #reportsPrintArea table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+    #reportsPrintArea th, #reportsPrintArea td { border: 1px solid #ccc; padding: 4px 6px; font-size: 0.72rem; text-align: left; }
+    #reportsPrintArea th { background: #eee; }
+    @media print {
+      @page { size: A4 portrait; margin: 12mm; }
+      html, body { background: #fff; }
+      body.reports-printing * { visibility: hidden; }
+      body.reports-printing #reportsPrintArea,
+      body.reports-printing #reportsPrintArea * { visibility: visible; }
+      body.reports-printing #reportsPrintArea {
+        display: block;
+        position: absolute; top: 0; left: 0; width: 100%;
+        color: #000;
+      }
+    }
+
     /* ---- Step 3: Low Stock Alerts ---- */
     .stock-card.low-stock { border-color: var(--danger); box-shadow: 0 0 0 1px var(--danger) inset; }
     .low-stock-flag { background: rgba(255,82,82,0.18); color: var(--danger); font-weight: 800; font-size: 0.6rem; letter-spacing: .3px; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-top: 6px; }
@@ -2311,7 +2337,8 @@
             <option value="frame">Frame</option>
           </select>
         </div>
-        <button class="btn filter-export-btn" onclick="exportLedgerCSV()">📥 Export Daily Ledger CSV</button>
+        <button class="btn filter-export-btn" onclick="exportLedgerCSV()" style="display:none;">📥 Export Daily Ledger CSV</button>
+        <button class="btn filter-export-btn" onclick="exportReportsPDF()">🖨️ Export to PDF</button>
       </div>
 
       <div id="dailyReportViews">
@@ -2503,7 +2530,7 @@
           <button class="btn" onclick="renderMasterSummary()">🔄 Generate</button>
           <button class="btn btn-canteen" onclick="printMasterSummaryReport()">🖨️ Print Summary Report</button>
           <button class="btn" style="background:var(--danger);" onclick="downloadMasterSummaryPDF()">📄 Download PDF Report</button>
-          <button class="btn btn-secondary" onclick="exportMasterSummaryCSV()">📥 Export Data (CSV)</button>
+          <button class="btn btn-secondary" onclick="exportMasterSummaryCSV()" style="display:none;">📥 Export Data (CSV)</button>
         </div>
         <p class="empty-note" id="msRangeLabel" style="position:static; padding:6px 0 0;"></p>
       </div>
@@ -14930,6 +14957,96 @@
       downloadCSV(`Snookify_Ledger_${dateVal}.csv`, csv);
     }
 
+    // Strips the trailing "Actions" column (edit/delete icons — meaningless on paper)
+    // from a cloned ledger table before it goes into the printable snapshot.
+    function stripActionsColumn(tableClone) {
+      const headRow = tableClone.querySelector('thead tr');
+      if (!headRow) return;
+      const headCells = Array.from(headRow.children);
+      const actionsIdx = headCells.findIndex(th => th.textContent.trim() === 'Actions');
+      if (actionsIdx === -1) return;
+      headCells[actionsIdx].remove();
+      tableClone.querySelectorAll('tbody tr, tfoot tr').forEach(row => {
+        if (row.children[actionsIdx]) row.children[actionsIdx].remove();
+      });
+    }
+
+    // "Export to PDF" — reuses the browser's native print pipeline (same approach as the
+    // thermal receipt / closing-slip print already in this app) rather than pulling in a
+    // jsPDF dependency. It snapshots whatever is CURRENTLY on screen in Reports — so it
+    // always matches the active Daily/Monthly view and the Date/Customer/Table/Mode
+    // filters exactly as the user has them set — into a clean, chrome-free layout, then
+    // opens the print dialog where "Save as PDF" is one of the destination options.
+    function exportReportsPDF() {
+      const printArea = document.getElementById('reportsPrintArea');
+      printArea.innerHTML = '';
+
+      const custFilter = document.getElementById('reportsCustomerFilter').value.trim();
+      const tableFilter = document.getElementById('reportsTableFilter').value;
+      const modeFilter = document.getElementById('reportsModeFilter').value;
+      const filterBits = [];
+      if (custFilter) filterBits.push(`Customer: "${custFilter}"`);
+      if (tableFilter) filterBits.push(`Table: ${tableFilter}`);
+      if (modeFilter) filterBits.push(`Mode: ${modeFilter}`);
+
+      const header = document.createElement('div');
+      if (reportsView === 'daily') {
+        const dateVal = getReportsDate();
+        const totals = computeDailyTotals(dateVal);
+        filterBits.unshift(`Date: ${dateVal}`);
+        header.innerHTML = `
+          <h1>Snookify Club — Daily Ledger Report</h1>
+          <div class="rp-meta">${filterBits.join(' &nbsp;|&nbsp; ')}<br>Generated: ${new Date().toLocaleString()}</div>
+          <h3>Summary</h3>
+          <table>
+            <tbody>
+              <tr><td>Total Revenue</td><td>Rs ${money(totals.totalRevenue)}</td></tr>
+              <tr><td>Games Revenue</td><td>Rs ${money(totals.gamesRevenue)}</td></tr>
+              <tr><td>Cafe Revenue</td><td>Rs ${money(totals.cafeRevenue)}</td></tr>
+              <tr><td>Cue Shop / Accessories Revenue</td><td>Rs ${money(totals.accessoriesRevenue)}</td></tr>
+              <tr><td>Discounts Given</td><td>Rs ${money(totals.discountsTotal)}</td></tr>
+              <tr><td>Expenses</td><td>Rs ${money(totals.expensesTotal)}</td></tr>
+              <tr><td><b>Net Profit</b></td><td><b>Rs ${money(totals.netProfit)}</b></td></tr>
+              <tr><td>Cash Collections</td><td>Rs ${money(totals.cashCollections)}</td></tr>
+              <tr><td>Online Collections</td><td>Rs ${money(totals.onlineCollections)}</td></tr>
+            </tbody>
+          </table>
+        `;
+        printArea.appendChild(header);
+
+        // Clone the currently-rendered (already filtered) ledger tables as-is, so the
+        // PDF matches on-screen data exactly without recomputing anything.
+        const sourceSection = document.getElementById('dailyReportViews');
+        sourceSection.querySelectorAll(':scope > h3, :scope > .table-responsive-wrap').forEach(node => {
+          const clone = node.cloneNode(true);
+          if (clone.matches('.table-responsive-wrap')) {
+            const t = clone.querySelector('table');
+            if (t) stripActionsColumn(t);
+          }
+          printArea.appendChild(clone);
+        });
+      } else {
+        const monthVal = getReportsMonth();
+        header.innerHTML = `
+          <h1>Snookify Club — Monthly Summary</h1>
+          <div class="rp-meta">Month: ${monthVal}<br>Generated: ${new Date().toLocaleString()}</div>
+        `;
+        printArea.appendChild(header);
+        const clone = document.getElementById('monthlySummaryContainer').cloneNode(true);
+        clone.style.display = '';
+        printArea.appendChild(clone);
+      }
+
+      document.body.classList.add('reports-printing');
+      const cleanup = () => {
+        document.body.classList.remove('reports-printing');
+        printArea.innerHTML = '';
+        window.removeEventListener('afterprint', cleanup);
+      };
+      window.addEventListener('afterprint', cleanup);
+      window.print();
+    }
+
     /* ---------- Setup ---------- */
     function saveRates() {
       if (!requireSingleBranch('save hourly / frame rates')) return;
@@ -19201,6 +19318,11 @@
     window.closeMobileNav = closeMobileNav;
   })();
 </script>
+
+<!-- Print-only snapshot target for Reports → "Export to PDF" (see exportReportsPDF()).
+     Kept as a direct child of <body>, outside every .screen wrapper, so a non-active
+     screen's own display:none can never suppress it during printing. -->
+<div id="reportsPrintArea"></div>
 
 </body>
 </html>
