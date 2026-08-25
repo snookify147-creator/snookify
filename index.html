@@ -1365,6 +1365,32 @@
        this role because the feature is essential to it. */
     .sec-protected-note { font-size: 0.6rem; font-weight: 800; color: var(--info); background: rgba(41,182,246,0.14); border: 1px solid var(--info); border-radius: 10px; padding: 2px 8px; white-space: nowrap; }
 
+    /* ---- Protected Mode master toggle (Feature Locker) ---- */
+    .protected-mode-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 12px 14px; border-radius: 10px; margin-bottom: 14px;
+      border: 1px solid var(--accent-green); background: rgba(0,230,118,0.08);
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .protected-mode-bar.pm-off { border-color: var(--danger); background: rgba(255,82,82,0.08); }
+    .protected-mode-bar .pm-text { display: flex; flex-direction: column; gap: 2px; }
+    .protected-mode-bar .pm-title { font-size: 0.82rem; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+    .protected-mode-bar .pm-sub { font-size: 0.68rem; color: var(--text-muted); font-weight: 600; }
+    .protected-mode-bar .pm-state { font-size: 0.68rem; font-weight: 800; padding: 2px 9px; border-radius: 10px; letter-spacing: 0.4px; }
+    .protected-mode-bar.pm-off .pm-state { color: var(--danger); background: rgba(255,82,82,0.16); border: 1px solid var(--danger); }
+    .protected-mode-bar:not(.pm-off) .pm-state { color: var(--accent-green); background: rgba(0,230,118,0.14); border: 1px solid var(--accent-green); }
+    .protected-mode-switch { position: relative; width: 46px; height: 25px; flex-shrink: 0; }
+    .protected-mode-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .protected-mode-switch .pm-track {
+      position: absolute; inset: 0; background: var(--danger); border-radius: 20px; cursor: pointer; transition: background 0.2s ease;
+    }
+    .protected-mode-switch .pm-track::before {
+      content: ""; position: absolute; width: 19px; height: 19px; left: 3px; top: 3px; background: #fff; border-radius: 50%;
+      transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .protected-mode-switch input:checked + .pm-track { background: var(--accent-green); }
+    .protected-mode-switch input:checked + .pm-track::before { transform: translateX(21px); }
+
     /* ---------- Dynamic Parent-Child Sidebar Mapping (Feature Locker add-on) ---------- */
     .nav-hier-row.disabled { opacity: 0.55; }
     .nav-hier-toggle { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); cursor: pointer; flex-shrink: 0; white-space: nowrap; }
@@ -3654,6 +3680,26 @@
 
       <div class="panel" style="margin-bottom: 15px;">
         <div class="section-header" style="margin-bottom: 4px;">🎛️ Feature Locker — UI Visibility Modes</div>
+
+        <!-- Protected Mode master toggle: global override for the 4 system-critical modules
+             (Setup / Rates, Partners Ledger, Bin / Delete Actions Log, Audit Log) — see
+             ESSENTIAL_FEATURES / isProtectedVisibility() / isProtectedModeEnabled() in the
+             Dynamic Feature Locker module below. -->
+        <div class="protected-mode-bar" id="protectedModeBar">
+          <div class="pm-text">
+            <div class="pm-title">🛡️ Protected Mode <span class="pm-state" id="protectedModeState">ON</span></div>
+            <div class="pm-sub">
+              When ON, Setup/Rates, Partners Ledger, Bin/Delete Actions Log and Audit Log always
+              stay Visible for Admin/Manager roles and can't be Blurred or Hidden. Turn OFF to
+              allow full custom Visible/Blurred/Hidden overrides on those 4 modules too.
+            </div>
+          </div>
+          <label class="protected-mode-switch">
+            <input type="checkbox" id="protectedModeToggle" checked onchange="toggleProtectedMode(this.checked)">
+            <span class="pm-track"></span>
+          </label>
+        </div>
+
         <div class="sec-intro" style="margin-bottom: 12px;">
           Configure how each menu item appears <strong>per staff role</strong> — handy for tailoring
           the UI per client when commercializing. <strong>Visible</strong> works normally.
@@ -16694,6 +16740,10 @@
     const MASTER_PIN_KEY = 'snookify_masterPin_v1';
     const DEFAULT_MASTER_PIN = '1122';
     const FEATURE_LOCK_KEY = 'snookify_featureLockState_v1';
+    // Global "Protected Mode" master switch — see ESSENTIAL_FEATURES / isProtectedVisibility()
+    // further down for what this actually gates. Declared here (alongside the other Feature
+    // Locker/Security keys) so it can join SECURITY_SYNC_FIELDS below and sync the same way.
+    const PROTECTED_MODE_KEY = 'snookify_protectedMode_v1';
 
     // The full catalog shown in the Security & Permissions panel. `selectors` (plural) is used
     // when one logical feature has more than one entry point in the UI (e.g. Setup / Rates is
@@ -16967,7 +17017,8 @@
       [CANCEL_SESSION_PIN_KEY]: 'cancelSessionPin',
       [FEATURE_LOCK_KEY]: 'featureLock',
       [BLUR_STATE_KEY]: 'blurState',
-      [HIDE_STATE_KEY]: 'hideState'
+      [HIDE_STATE_KEY]: 'hideState',
+      [PROTECTED_MODE_KEY]: 'protectedMode'
     };
 
     function pushSecuritySetting(localKey, rawValue) {
@@ -17003,6 +17054,11 @@
         if (typeof applyLockBadges === 'function') applyLockBadges();
         if (typeof applyAllPrivacyMasks === 'function') applyAllPrivacyMasks();
         if (typeof renderPrivacyPanel === 'function') renderPrivacyPanel();
+        // Protected Mode may have just changed from another device — re-render the toggle bar,
+        // the Feature Locker list (badges/disabled buttons), and re-apply live sidebar visibility.
+        if (typeof renderProtectedModeToggle === 'function') renderProtectedModeToggle();
+        if (typeof renderFeatureVisibilityPanel === 'function') renderFeatureVisibilityPanel();
+        if (typeof applySidebarVisibility === 'function') applySidebarVisibility();
       }, err => console.error('Snookify: security settings sync listener error', err));
     }
 
@@ -17084,8 +17140,47 @@
     function isElevatedRole(role) {
       return !!(ROLES[role] && ROLES[role].permissions.includes('security'));
     }
+
+    /* ---------- Protected Mode — global master switch for the safeguard above ----------
+       Defaults to ON (protected) for every existing install: an installation that has never
+       touched PROTECTED_MODE_KEY has no value in localStorage, and getProtectedModeEnabled()
+       treats that as ON so behavior doesn't change for anyone until they deliberately flip it.
+       Turning it OFF removes the ESSENTIAL_FEATURES safeguard entirely — Setup/Rates, Partners
+       Ledger, Bin/Delete Actions Log and Audit Log become ordinary rows in the Feature Locker,
+       Blurred/Hidden-able per role like any other feature. Turning it back ON immediately
+       restores the 🛡️ Protected badge and re-forces those 4 modules back to Visible for
+       Admin/Manager, on top of whatever Visible/Blurred/Hidden value happens to be stored for
+       them (same self-healing read-time behavior as the safeguard always had). */
+    function isProtectedModeEnabled() {
+      const raw = localStorage.getItem(PROTECTED_MODE_KEY);
+      return raw === null ? true : raw === 'true';
+    }
+    function setProtectedModeEnabled(enabled) {
+      enabled = !!enabled;
+      localStorage.setItem(PROTECTED_MODE_KEY, String(enabled));
+      pushSecuritySetting(PROTECTED_MODE_KEY, String(enabled));
+      logAudit({ action: enabled ? 'PROTECTED_MODE_ENABLED' : 'PROTECTED_MODE_DISABLED', features: ESSENTIAL_FEATURES.slice() });
+      renderProtectedModeToggle();
+      renderFeatureVisibilityPanel();
+      applySidebarVisibility();
+    }
+    // Wired to the toggle's onchange in the Security & Permissions screen.
+    function toggleProtectedMode(enabled) {
+      setProtectedModeEnabled(enabled);
+    }
+    function renderProtectedModeToggle() {
+      const bar = document.getElementById('protectedModeBar');
+      const input = document.getElementById('protectedModeToggle');
+      const stateLabel = document.getElementById('protectedModeState');
+      if (!bar || !input || !stateLabel) return; // Security & Permissions tab not open
+      const enabled = isProtectedModeEnabled();
+      input.checked = enabled;
+      bar.classList.toggle('pm-off', !enabled);
+      stateLabel.textContent = enabled ? 'ON' : 'OFF';
+    }
+
     function isProtectedVisibility(role, featureId) {
-      return isElevatedRole(role) && ESSENTIAL_FEATURES.includes(featureId);
+      return isProtectedModeEnabled() && isElevatedRole(role) && ESSENTIAL_FEATURES.includes(featureId);
     }
 
     function getVisibilityState() {
@@ -17114,12 +17209,17 @@
         // to store as-is here — getFeatureVisibility() below refuses to honor it on read — but
         // we still don't want it lingering in the synced payload, so it gets scrubbed back to
         // 'visible' before it's written to this device's own localStorage.
-        Object.keys(roleMap).forEach(role => {
-          if (!isElevatedRole(role) || !roleMap[role]) return;
-          ESSENTIAL_FEATURES.forEach(fid => {
-            if (roleMap[role][fid] && roleMap[role][fid] !== 'visible') roleMap[role][fid] = 'visible';
+        // Only scrub essential-feature values back to 'visible' while Protected Mode is ON —
+        // with it OFF, Blurred/Hidden is a legitimate, intentional value for these 4 modules
+        // too, same as any other feature.
+        if (isProtectedModeEnabled()) {
+          Object.keys(roleMap).forEach(role => {
+            if (!isElevatedRole(role) || !roleMap[role]) return;
+            ESSENTIAL_FEATURES.forEach(fid => {
+              if (roleMap[role][fid] && roleMap[role][fid] !== 'visible') roleMap[role][fid] = 'visible';
+            });
           });
-        });
+        }
         localStorage.setItem(tenantStorageKey(FEATURE_VISIBILITY_KEY), JSON.stringify(roleMap));
         if (typeof renderFeatureVisibilityPanel === 'function') renderFeatureVisibilityPanel();
         if (typeof applySidebarVisibility === 'function') applySidebarVisibility();
@@ -17238,6 +17338,7 @@
 
     /* ---------- Feature Locker panel: 3-way Visible/Blurred/Hidden control, per role ---------- */
     function renderFeatureVisibilityPanel() {
+      renderProtectedModeToggle(); // keep the master toggle bar in sync every time this panel refreshes
       const roleSelect = document.getElementById('visibilityRoleSelect');
       if (!roleSelect) return; // Security & Permissions tab not open in this build/screen
       if (!roleSelect.options.length) {
