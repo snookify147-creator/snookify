@@ -382,6 +382,13 @@
 
     .erp-mid-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 20px; align-items: start; }
     @media (max-width: 950px) { .erp-mid-grid { grid-template-columns: 1fr; } }
+    /* Same grid-item min-width fix as .analytics-grid / .ledger-panels elsewhere in this file:
+       .erp-mid-card is a grid item, and a grid track's default min-width is 'auto' — so the
+       Expenses Breakdown table inside it (msExpenseCategoryBody) was forcing the card, and the
+       whole .erp-mid-grid row, wider than the viewport on mobile instead of scrolling inside its
+       own .table-scroll-wrap. This lets the card shrink to the column so the table's internal
+       horizontal scroll actually kicks in. */
+    .erp-mid-card { min-width: 0; }
     .erp-mid-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px 18px; }
     .big-stat-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px dashed var(--border-color); }
     .big-stat-row .bsr-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
@@ -1127,6 +1134,18 @@
     /* ================= REPORTS: INVESTMENT ANALYTICS ================= */
     .analytics-grid { display: grid; grid-template-columns: minmax(220px, 320px) 1fr; gap: 22px; align-items: start; }
     @media (max-width: 800px) { .analytics-grid { grid-template-columns: 1fr; } }
+    /* Same grid-item min-width fix as .ledger-panels above — this was the actual cause of the
+       "By Category" / "Type" tables on Reports & Expenses (Expense vs Investment Breakdown,
+       Partner-wise Contribution Report) clipping their right-hand column on mobile: a CSS grid
+       track's default min-width is 'auto', so the plain <div> (and, for the Partner-wise
+       Contribution table, the .table-scroll-wrap itself) sitting in the '1fr' column was being
+       stretched to the table's full intrinsic width instead of shrinking to the column — which
+       pushed .analytics-grid, and everything around it, wider than the viewport. The inner
+       .table-scroll-wrap's own overflow-x:auto never even got a chance to kick in, because the
+       overflow was happening one level up, at the grid track, not inside the scroll wrapper.
+       min-width: 0 here lets the column actually shrink to fit the screen, so the horizontal
+       scroll now correctly happens *inside* the table wrapper instead of blowing out the layout. */
+    .analytics-grid > * { min-width: 0; }
     .type-pill { padding: 2px 9px; border-radius: 12px; font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; }
     .type-operational { background: rgba(41,182,246,0.18); color: var(--info); }
     .type-capital { background: rgba(255,179,0,0.18); color: var(--accent-gold); }
@@ -1500,17 +1519,15 @@
     .lsm-branch-empty { padding: 12px 14px; color: var(--text-muted); font-size: 0.78rem; text-align: center; }
     .lsm-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 10px; line-height: 1.5; }
 
-    /* ---------- i18n / RTL ----------
-       Minimal, targeted overrides rather than a full logical-properties rewrite of the whole
-       stylesheet — the layout here (cards, tables, sidebar) is naturally symmetric, so only the
-       handful of genuinely direction-sensitive rules below need a [dir="rtl"] override. Add more
-       here as you extend translation coverage and notice something that looks wrong mirrored. */
-    [dir="rtl"] body { font-family: 'Noto Nastaliq Urdu', 'Noto Sans Arabic', var(--font-main, sans-serif); }
-    [dir="rtl"] .sidebar { border-right: none; border-left: 1px solid var(--sidebar-border); }
-    [dir="rtl"] .nav-item { flex-direction: row-reverse; text-align: right; }
-    [dir="rtl"] .live-status-chevron { transform: scaleX(-1); }
-    [dir="rtl"] table { direction: rtl; }
-    [dir="rtl"] .btn-row { flex-direction: row-reverse; }
+    /* ---------- i18n ----------
+       Direction is intentionally pinned to LTR app-wide regardless of the selected language —
+       see setLocale()/initI18n() below, which no longer flip document.documentElement.dir.
+       Previously an [dir="rtl"] block here mirrored the sidebar/tables/nav and swapped the body
+       font for Urdu/Arabic/Persian/Hebrew, but that full-layout mirroring was breaking the
+       Sign-in (Start Shift) screen's alignment and reversing tables/sidebar order app-wide, so
+       it's been removed. Urdu/Arabic text itself still renders correctly right-to-left character
+       shaping-wise inside an LTR container (the Unicode bidi algorithm handles that per run of
+       text) — only the page/component layout direction no longer flips. */
 
     /* ============================================================
        MOBILE RESPONSIVE LAYOUT — top header + slide-over nav drawer
@@ -1557,8 +1574,8 @@
         backdrop-filter: none;
       }
       .sidebar.mobile-open { transform: translateX(0); }
-      [dir="rtl"] .sidebar, [dir="rtl"] .sidebar.collapsed { transform: translateX(100%); }
-      [dir="rtl"] .sidebar.mobile-open { transform: translateX(0); }
+      /* Mobile sidebar direction is always LTR now — see the i18n note above — so no
+         [dir="rtl"] mirrored-drawer rule is needed here any more. */
 
       .sidebar.collapsed .nav-title,
       .sidebar.collapsed .nav-item span:nth-child(2),
@@ -16245,8 +16262,9 @@
        Single source of truth: TRANSLATIONS[locale][key]. Static HTML strings are marked with
        data-i18n="key.name" (see the sidebar nav / Start Shift screen for examples) and get
        swapped by applyTranslations(); anything built in JS template literals should call
-       t('key.name', 'English fallback text') directly instead. setLocale() flips <html dir>
-       for RTL languages and re-applies every translation instantly — no reload needed.
+       t('key.name', 'English fallback text') directly instead. setLocale() re-applies every
+       translation instantly — no reload needed. Layout direction (<html dir>) is always LTR
+       regardless of locale — see the RTL_LOCALES comment below for why.
 
        Coverage note: this wires up the full architecture and translates the sidebar nav +
        language switcher + Start Shift screen end-to-end as a working reference. Extending
@@ -16261,6 +16279,11 @@
        way, since they only ever read from TRANSLATIONS.
        ===================================================================================== */
     const I18N_KEY = 'snookify_locale_v1';
+    // Direction is intentionally NOT tied to locale any more — the whole app (layout, sidebar,
+    // tables) always stays LTR regardless of which language is selected; see setLocale()/
+    // initI18n() below and the i18n CSS note near .lsm-note above for why. RTL_LOCALES is kept
+    // only as documentation of which locales are right-to-left scripts, in case per-element
+    // text-direction handling is ever added back in a way that doesn't mirror the whole layout.
     const RTL_LOCALES = new Set(['ur', 'ar', 'fa', 'he']);
 
     const TRANSLATIONS = {
@@ -16355,7 +16378,10 @@
       if (!TRANSLATIONS[locale]) locale = 'en';
       localStorage.setItem(I18N_KEY, locale);
       document.documentElement.lang = locale;
-      document.documentElement.dir = RTL_LOCALES.has(locale) ? 'rtl' : 'ltr';
+      // Layout direction is pinned to LTR for every language — see the RTL_LOCALES comment
+      // above. Only `lang` changes (useful for screen readers / font-shaping hints); `dir` is
+      // no longer derived from the selected locale.
+      document.documentElement.dir = 'ltr';
       const sel = document.getElementById('localeSwitcher');
       if (sel) sel.value = locale;
       applyTranslations();
@@ -16372,7 +16398,9 @@
     function initI18n() {
       const locale = getLocale();
       document.documentElement.lang = locale;
-      document.documentElement.dir = RTL_LOCALES.has(locale) ? 'rtl' : 'ltr';
+      // Same LTR pin as setLocale() above — applies on page load too, so a previously-saved
+      // Urdu/Arabic/etc. locale never re-triggers the old RTL layout flip on refresh.
+      document.documentElement.dir = 'ltr';
       const sel = document.getElementById('localeSwitcher');
       if (sel) sel.value = locale;
       applyTranslations();
