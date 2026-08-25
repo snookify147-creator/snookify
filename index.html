@@ -1813,7 +1813,8 @@
          off the right edge of the screen instead of stacking. !important is required here
          specifically to out-rank that inline style. */
       .branch-select-wrap > *, .staff-select-wrap > * { width: 100% !important; }
-      .branch-select-wrap select, .staff-select-wrap select { min-width: 0; }
+      .branch-select-wrap select, .staff-select-wrap select,
+      #branchSelector, #activeStaffSelector { min-width: 0; }
 
       /* ---- Shift Closing (Z-Report): filter row + time pickers + action buttons ---- */
       /* Each Shift Date / Start Time / End Time / Staff Member field stacks to full width
