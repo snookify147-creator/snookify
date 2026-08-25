@@ -176,7 +176,7 @@
       backdrop-filter: blur(16px) saturate(140%);
       border-right: 1px solid var(--sidebar-border);
       display: flex; flex-direction: column; padding: 20px 15px; justify-content: space-between;
-      flex-shrink: 0; overflow-y: auto; position: relative; z-index: 10;
+      flex-shrink: 0; overflow-y: auto; overflow-x: hidden; position: relative; z-index: 10;
       transition: width 0.2s ease, padding 0.2s ease;
     }
     /* Fallback for browsers without backdrop-filter support: fall back to a solid
@@ -225,7 +225,13 @@
        existing nav rules), so the header stacks the toggle centered on its own — still a full
        36x36 target, still fully inside the sidebar's padding. */
     .sidebar.collapsed .sidebar-header { justify-content: center; margin-bottom: 22px; }
-    .sidebar.collapsed .sidebar-header .brand { flex: 0; }
+    /* Fix: flex:0 expands to flex-basis:0%, which collapsed this item to zero width — it only
+       ever looked fine because the oversized logo image used to overflow visibly past that 0px
+       box. Now that .brand-badge properly clips overflow (see .brand-logo-img fix above), a
+       true 0-width box would hide the icon entirely instead of just cropping the wordmark.
+       flex: 0 0 auto sizes the item to its actual content (the icon-only badge) so it stays
+       visible, still without growing or shrinking away from that size. */
+    .sidebar.collapsed .sidebar-header .brand { flex: 0 0 auto; }
 
     .sidebar.collapsed { width: 68px; padding-left: 10px; padding-right: 10px; }
     .sidebar.collapsed .nav-title,
@@ -279,8 +285,26 @@
       border: 1px solid var(--brand-badge-border);
       border-radius: 8px;
       padding: 6px 10px;
+      /* Fix: never let logo content (or anything else unexpectedly wide) escape the badge and
+         overlap sibling controls like the sidebar collapse button. */
+      overflow: hidden;
     }
-    .brand-logo-img { height: 28px; max-height: 30px; width: auto; display: block; flex-shrink: 0; }
+    /* Fix: this image's source PNG has "SNOOKIFY" baked into it right next to the icon mark
+       (icon occupies roughly the left square of the file, full wordmark fills the rest). At
+       width:auto the whole file rendered at 28px tall, so the baked-in wordmark showed up
+       right next to the real HTML .brand-name text below — two "SNOOKIFY"s side by side, and
+       the excess width was wide enough to spill out of .brand-badge and overlap the sidebar
+       collapse button / bleed past the sidebar edge. Constraining the box to a square and using
+       object-fit: cover with object-position: left crops the rendered image down to just the
+       icon mark on the left, discarding the baked-in text entirely. */
+    .brand-logo-img {
+      height: 28px;
+      width: 28px;
+      object-fit: cover;
+      object-position: left center;
+      display: block;
+      flex-shrink: 0;
+    }
     .brand-name {
       font-weight: 800;
       font-size: 1.05rem;
@@ -298,7 +322,7 @@
     /* Mobile top header: badge sits inline with the hamburger/shift-status, so it drops its
        own bottom margin and outer padding (the parent .mobile-header already provides spacing). */
     .mobile-header-brand .brand-badge { padding: 5px 9px; }
-    .mobile-header-brand .brand-logo-img { height: 24px; max-height: 26px; }
+    .mobile-header-brand .brand-logo-img { height: 24px; width: 24px; }
     .mobile-header-brand .brand-name { font-size: 0.92rem; letter-spacing: 1.2px; line-height: 24px; }
 
     .nav-section { margin-bottom: 20px; }
@@ -1754,7 +1778,6 @@
       }
       .hamburger-btn span { display: block; width: 18px; height: 2px; background: var(--text-main); border-radius: 2px; }
       .mobile-header-brand { display: flex; align-items: center; flex: 1; min-width: 0; overflow: hidden; }
-      .mobile-header-brand img { height: 26px; width: auto; display: block; }
       .mobile-header-shift {
         display: flex; align-items: center; gap: 6px; flex-shrink: 0;
         background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px;
