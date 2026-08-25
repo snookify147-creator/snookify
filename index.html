@@ -9040,15 +9040,26 @@
         openFrame.endTime = now;
         openFrame.duration = now - openFrame.startTime;
         openFrame.cost = rates.frameRate * mult;
-        openFrame.mult = mult === 2 ? 'double' : 'single'; // locked in per-frame — see closeFrameNow()
-        openFrame.seriesTarget = t.matchTarget || null; // locked in per-frame too — see closeFrameNow()
+        // FIX (Series Tag / type mis-mapping bug): mult and seriesTarget are per-frame identity
+        // the same way playerName/playerPhone/playerId/assigned are — see the comment above
+        // openFrameAlreadyHadOwnName. Previously these two were stamped unconditionally, so if
+        // the closing frame already belonged to an earlier player (e.g. Asad, Frame #2) and
+        // staff then picked a Series Tag / Single-Double type in THIS modal meaning it for the
+        // NEW incoming player (e.g. Zaki), that selection got baked onto Asad's already-closed
+        // frame instead — exactly the reported bug. Now, just like the name fields below, mult
+        // and seriesTarget are only (re)locked in here when this frame is the one actually being
+        // named/tagged right now; an already-identified frame keeps whatever it already had.
         if (!openFrameAlreadyHadOwnName) {
+          openFrame.mult = mult === 2 ? 'double' : 'single'; // locked in per-frame — see closeFrameNow()
+          openFrame.seriesTarget = t.matchTarget || null; // locked in per-frame too — see closeFrameNow()
           openFrame.playerName = nameInput || t.customerName || 'Walk-in';
           openFrame.playerPhone = phoneInput || t.customerPhone || '';
           openFrame.playerId = selectedPlayerId;
           openFrame.assigned = true;
         }
-        // else: leave openFrame.playerName/playerPhone/playerId/assigned exactly as they are.
+        // else: leave openFrame.playerName/playerPhone/playerId/assigned/mult/seriesTarget
+        // exactly as they are — this frame's identity (including its type/tag) was already
+        // locked in earlier and belongs to a different player than the one in this modal.
 
         // Event-Based Billing — mirrors the SAME push closeFrameNow() already does for every
         // OTHER way a frame can close. This is the everyday "+ Add Frame" one-at-a-time path,
