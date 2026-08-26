@@ -132,6 +132,13 @@
     }
     html, body { transition: background-color .2s var(--ease), color .2s var(--ease); }
 
+    /* Icon System v2 — sizing/alignment for every ICONS.* SVG (see script block). Icons
+       inherit color from whatever text they sit in, so no separate color variables to sync. */
+    .icon-inline { width: 1em; height: 1em; display: inline-block; vertical-align: -0.15em; flex-shrink: 0; }
+    .metric-unit .icon-inline, .status-pill .icon-inline { width: 13px; height: 13px; vertical-align: -2px; }
+    button .icon-inline, .btn .icon-inline { width: 15px; height: 15px; vertical-align: -3px; }
+    .row-action-icon .icon-inline { width: 15px; height: 15px; vertical-align: -3px; }
+
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
     h1, h2, h3, h4, .metric-val, .num-display { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; letter-spacing: -0.02em; }
     /* GLOBAL HORIZONTAL VIEWPORT LOCK — root cause fix for page-wide side clipping/wobbling.
@@ -148,6 +155,8 @@
       height: 100%;
       max-width: 100vw;
       overflow-x: hidden;
+      overflow-x: clip; /* stronger than hidden — not just a scroll container, actually un-scrollable on this axis in browsers that support it (iOS 16+) */
+      overscroll-behavior-x: none; /* stops a stray horizontal swipe from rubber-banding the page a few px off zero on iOS Safari */
       background-color: var(--bg-dark); /* prevents the browser-default gap from ever showing black/white */
     }
     body {
@@ -1733,7 +1742,16 @@
       .sidebar, .sidebar.collapsed {
         position: fixed; top: 0; left: 0; bottom: 0; z-index: 1000;
         width: 82vw; max-width: 300px; padding: 18px 15px 15px;
-        transform: translateX(-100%); transition: transform 0.25s ease;
+        transform: translateX(-100%);
+        /* visibility (not just transform) fully excludes the closed drawer from the page's
+           scrollable-overflow calculation — works around a WebKit bug where a fixed-position
+           element combined with transform can still inflate document scrollWidth even while
+           rendered off-screen, which is what let the page rubber-band/scroll a few px
+           horizontally on iOS Safari and clip the left edge of unrelated content.
+           Delay hiding on close so it's still visible for the slide-out transition; show
+           instantly (no delay) on open. */
+        visibility: hidden;
+        transition: transform 0.25s ease, visibility 0s linear 0.25s;
         box-shadow: 10px 0 40px rgba(0,0,0,0.45);
         /* Fix: as a mobile drawer the sidebar is no longer a frosted panel floating over the
            dashboard — it's a full opaque menu that must fully occlude whatever is behind it.
@@ -1749,7 +1767,7 @@
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
       }
-      .sidebar.mobile-open { transform: translateX(0); }
+      .sidebar.mobile-open { transform: translateX(0); visibility: visible; transition: transform 0.25s ease; }
       /* Mobile sidebar direction is always LTR now — see the i18n note above — so no
          [dir="rtl"] mirrored-drawer rule is needed here any more. */
 
@@ -1969,11 +1987,11 @@
         <div class="nav-item" data-tab="udhaar" onclick="showTab('udhaar', this)"><span>💳</span> <span data-i18n="nav.udhaar">Udhaar (Credit)</span></div>
         <div class="nav-item" data-tab="players" onclick="showTab('players', this)"><span>🏆</span> <span data-i18n="nav.players">Player Profiles</span></div>
         <div class="nav-item" data-tab="tournaments" onclick="showTab('tournaments', this)"><span>🥇</span> <span data-i18n="nav.tournaments">Tournaments</span></div>
-        <div class="nav-item" data-tab="partnersLedger" onclick="showTab('partnersLedger', this)"><span>🤝</span> <span data-i18n="nav.partnersLedger">Partners Ledger</span></div>
-        <div class="nav-item" data-tab="resourceVault" onclick="showTab('resourceVault', this)"><span>🔗</span> <span data-i18n="nav.resourceVault">Resource Vault</span></div>
-        <div class="nav-item" data-tab="themeEngine" onclick="showTab('themeEngine', this)"><span>🎨</span> <span data-i18n="nav.themeEngine">Theme & Appearance</span></div>
-        <div class="nav-item" data-tab="bin" onclick="showTab('bin', this)"><span>🗑️</span> <span data-i18n="nav.bin">Bin</span></div>
-        <div class="nav-item" data-tab="auditLog" onclick="requestAuditLogAccess(this)"><span>📜</span> <span data-i18n="nav.auditLog">Audit Log</span></div>
+        <div class="nav-item" data-tab="partnersLedger" onclick="showTab('partnersLedger', this)"><span>${ICONS.handshake}</span> <span data-i18n="nav.partnersLedger">Partners Ledger</span></div>
+        <div class="nav-item" data-tab="resourceVault" onclick="showTab('resourceVault', this)"><span>${ICONS.link}</span> <span data-i18n="nav.resourceVault">Resource Vault</span></div>
+        <div class="nav-item" data-tab="themeEngine" onclick="showTab('themeEngine', this)"><span>${ICONS.palette}</span> <span data-i18n="nav.themeEngine">Theme & Appearance</span></div>
+        <div class="nav-item" data-tab="bin" onclick="showTab('bin', this)"><span>${ICONS.trash}</span> <span data-i18n="nav.bin">Bin</span></div>
+        <div class="nav-item" data-tab="auditLog" onclick="requestAuditLogAccess(this)"><span>${ICONS.ledger}</span> <span data-i18n="nav.auditLog">Audit Log</span></div>
         <div class="nav-item" data-tab="staffAuthHistory" onclick="requestStaffAuthHistoryAccess(this)"><span>🛰️</span> <span data-i18n="nav.staffAuthHistory">Login/Logout & Location History</span></div>
         <div class="nav-item" data-tab="security" onclick="requestSecurityPanelAccess(this)"><span>🔐</span> <span data-i18n="nav.security">Security & Permissions</span></div>
       </div>
@@ -2075,12 +2093,12 @@
         <div class="metric-card">
           <div class="metric-title" id="mTitleCafeSales">Today's Cafe Sales</div>
           <div class="metric-val" id="mCafeSales">0</div>
-          <div class="metric-unit">☕</div>
+          <div class="metric-unit"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8Z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg></div>
         </div>
         <div class="metric-card">
           <div class="metric-title" id="mTitleAccessoriesSales">Today's Cue Shop Sales</div>
           <div class="metric-val" id="mAccessoriesSales">0</div>
-          <div class="metric-unit">🎱</div>
+          <div class="metric-unit"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg></div>
         </div>
         <div class="metric-card">
           <div class="metric-title" id="mTitleExpenses">Today's Expenses</div>
@@ -2093,24 +2111,24 @@
         <div class="metric-card">
           <div class="metric-title" id="mTitleCashCollections">Today's Cash Collections</div>
           <div class="metric-val" id="mCashCollections">0</div>
-          <div class="metric-unit">💵</div>
+          <div class="metric-unit"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg></div>
         </div>
         <div class="metric-card">
           <div class="metric-title" id="mTitleOnlineCollections">Today's Online Collections</div>
           <div class="metric-val" id="mOnlineCollections">0</div>
-          <div class="metric-unit">📱</div>
+          <div class="metric-unit"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg></div>
         </div>
         <div class="metric-card" title="Cash Collections + Online Collections + Udhaar Given (this card) always adds up to Total Revenue above. Manually-added Udhaar (old dues, not from a bill) is tracked separately and excluded here.">
           <div class="metric-title" id="mTitleUdhaarToday">Today's Udhaar Given</div>
           <div class="metric-val" id="mUdhaarToday">0</div>
-          <div class="metric-unit">📒</div>
+          <div class="metric-unit"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 0 1 1 1v18l-3-2-3 2-3-2-3 2-3-2-3 2V4a2 2 0 0 1 2-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
         </div>
         <div class="metric-card" id="udhaarMetricCard">
           <div class="metric-title">Udhaar Outstanding</div>
           <div class="metric-val" id="mUdhaar">0</div>
         </div>
         <div class="metric-card" title="Cash/online received today for Advance Frame top-ups (Player Profiles → Add Advance Frames & Payment). Counted once, here, as revenue — frames redeemed later against a bill show up as a discount on that bill instead, so nothing is double-counted.">
-          <div class="metric-title">🎯 Advance Frames Sold Today</div>
+          <div class="metric-title"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg> Advance Frames Sold Today</div>
           <div class="metric-val" id="mAdvanceRevenue">0</div>
         </div>
         <div class="metric-card" id="poolBalanceMetricCard">
@@ -2163,7 +2181,7 @@
     <!-- CAFE & STOCK SCREEN -->
     <div id="cafeStock" class="screen">
       <div class="panel">
-        <h3>🛒 Walk-In Order Builder — Canteen POS</h3>
+        <h3>${ICONS.cart} Walk-In Order Builder — Canteen POS</h3>
 
         <div class="form-grid" style="margin-bottom: 10px;">
           <div class="form-group">
@@ -2177,27 +2195,27 @@
         </div>
 
         <div class="form-group">
-          <label>🔍 Search Canteen Items</label>
+          <label>${ICONS.search} Search Canteen Items</label>
           <input type="text" id="walkInSearchInput" placeholder="Search by name — Cold Drink, Snacks, Tea..." oninput="renderWalkInItemList()">
         </div>
 
         <div id="walkInItemList" style="max-height: 210px; overflow-y: auto; margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px;"></div>
 
         <h3 style="font-size: 0.9rem; margin-top: 4px; display:flex; justify-content:space-between; align-items:center;">
-          <span>🧾 Current Order</span>
+          <span>${ICONS.receipt} Current Order</span>
           <span id="walkInCartCount" style="color: var(--text-muted); font-weight:600; font-size:0.7rem;"></span>
         </h3>
         <div id="walkInCartList" style="margin-bottom: 8px;"></div>
         <div class="checkout-row total"><span>Order Total</span><span id="walkInCartTotal">Rs 0</span></div>
 
         <div class="btn-row">
-          <button class="btn btn-secondary" onclick="clearWalkInCart()">🗑️ Clear Cart</button>
-          <button class="btn btn-canteen" onclick="openPosCheckoutModal('cafe')">✅ Checkout</button>
+          <button class="btn btn-secondary" onclick="clearWalkInCart()">${ICONS.trash} Clear Cart</button>
+          <button class="btn btn-canteen" onclick="openPosCheckoutModal('cafe')">${ICONS.check} Checkout</button>
         </div>
       </div>
 
       <div class="section-header">
-        <span>📦 Stock, Cost & Pricing</span>
+        <span>${ICONS.ledger} Stock, Cost & Pricing</span>
         <button class="btn btn-canteen" style="width: auto; padding: 6px 12px;" onclick="addNewStockItem()">+ Add New Item</button>
       </div>
 
@@ -2209,7 +2227,7 @@
     <!-- CUE SHOP SCREEN -->
     <div id="cueShop" class="screen">
       <div class="panel">
-        <h3>🎱 Cue Shop POS — Billing & Checkout</h3>
+        <h3>${ICONS.cueball} Cue Shop POS — Billing & Checkout</h3>
 
         <div class="form-grid" style="margin-bottom: 10px;">
           <div class="form-group">
@@ -2224,28 +2242,28 @@
         <p class="page-sub" style="margin: -4px 0 12px;">Saved with the sale for future customer tracking and repair / warranty history lookups.</p>
 
         <div class="form-group">
-          <label>🔍 Search Items &amp; Services</label>
+          <label>${ICONS.search} Search Items &amp; Services</label>
           <input type="text" id="cueSearchInput" placeholder="Search by name — Cue Tips, Chalk, Cue Cases, Repair Services..." oninput="renderCueItemList()">
         </div>
 
         <div id="cueItemList" style="max-height: 210px; overflow-y: auto; margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px;"></div>
 
         <h3 style="font-size: 0.9rem; margin-top: 4px; display:flex; justify-content:space-between; align-items:center;">
-          <span>🧾 Current Order</span>
+          <span>${ICONS.receipt} Current Order</span>
           <span id="cueCartCount" style="color: var(--text-muted); font-weight:600; font-size:0.7rem;"></span>
         </h3>
         <div id="cueCartList" style="margin-bottom: 8px;"></div>
         <div class="checkout-row total"><span>Order Total</span><span id="cueCartTotal">Rs 0</span></div>
 
         <div class="btn-row">
-          <button class="btn btn-secondary" onclick="clearCueCart()">🗑️ Clear Cart</button>
-          <button class="btn btn-canteen" onclick="openPosCheckoutModal('cue')">🧾 Checkout</button>
+          <button class="btn btn-secondary" onclick="clearCueCart()">${ICONS.trash} Clear Cart</button>
+          <button class="btn btn-canteen" onclick="openPosCheckoutModal('cue')">${ICONS.receipt} Checkout</button>
         </div>
         <p class="page-sub" style="margin-top: 10px;">Checkout deducts quantities from stock automatically and generates a printable invoice. Items can also be attached to a live table's checkout via "+ Add Item" on that table.</p>
       </div>
 
       <div class="section-header">
-        <span>🎱 Cue & Accessory Inventory</span>
+        <span>${ICONS.cueball} Cue & Accessory Inventory</span>
         <button class="btn btn-canteen" style="width: auto; padding: 6px 12px;" onclick="addNewCueItem()">+ Add New Item</button>
       </div>
 
@@ -2289,9 +2307,9 @@
           <label>Category</label>
           <select id="receiptsCategoryFilter" onchange="renderReceipts()">
             <option value="all">All Categories</option>
-            <option value="table">🎱 Table Sessions</option>
-            <option value="cafe">☕ Cafe Orders</option>
-            <option value="cue">🎱 Cue Shop Sales</option>
+            <option value="table">${ICONS.cueball} Table Sessions</option>
+            <option value="cafe">${ICONS.coffee} Cafe Orders</option>
+            <option value="cue">${ICONS.cueball} Cue Shop Sales</option>
           </select>
         </div>
         <button class="btn btn-secondary" style="width:auto;" onclick="resetReceiptsFilters()">↺ Reset Filters</button>
@@ -2339,8 +2357,8 @@
         <div class="form-group">
           <label>Paid Via</label>
           <select id="expensePaymentTypeInput">
-            <option value="cash">💵 Cash (Drawer)</option>
-            <option value="online">📱 Online / Bank</option>
+            <option value="cash">${ICONS.cash} Cash (Drawer)</option>
+            <option value="online">${ICONS.mobile} Online / Bank</option>
           </select>
         </div>
         <div class="form-group">
@@ -2350,13 +2368,13 @@
                  chooser (Camera / Gallery / Files) — capture is just a hint that back-camera
                  capture should be offered as one of the options, per the request. -->
             <input type="file" id="expenseBillInput" accept="image/*,.pdf,application/pdf" capture="environment" style="display:none;" onchange="handleExpenseBillSelect(this)">
-            <button type="button" id="expenseBillAttachBtn" class="btn-attach" onclick="document.getElementById('expenseBillInput').click()">📎 + Attach Bill</button>
+            <button type="button" id="expenseBillAttachBtn" class="btn-attach" onclick="document.getElementById('expenseBillInput').click()">${ICONS.paperclip} + Attach Bill</button>
             <span id="expenseBillFileName" class="expense-attach-filename">No file selected</span>
-            <button type="button" id="expenseBillClearBtn" class="expense-attach-clear" onclick="clearExpenseBillSelection()" title="Remove attachment">✕</button>
+            <button type="button" id="expenseBillClearBtn" class="expense-attach-clear" onclick="clearExpenseBillSelection()" title="Remove attachment">${ICONS.close}</button>
           </div>
           <div id="expenseBillPreviewWrap" class="expense-attach-preview" style="display:none;">
             <img id="expenseBillPreviewImg" style="display:none;">
-            <span id="expenseBillPreviewPdfBadge" class="expense-attach-pdf-badge" style="display:none;">📄 <span id="expenseBillPdfName"></span></span>
+            <span id="expenseBillPreviewPdfBadge" class="expense-attach-pdf-badge" style="display:none;">${ICONS.file} <span id="expenseBillPdfName"></span></span>
           </div>
         </div>
         <button class="btn" id="expenseSaveBtn" onclick="addExpense()">Save Expense</button>
@@ -2442,12 +2460,12 @@
             <div class="metric-unit">Rs</div>
           </div>
           <div class="metric-card">
-            <div class="metric-title">💵 Cash Paid</div>
+            <div class="metric-title">${ICONS.cash} Cash Paid</div>
             <div class="metric-val" id="expSummaryCash">0</div>
             <div class="metric-unit">Rs</div>
           </div>
           <div class="metric-card">
-            <div class="metric-title">📱 Online Paid</div>
+            <div class="metric-title">${ICONS.mobile} Online Paid</div>
             <div class="metric-val" id="expSummaryOnline">0</div>
             <div class="metric-unit">Rs</div>
           </div>
@@ -2468,7 +2486,7 @@
     <!-- REPORTS SCREEN -->
     <div id="reports" class="screen">
       <div class="branch-scope-note" id="reportsBranchScopeNote">
-        👑 You're in the consolidated <b>All Branches View</b>. The Dashboard and Z-Report already total everything across branches. The detailed ledgers below (Completed Sessions, Cafe Sales, Cue Shop Sales) show one branch's line-by-line entries at a time — pick a specific branch from the top-right selector to view or edit them.
+        <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18M4 18l-1-9 5 4 4-6 4 6 5-4-1 9"/></svg> You're in the consolidated <b>All Branches View</b>. The Dashboard and Z-Report already total everything across branches. The detailed ledgers below (Completed Sessions, Cafe Sales, Cue Shop Sales) show one branch's line-by-line entries at a time — pick a specific branch from the top-right selector to view or edit them.
       </div>
       <div class="filter-row" id="reportsFilterRow">
         <div class="form-group" style="margin:0;">
@@ -2502,8 +2520,8 @@
             <option value="frame">Frame</option>
           </select>
         </div>
-        <button class="btn filter-export-btn" onclick="exportLedgerCSV()" style="display:none;">📥 Export Daily Ledger CSV</button>
-        <button class="btn filter-export-btn" onclick="exportReportsPDF()">🖨️ Export to PDF</button>
+        <button class="btn filter-export-btn" onclick="exportLedgerCSV()" style="display:none;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Export Daily Ledger CSV</button>
+        <button class="btn filter-export-btn" onclick="exportReportsPDF()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M6 17h12v5H6z"/></svg> Export to PDF</button>
       </div>
 
       <div id="dailyReportViews">
@@ -2539,7 +2557,7 @@
           </table>
         </div>
 
-        <h3 style="margin-top: 18px;">🎱 Cue Shop / Accessories Sales</h3>
+        <h3 style="margin-top: 18px;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg> Cue Shop / Accessories Sales</h3>
         <div class="table-responsive-wrap">
           <table>
             <thead><tr><th>Time</th><th>Customer</th><th>Items</th><th>Qty</th><th>Gross (Rs)</th><th>Discount</th><th>Net (Rs)</th><th>Payment</th><th>Staff</th><th>Actions</th></tr></thead>
@@ -2548,7 +2566,7 @@
           </table>
         </div>
 
-        <h3 style="margin-top: 18px;">🧾 All Sales Transactions (Cafe + Cue Shop + Table Sessions)</h3>
+        <h3 style="margin-top: 18px;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 0 1 1 1v18l-3-2-3 2-3-2-3 2-3-2-3 2V4a2 2 0 0 1 2-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg> All Sales Transactions (Cafe + Cue Shop + Table Sessions)</h3>
         <div class="table-responsive-wrap">
           <table>
             <thead><tr><th>Time</th><th>Source</th><th>Customer</th><th>Items / Details</th><th>Qty</th><th>Gross (Rs)</th><th>Discount</th><th>Net (Rs)</th><th>Payment</th><th>Staff</th><th>Actions</th></tr></thead>
@@ -2570,7 +2588,7 @@
 
       <div class="panel" style="margin-top: 25px;">
         <div class="section-header">
-          <span>📈 Revenue Trend</span>
+          <span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg> Revenue Trend</span>
         </div>
         <p class="page-sub" style="margin-bottom: 12px;">Pulled from the Completed Sessions Ledger — total daily revenue (game + canteen + cue shop, net of discounts) for each day in the selected range.</p>
         <div class="filter-row" style="margin-bottom: 5px;">
@@ -2593,7 +2611,7 @@
       <!-- PARTNER-WISE CONTRIBUTION REPORT -->
       <div class="panel" style="margin-top: 25px;">
         <div class="section-header">
-          <span>🤝 Partner-wise Contribution Report</span>
+          <span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/></svg> Partner-wise Contribution Report</span>
         </div>
         <p class="page-sub" style="margin-bottom: 12px;">All-time capital contributed by each partner and their share of the total investment pool.</p>
         <div class="analytics-grid">
@@ -2614,7 +2632,7 @@
       <!-- EXPENSE VS INVESTMENT BREAKDOWN -->
       <div class="panel" style="margin-top: 25px;">
         <div class="section-header">
-          <span>💰 Expense vs Investment Breakdown</span>
+          <span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M18 12a2 2 0 0 0 0 4h3v-4Z"/></svg> Expense vs Investment Breakdown</span>
         </div>
         <p class="page-sub" style="margin-bottom: 12px;">Routine operational spending (bills, salaries, maintenance) vs. capital / renovation spending — all-time, from the Expenses log.</p>
         <div class="analytics-grid">
@@ -2644,11 +2662,11 @@
     <!-- REPORTS & MASTER SUMMARY SCREEN -->
     <div id="masterSummary" class="screen">
       <div class="branch-scope-note" id="masterSummaryBranchScopeNote">
-        👑 You're in the consolidated <b>All Branches View</b> — every total below pools every branch together. Pick a specific branch from the top-right selector to see that branch's numbers alone.
+        <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18M4 18l-1-9 5 4 4-6 4 6 5-4-1 9"/></svg> You're in the consolidated <b>All Branches View</b> — every total below pools every branch together. Pick a specific branch from the top-right selector to see that branch's numbers alone.
       </div>
 
       <div class="panel">
-        <h3>🧮 Master Summary — Custom Date Range</h3>
+        <h3><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg> Master Summary — Custom Date Range</h3>
         <p class="page-sub" style="margin: 4px 0 14px;">Aggregated totals across Completed Sessions, Cafe & Cue Shop sales, Expenses and Udhaar — pick a range (or a quick preset) and optionally narrow by staff member or table.</p>
 
         <div class="filter-row ms-filter-grid" id="msFilterRow1">
@@ -2691,11 +2709,11 @@
               <option value="">All Tables</option>
             </select>
           </div>
-          <button class="btn btn-secondary" onclick="clearMasterSummaryFilters()">✕ Clear Filters</button>
-          <button class="btn" onclick="renderMasterSummary()">🔄 Generate</button>
-          <button class="btn btn-canteen" onclick="printMasterSummaryReport()">🖨️ Print Summary Report</button>
-          <button class="btn" style="background:var(--danger);" onclick="downloadMasterSummaryPDF()">📄 Download PDF Report</button>
-          <button class="btn btn-secondary" onclick="exportMasterSummaryCSV()" style="display:none;">📥 Export Data (CSV)</button>
+          <button class="btn btn-secondary" onclick="clearMasterSummaryFilters()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg> Clear Filters</button>
+          <button class="btn" onclick="renderMasterSummary()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg> Generate</button>
+          <button class="btn btn-canteen" onclick="printMasterSummaryReport()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M6 17h12v5H6z"/></svg> Print Summary Report</button>
+          <button class="btn" style="background:var(--danger);" onclick="downloadMasterSummaryPDF()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg> Download PDF Report</button>
+          <button class="btn btn-secondary" onclick="exportMasterSummaryCSV()" style="display:none;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Export Data (CSV)</button>
         </div>
         <p class="empty-note" id="msRangeLabel" style="position:static; padding:6px 0 0;"></p>
       </div>
@@ -2703,7 +2721,7 @@
       <!-- Automated Cross-Check & Audit Engine -->
       <div class="audit-panel" id="auditPanel">
         <div class="audit-status-row">
-          <span style="font-weight:800; font-size:0.95rem;">🛡️ System Cross-Check &amp; Integrity Status</span>
+          <span style="font-weight:800; font-size:0.95rem;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5.2 3.4 9.5 8 11 4.6-1.5 8-5.8 8-11V5Z"/></svg> System Cross-Check &amp; Integrity Status</span>
           <span class="audit-status-pill" id="auditStatusPill"><span class="audit-dot" id="auditStatusDot"></span><span id="auditStatusText">Checking…</span></span>
         </div>
         <p class="page-sub" style="margin:4px 0 0;">Automatically re-verifies every total shown above against the core balance formula and the shift closing (Z-Report) logs for the selected range — every time you generate a report.</p>
@@ -2724,7 +2742,7 @@
           </div>
         </div>
 
-        <div class="audit-subhead">📆 Shift-to-Date Reconciliation Audit</div>
+        <div class="audit-subhead"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Shift-to-Date Reconciliation Audit</div>
         <p class="page-sub" style="margin:0 0 8px;">Sums every day's Z-Report (shift closing) totals across the selected range and cross-checks the total against the Master Summary above — surfacing any orphaned or unmatched transactions.</p>
         <div class="audit-grid">
           <div class="audit-card">
@@ -2742,16 +2760,16 @@
         </div>
         <div id="auditOrphanList" style="margin-top:8px;"></div>
 
-        <div class="audit-subhead">🧾 Audit Discrepancy Log — Physical Drawer vs Expected Cash</div>
+        <div class="audit-subhead"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2-1 2Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg> Audit Discrepancy Log — Physical Drawer vs Expected Cash</div>
         <p class="page-sub" style="margin:0 0 8px;">Per-day cash-drawer reconciliation for the selected range. A day is flagged the moment the physically-counted drawer total doesn't match the system-expected cash — with the staff active on the till that day shown for traceability.</p>
         <div id="auditDiscrepancyLog"></div>
       </div>
 
       <!-- ================= TOP SECTION: Periodic Cash Flow chart + quick-glance side cards ================= -->
-      <div class="section-header" style="margin-top:20px;">💰 Cash Flow & Revenue Overview</div>
+      <div class="section-header" style="margin-top:20px;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M18 12a2 2 0 0 0 0 4h3v-4Z"/></svg> Cash Flow & Revenue Overview</div>
       <div class="erp-top-grid">
         <div class="erp-chart-card">
-          <div class="section-header" style="margin-bottom:6px;"><span>📊 Revenue vs. Actual Cash Collected — <span id="msPeriodChartLabel">By Day</span></span></div>
+          <div class="section-header" style="margin-bottom:6px;"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16v-7"/></svg> Revenue vs. Actual Cash Collected — <span id="msPeriodChartLabel">By Day</span></span></div>
           <p class="page-sub" style="margin:0 0 10px;">Billed revenue (games + cafe + cue shop, net of discounts) vs. cash actually collected (cash + online), grouped by the interval selected above.</p>
           <div style="position:relative; height:280px;">
             <canvas id="msPeriodChart"></canvas>
@@ -2772,7 +2790,7 @@
             <span class="esi-val" id="msUdhaarGiven">0</span>
           </div>
           <div class="erp-side-item" title="Cash/online received in this period for Advance Frame top-ups (Player Profiles → Add Advance Frames & Payment).">
-            <span class="esi-label">🎯 Advance Frames Sold</span>
+            <span class="esi-label"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg> Advance Frames Sold</span>
             <span class="esi-val" id="msAdvanceRevenue">0</span>
           </div>
           <div class="erp-side-item">
@@ -2792,7 +2810,7 @@
 
       <!-- Compact quick-metrics summary table -->
       <div class="panel" style="margin-top:18px;">
-        <div class="section-header" style="margin-bottom:8px;"><span>🧾 Quick Metrics Summary</span></div>
+        <div class="section-header" style="margin-bottom:8px;"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2-1 2Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg> Quick Metrics Summary</span></div>
         <div class="table-scroll-wrap">
           <table class="compact-summary-table">
             <tbody id="msQuickSummaryBody"></tbody>
@@ -2803,7 +2821,7 @@
       <!-- ================= MIDDLE SECTION: Sales breakdown + Expenses breakdown ================= -->
       <div class="erp-mid-grid">
         <div class="erp-mid-card">
-          <div class="section-header" style="margin-bottom:4px;"><span>🛒 Sales Breakdown</span></div>
+          <div class="section-header" style="margin-bottom:4px;"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.5 3h2l2.6 12.5a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 8H6"/></svg> Sales Breakdown</span></div>
           <div class="big-stat-row bsr-income">
             <span class="bsr-label">Total Sales (Net)</span>
             <span class="bsr-val" id="msSalesBigVal">Rs 0</span>
@@ -2816,7 +2834,7 @@
         </div>
 
         <div class="erp-mid-card">
-          <div class="section-header" style="margin-bottom:4px;"><span>💸 Expenses Breakdown</span></div>
+          <div class="section-header" style="margin-bottom:4px;"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M18 12a2 2 0 0 0 0 4h3v-4Z"/></svg> Expenses Breakdown</span></div>
           <div class="big-stat-row bsr-expense">
             <span class="bsr-label">Total Expenses</span>
             <span class="bsr-val" id="msExpensesBigVal">Rs 0</span>
@@ -2834,7 +2852,7 @@
       </div>
 
       <!-- ================= BOTTOM SECTION: Profit & Loss summary ================= -->
-      <div class="section-header" style="margin-top:20px;">📑 Profit &amp; Loss Summary</div>
+      <div class="section-header" style="margin-top:20px;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2-1 2Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg> Profit &amp; Loss Summary</div>
       <div class="pnl-grid">
         <div class="pnl-card pnl-income">
           <div class="pnl-label">Total Income</div>
@@ -2853,25 +2871,25 @@
         </div>
       </div>
 
-      <div class="section-header" style="margin-top:20px; display:none;">💰 Financial Grand Totals</div>
+      <div class="section-header" style="margin-top:20px; display:none;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M18 12a2 2 0 0 0 0 4h3v-4Z"/></svg> Financial Grand Totals</div>
       <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); display:none;">
         <div class="metric-card">
-          <div class="metric-title">💵 Cash Collections</div>
+          <div class="metric-title"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg> Cash Collections</div>
           <div class="metric-val" id="msCashCollections">0</div>
           <div class="metric-unit">Rs</div>
         </div>
         <div class="metric-card">
-          <div class="metric-title">📱 Online Collections</div>
+          <div class="metric-title"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg> Online Collections</div>
           <div class="metric-val" id="msOnlineCollections">0</div>
           <div class="metric-unit">Rs</div>
         </div>
         <div class="metric-card">
-          <div class="metric-title">💸 Total Expenses</div>
+          <div class="metric-title"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M18 12a2 2 0 0 0 0 4h3v-4Z"/></svg> Total Expenses</div>
           <div class="metric-val" id="msTotalExpenses">0</div>
           <div class="metric-unit">Rs</div>
         </div>
         <div class="metric-card">
-          <div class="metric-title">🎁 Discounts / Complimentary</div>
+          <div class="metric-title"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7"/><path d="M12 8c-1.5 0-3-1-3-2.5S10 3 12 5c0-2 1.5-3.5 3-2.5S13.5 8 12 8Z"/></svg> Discounts / Complimentary</div>
           <div class="metric-val" id="msDiscounts">0</div>
           <div class="metric-unit">Rs</div>
         </div>
@@ -2883,7 +2901,7 @@
       </div>
 
       <div class="panel" style="margin-top:20px;">
-        <div class="section-header"><span>🎯 Table Utilization & Revenue</span></div>
+        <div class="section-header"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg> Table Utilization & Revenue</span></div>
         <p class="page-sub" style="margin-bottom: 12px;">Per-table breakdown for the selected range. Utilization % is time-billed play hours as a share of total hours in the range (24h/day) — an approximate occupancy gauge, not tied to actual club opening hours.</p>
         <div class="table-scroll-wrap">
           <table id="msTableStatsTable">
@@ -2896,7 +2914,7 @@
       </div>
 
       <div class="panel" style="margin-top:20px;">
-        <div class="section-header"><span>🧑‍💼 Staff Performance</span></div>
+        <div class="section-header"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Staff Performance</span></div>
         <p class="page-sub" style="margin-bottom: 12px;">Sessions closed, sales revenue generated, and expenses logged per staff member for the selected range.</p>
         <div class="table-scroll-wrap">
           <table id="msStaffStatsTable">
@@ -3185,7 +3203,7 @@
       </div>
 
       <div class="section-header" id="udhaarSectionHeader">
-        <span>💳 Udhaar Ledger</span>
+        <span>${ICONS.card} Udhaar Ledger</span>
         <button class="btn btn-canteen" style="width: auto; padding: 8px 16px;" onclick="openAddUdhaarModal()">+ Add Udhaar Entry</button>
       </div>
 
@@ -3302,9 +3320,9 @@
         <div class="form-group">
           <label>Payment Method</label>
           <select id="settleUdhaarMethodInput">
-            <option value="cash">💵 Cash</option>
-            <option value="online">📱 Online</option>
-            <option value="card">💳 Card</option>
+            <option value="cash">${ICONS.cash} Cash</option>
+            <option value="online">${ICONS.mobile} Online</option>
+            <option value="card">${ICONS.card} Card</option>
           </select>
         </div>
         <div class="form-group">
@@ -3315,7 +3333,7 @@
         <div id="settleUdhaarLog" style="max-height: 110px; overflow-y: auto; margin-bottom: 10px;"></div>
         <div class="btn-row">
           <button class="btn btn-secondary" onclick="closeSettleUdhaarModal()">Cancel</button>
-          <button class="btn btn-canteen" onclick="confirmSettleUdhaar()">✔ Confirm Settlement</button>
+          <button class="btn btn-canteen" onclick="confirmSettleUdhaar()">${ICONS.check} Confirm Settlement</button>
         </div>
       </div>
     </div>
@@ -3323,23 +3341,23 @@
     <!-- PLAYER PROFILES SCREEN (unified member & customer directory) -->
     <div id="players" class="screen">
       <div class="section-header" id="playersSectionHeader">
-        <span>🏆 Player Profiles</span>
+        <span>${ICONS.trophy} Player Profiles</span>
         <button class="btn btn-canteen" style="width: auto; padding: 8px 16px;" onclick="openCreatePlayerModal()">+ Create New Player Profile</button>
       </div>
 
       <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-bottom: 15px;">
         <div class="metric-card tier-summary-card">
-          <span class="tier-badge tier-gold">🏆 Gold</span>
+          <span class="tier-badge tier-gold">${ICONS.trophy} Gold</span>
           <div class="tier-summary-count" id="tierCountGold">0</div>
           <div class="metric-title" style="margin-top:2px;">Members</div>
         </div>
         <div class="metric-card tier-summary-card">
-          <span class="tier-badge tier-silver">🥈 Silver</span>
+          <span class="tier-badge tier-silver">${ICONS.medal} Silver</span>
           <div class="tier-summary-count" id="tierCountSilver">0</div>
           <div class="metric-title" style="margin-top:2px;">Members</div>
         </div>
         <div class="metric-card tier-summary-card">
-          <span class="tier-badge tier-bronze">🥉 Bronze</span>
+          <span class="tier-badge tier-bronze">${ICONS.medal} Bronze</span>
           <div class="tier-summary-count" id="tierCountBronze">0</div>
           <div class="metric-title" style="margin-top:2px;">Members</div>
         </div>
@@ -3362,9 +3380,9 @@
           <label>Tier</label>
           <select id="playerTierFilter" onchange="renderPlayersScreen()">
             <option value="all">All Tiers</option>
-            <option value="gold">🏆 Gold</option>
-            <option value="silver">🥈 Silver</option>
-            <option value="bronze">🥉 Bronze</option>
+            <option value="gold">${ICONS.trophy} Gold</option>
+            <option value="silver">${ICONS.medal} Silver</option>
+            <option value="bronze">${ICONS.medal} Bronze</option>
           </select>
         </div>
         <button class="btn btn-secondary" onclick="clearPlayerFilters()">Clear Filters</button>
@@ -3379,7 +3397,7 @@
               <th>Phone</th>
               <th>Email</th>
               <th>Frames Played</th>
-              <th title="Frames awarded when an opponent conceded mid-series — see Concede / End Series Early">🏆 Walkover Frames</th>
+              <th title="Frames awarded when an opponent conceded mid-series — see Concede / End Series Early">${ICONS.trophy} Walkover Frames</th>
               <th>Highest Break</th>
               <th>Total Spending (Rs)</th>
               <th>Advance Frames</th>
@@ -3401,20 +3419,20 @@
          code changes needed. -->
     <div id="resourceVault" class="screen">
       <div class="section-header">
-        <span>🔗 Resource Vault / Quick Links</span>
+        <span>${ICONS.link} Resource Vault / Quick Links</span>
         <button class="btn btn-canteen" style="width: auto; padding: 8px 16px;" onclick="openAddLinkModal()">+ Add New Link</button>
       </div>
 
       <div class="rv-toolbar">
         <div class="rv-filter-tabs" id="rvFilterTabs">
           <button class="rv-filter-tab active" data-cat="all" onclick="setRvCategoryFilter('all', this)">All</button>
-          <button class="rv-filter-tab" data-cat="Social Media" onclick="setRvCategoryFilter('Social Media', this)">📱 Social Media</button>
-          <button class="rv-filter-tab" data-cat="E-Commerce" onclick="setRvCategoryFilter('E-Commerce', this)">🛒 Store</button>
-          <button class="rv-filter-tab" data-cat="Videos" onclick="setRvCategoryFilter('Videos', this)">🎬 Videos</button>
-          <button class="rv-filter-tab" data-cat="Websites" onclick="setRvCategoryFilter('Websites', this)">🌐 Websites</button>
-          <button class="rv-filter-tab" data-cat="Other" onclick="setRvCategoryFilter('Other', this)">📁 Other</button>
+          <button class="rv-filter-tab" data-cat="Social Media" onclick="setRvCategoryFilter('Social Media', this)">${ICONS.mobile} Social Media</button>
+          <button class="rv-filter-tab" data-cat="E-Commerce" onclick="setRvCategoryFilter('E-Commerce', this)">${ICONS.cart} Store</button>
+          <button class="rv-filter-tab" data-cat="Videos" onclick="setRvCategoryFilter('Videos', this)">${ICONS.film} Videos</button>
+          <button class="rv-filter-tab" data-cat="Websites" onclick="setRvCategoryFilter('Websites', this)">${ICONS.globe} Websites</button>
+          <button class="rv-filter-tab" data-cat="Other" onclick="setRvCategoryFilter('Other', this)">${ICONS.folder} Other</button>
         </div>
-        <input type="text" id="rvSearchInput" placeholder="🔎 Search by title..." oninput="renderResourceVaultScreen()">
+        <input type="text" id="rvSearchInput" placeholder="Search by title..." oninput="renderResourceVaultScreen()">
       </div>
 
       <p class="auth-note" id="resourceVaultSyncNote" style="margin-bottom: 14px;">Synced live via Firebase.</p>
@@ -3432,33 +3450,33 @@
          previously never shown anywhere reachable without already knowing a PIN. -->
     <div id="welcomeCredentialsModal" class="modal-overlay">
       <div class="modal-box" style="max-width: 460px;">
-        <h3>👋 Welcome to Snookify!</h3>
+        <h3>${ICONS.wave} Welcome to Snookify!</h3>
         <p style="margin-bottom: 12px; opacity: 0.85;">
           Your club has been set up. Here are the auto-generated codes you'll need to start your
           first shift — write them down now, they won't be shown again automatically (you can always
           view or change them later from <strong>Security &amp; Permissions</strong>).
         </p>
         <div class="form-group">
-          <label>👤 Owner Staff Security PIN</label>
+          <label>${ICONS.user} Owner Staff Security PIN</label>
           <input type="text" id="welcomeOwnerPin" readonly style="font-weight:700; letter-spacing:2px;">
         </div>
         <div class="form-group">
-          <label>🏢 Main Branch Security PIN</label>
+          <label>${ICONS.building} Main Branch Security PIN</label>
           <input type="text" id="welcomeBranchPin" readonly style="font-weight:700; letter-spacing:2px;">
         </div>
         <div class="form-group">
-          <label>🔐 Master PIN (Security &amp; Permissions access)</label>
+          <label>${ICONS.lock} Master PIN (Security &amp; Permissions access)</label>
           <input type="text" id="welcomeMasterPin" readonly style="font-weight:700; letter-spacing:2px;">
         </div>
         <div class="btn-row" style="flex-direction: column;">
-          <button class="btn" onclick="closeWelcomeCredentialsModal()">✅ Got it, I've saved these</button>
+          <button class="btn" onclick="closeWelcomeCredentialsModal()">${ICONS.check} Got it, I've saved these</button>
         </div>
       </div>
     </div>
 
     <div id="resourceLinkModal" class="modal-overlay">
       <div class="modal-box" style="max-width: 460px;">
-        <h3 id="resourceLinkModalTitle">🔗 Add New Link</h3>
+        <h3 id="resourceLinkModalTitle">${ICONS.link} Add New Link</h3>
         <div class="form-group">
           <label>Title</label>
           <input type="text" id="rvTitleInput" placeholder="e.g. Official Facebook Page">
@@ -3470,11 +3488,11 @@
         <div class="form-group">
           <label>Category</label>
           <select id="rvCategoryInput">
-            <option value="Social Media">📱 Social Media</option>
-            <option value="E-Commerce">🛒 E-Commerce</option>
-            <option value="Videos">🎬 Videos</option>
-            <option value="Websites">🌐 Websites</option>
-            <option value="Other">📁 Other</option>
+            <option value="Social Media">${ICONS.mobile} Social Media</option>
+            <option value="E-Commerce">${ICONS.cart} E-Commerce</option>
+            <option value="Videos">${ICONS.film} Videos</option>
+            <option value="Websites">${ICONS.globe} Websites</option>
+            <option value="Other">${ICONS.folder} Other</option>
           </select>
         </div>
         <div class="form-group">
@@ -3483,7 +3501,7 @@
         </div>
         <div class="auth-error" id="resourceLinkError"></div>
         <div class="btn-row" style="flex-direction: column;">
-          <button class="btn" id="rvSaveBtn" onclick="saveResourceLink()">💾 Save Link</button>
+          <button class="btn" id="rvSaveBtn" onclick="saveResourceLink()">${ICONS.download} Save Link</button>
           <button class="btn btn-secondary" onclick="closeResourceLinkModal()">Cancel</button>
         </div>
       </div>
@@ -3494,7 +3512,7 @@
          glassmorphism/glow effects and logo branding, all persisted to localStorage. -->
     <div id="themeEngine" class="screen">
       <div class="section-header">
-        <span>🎨 Theme & Appearance</span>
+        <span>${ICONS.palette} Theme & Appearance</span>
       </div>
       <p class="auth-note" style="margin-bottom: 14px;">Customize wallpaper, colors, glass/glow effects and branding for the whole app — changes save automatically on this device.</p>
 
@@ -3672,7 +3690,7 @@
             <label>Amount (PKR)</label>
             <input type="number" id="pcAmountInput" placeholder="0" min="0">
           </div>
-          <button class="btn" onclick="addPartnerContribution()">💾 Log Contribution</button>
+          <button class="btn" onclick="addPartnerContribution()">${ICONS.download} Log Contribution</button>
         </div>
 
         <div class="panel ledger-history-panel">
@@ -3706,7 +3724,7 @@
     <div id="reportArchive" class="screen">
       <div class="panel" style="margin-bottom: 15px;">
         <div style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.5;">
-          🖼️ Every Master Summary, Z-Report and Shift Closing you print is automatically captured as an image and stored
+          ${ICONS.image} Every Master Summary, Z-Report and Shift Closing you print is automatically captured as an image and stored
           on this device — even offline. Nothing here depends on the live data records, so these snapshots remain exactly
           as they looked the moment they were generated.
         </div>
@@ -3739,8 +3757,8 @@
               <option value="synced">Synced</option>
             </select>
           </div>
-          <button class="btn btn-secondary" style="width:auto; align-self:flex-end;" onclick="window.ReportArchive.clearFilters()">✕ Clear Filters</button>
-          <button class="btn" style="width:auto; align-self:flex-end;" onclick="window.ReportArchive.syncNow()">☁️ Sync Now</button>
+          <button class="btn btn-secondary" style="width:auto; align-self:flex-end;" onclick="window.ReportArchive.clearFilters()">${ICONS.close} Clear Filters</button>
+          <button class="btn" style="width:auto; align-self:flex-end;" onclick="window.ReportArchive.syncNow()">${ICONS.cloud} Sync Now</button>
         </div>
         <div id="raStatusLine" style="font-size:0.72rem; color:var(--text-muted); margin-top:8px;"></div>
       </div>
@@ -3759,9 +3777,9 @@
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
           <div id="raViewerTitle" style="font-weight:800;"></div>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary" style="width:auto; padding:7px 14px;" onclick="window.ReportArchive.downloadCurrent()">📥 Download</button>
-            <button class="btn btn-secondary" style="width:auto; padding:7px 14px;" onclick="window.ReportArchive.printCurrent()">🖨️ Print</button>
-            <button class="btn btn-secondary" style="width:auto; padding:7px 14px;" onclick="window.ReportArchive.closeViewer()">✕ Close</button>
+            <button class="btn btn-secondary" style="width:auto; padding:7px 14px;" onclick="window.ReportArchive.downloadCurrent()">${ICONS.download} Download</button>
+            <button class="btn btn-secondary" style="width:auto; padding:7px 14px;" onclick="window.ReportArchive.printCurrent()">${ICONS.printer} Print</button>
+            <button class="btn btn-secondary" style="width:auto; padding:7px 14px;" onclick="window.ReportArchive.closeViewer()">${ICONS.close} Close</button>
           </div>
         </div>
         <div style="overflow:auto;">
@@ -3774,7 +3792,7 @@
     <div id="bin" class="screen">
       <div class="panel" style="margin-bottom: 15px;">
         <div style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.5;">
-          🔒 Every time a Completed Session, Cafe Sale, or Cue Shop entry is edited or deleted through the admin-password gate,
+          ${ICONS.lock} Every time a Completed Session, Cafe Sale, or Cue Shop entry is edited or deleted through the admin-password gate,
           a permanent copy of that record is captured here automatically. Nothing in this list can be altered — it exists purely
           as a tamper-evident history of what changed, when, and to what.
         </div>
@@ -3828,7 +3846,7 @@
     <div id="security" class="screen">
       <div class="panel" style="margin-bottom: 15px;">
         <div class="sec-intro">
-          🔐 Choose which menu items and buttons should require the Master PIN before they open.
+          ${ICONS.lock} Choose which menu items and buttons should require the Master PIN before they open.
           Locked items show a small padlock and will prompt for the PIN — the underlying action still
           runs exactly as before once the PIN is entered. Unlocked items work with zero prompts.
         </div>
@@ -3850,11 +3868,11 @@
             <input type="password" id="secConfirmPin" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter') changeMasterPin();">
           </div>
         </div>
-        <button class="btn" style="width: auto;" onclick="changeMasterPin()">💾 Update Master PIN</button>
+        <button class="btn" style="width: auto;" onclick="changeMasterPin()">${ICONS.download} Update Master PIN</button>
         <div class="sec-pin-success" id="secPinChangeMsg"></div>
         <div style="margin-top:10px; font-size:0.7rem; color:var(--text-muted);">
           Recovery code status: <span id="recoveryCodeStatus">—</span>
-          <button type="button" class="btn" style="width:auto; padding:2px 8px; font-size:0.68rem; margin-left:6px;" onclick="regenerateRecoveryCode()">🔁 Generate / Replace Recovery Code</button>
+          <button type="button" class="btn" style="width:auto; padding:2px 8px; font-size:0.68rem; margin-left:6px;" onclick="regenerateRecoveryCode()">${ICONS.refresh} Generate / Replace Recovery Code</button>
         </div>
       </div>
 
@@ -3863,7 +3881,7 @@
            this file. See generateRecoveryCode()/verifyRecoveryCode() below for why. -->
       <div class="modal-overlay" id="forgotPinModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(5,10,15,0.85); align-items:center; justify-content:center; z-index:950;">
         <div class="panel" style="max-width:420px; width:100%; padding:22px;">
-          <div class="section-header" style="margin-bottom:8px;">🔑 Recover Master PIN</div>
+          <div class="section-header" style="margin-bottom:8px;">${ICONS.key} Recover Master PIN</div>
           <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:14px;">
             Enter this installation's Recovery Code (shown to you once when it was generated).
           </p>
@@ -3888,7 +3906,7 @@
       </div>
 
       <div class="panel" style="margin-bottom: 15px;">
-        <div class="section-header" style="margin-bottom: 4px;">🎛️ Feature Locker — UI Visibility Modes</div>
+        <div class="section-header" style="margin-bottom: 4px;">${ICONS.calculator} Feature Locker — UI Visibility Modes</div>
 
         <!-- Protected Mode master toggle: global override for the 4 system-critical modules
              (Setup / Rates, Partners Ledger, Bin / Delete Actions Log, Audit Log) — see
@@ -3896,7 +3914,7 @@
              Dynamic Feature Locker module below. -->
         <div class="protected-mode-bar" id="protectedModeBar">
           <div class="pm-text">
-            <div class="pm-title">🛡️ Protected Mode <span class="pm-state" id="protectedModeState">ON</span></div>
+            <div class="pm-title">${ICONS.shield} Protected Mode <span class="pm-state" id="protectedModeState">ON</span></div>
             <div class="pm-sub">
               When ON, Setup/Rates, Partners Ledger, Bin/Delete Actions Log and Audit Log always
               stay Visible for Admin/Manager roles and can't be Blurred or Hidden. Turn OFF to
@@ -3925,7 +3943,7 @@
       </div>
 
       <div class="panel" style="margin-bottom: 15px;">
-        <div class="section-header" style="margin-bottom: 4px;">🗂️ Sidebar Menu Structure — Parent/Child Dropdowns</div>
+        <div class="section-header" style="margin-bottom: 4px;">${ICONS.folder} Sidebar Menu Structure — Parent/Child Dropdowns</div>
         <div class="sec-intro" style="margin-bottom: 12px;">
           Turn any feature into a <strong>dropdown parent</strong> and pick which other sidebar
           items should nest under it as children. The sidebar renders a smooth arrow next to the
@@ -3949,7 +3967,7 @@
       </div>
 
       <div class="panel" style="margin-bottom: 15px;">
-        <div class="section-header" style="margin-bottom: 4px;">🔑 Staff & Branch Security Codes</div>
+        <div class="section-header" style="margin-bottom: 4px;">${ICONS.key} Staff & Branch Security Codes</div>
         <div class="sec-intro" style="margin-bottom: 12px;">
           Every staff member and branch gets a 4-digit Security Code automatically when they're
           created. Staff enter theirs on the Start Shift screen. Admins can view or change any
@@ -3964,7 +3982,7 @@
           <div class="sec-code-label">Cancel Session Authorization Code<span class="sc-sub">Required to void/cancel an accidental active session from a table card</span></div>
           <div class="sec-code-controls">
             <input type="text" maxlength="4" inputmode="numeric" id="cancelSessionPinInput" value="" placeholder="••••">
-            <button class="sec-code-save" onclick="updateCancelSessionPin()">💾 Save</button>
+            <button class="sec-code-save" onclick="updateCancelSessionPin()">${ICONS.download} Save</button>
             <span class="sec-code-msg" id="cancelSessionPinMsg"></span>
           </div>
         </div>
@@ -3973,7 +3991,7 @@
       <div class="panel">
         <div class="section-header" style="margin-bottom: 4px;">Dashboard & UI Privacy Controls (Blur Mode)</div>
         <div class="sec-intro" style="margin-bottom: 12px;">
-          🌫️ <strong>Lock</strong> requires the Master PIN before a value is revealed. <strong>Blur</strong> hides it
+          ${ICONS.eyeOff} <strong>Lock</strong> requires the Master PIN before a value is revealed. <strong>Blur</strong> hides it
           behind a tap-to-reveal blur with no PIN needed — a quick privacy screen for when a customer can see the
           counter. <strong>Hide</strong> goes further and completely conceals the item — it's removed from the
           dashboard entirely, with no blur and no tap-to-reveal, until you switch Hide back off. Lock and Blur can
@@ -3985,9 +4003,9 @@
         </div>
         <div class="sec-privacy-header-row">
           <span>Item</span>
-          <span>🔒 Lock</span>
-          <span>🌫️ Blur</span>
-          <span>🚫 Hide</span>
+          <span>${ICONS.lock} Lock</span>
+          <span>${ICONS.eyeOff} Blur</span>
+          <span>${ICONS.ban} Hide</span>
         </div>
         <div id="privacyFeatureList"></div>
       </div>
@@ -4002,7 +4020,7 @@
   <div id="auditLog" class="screen">
     <div class="panel" style="margin-bottom: 15px;">
       <div class="sec-intro" data-i18n="audit.intro">
-        📜 A record of feature unlocks, access-denied attempts, and sensitive actions (expenses,
+        ${ICONS.ledger} A record of feature unlocks, access-denied attempts, and sensitive actions (expenses,
         branch/staff changes, PIN changes). Kept locally (last 2000 entries) and mirrored to
         Firestore's <code>auditLog</code> collection when Firebase is configured, so it survives
         even if this device's storage is cleared.
@@ -4034,11 +4052,11 @@
   <div id="staffAuthHistory" class="screen">
     <div class="panel" style="margin-bottom: 15px;">
       <div class="sec-intro">
-        🛰️ Every Start Shift / Shutdown Shift automatically records a server-timestamped
+        ${ICONS.satellite} Every Start Shift / Shutdown Shift automatically records a server-timestamped
         login/logout entry with device info and (if location permission is granted) a
         reverse-geocoded location name. Login always proceeds even if location access is
         denied or unavailable — this is a passive record, not a blocking check.
-        Entries marked <span style="color: var(--accent-gold);">⚠️ local clock</span> were
+        Entries marked <span style="color: var(--accent-gold);">${ICONS.warning} local clock</span> were
         recorded without Firebase configured, so their timestamp is this device's own clock
         and is not tamper-resistant — configure <code>firebaseConfig</code> for
         server-verified timestamps. IP addresses shown are best-effort only (see code
@@ -4127,9 +4145,9 @@
       <div class="form-group">
         <label>Player Tier</label>
         <select id="playerTierInput">
-          <option value="gold">🏆 Gold</option>
-          <option value="silver">🥈 Silver</option>
-          <option value="bronze">🥉 Bronze</option>
+          <option value="gold">${ICONS.trophy} Gold</option>
+          <option value="silver">${ICONS.medal} Silver</option>
+          <option value="bronze">${ICONS.medal} Bronze</option>
         </select>
         <span class="sub" style="color: var(--text-muted); font-size: 0.7rem;">Manually sets the tier shown everywhere for this player, overriding the automatic Gold/Silver/Bronze calculation from frames played &amp; lifetime spend.</span>
       </div>
@@ -4156,7 +4174,7 @@
         <input type="number" id="playerSpendInput" value="0" min="0">
       </div>
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="savePlayerProfile()">💾 Save Profile</button>
+        <button class="btn" onclick="savePlayerProfile()">${ICONS.download} Save Profile</button>
         <button class="btn btn-secondary" onclick="closePlayerModal()">Cancel</button>
       </div>
     </div>
@@ -4180,7 +4198,7 @@
         <input type="number" id="quickStatsSpendInput" placeholder="0" min="0">
       </div>
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="saveQuickStats()">✅ Apply Update</button>
+        <button class="btn" onclick="saveQuickStats()">${ICONS.check} Apply Update</button>
         <button class="btn btn-secondary" onclick="closeQuickStatsModal()">Cancel</button>
       </div>
     </div>
@@ -4212,11 +4230,11 @@
           <div style="font-size:1.4rem; font-weight:800;" id="playerDetailBalance">Rs 0</div>
         </div>
         <div class="stock-card" style="text-align:center;">
-          <div style="color:var(--text-muted); font-size:0.7rem; text-transform:uppercase;">🎯 Advance Frames Balance</div>
+          <div style="color:var(--text-muted); font-size:0.7rem; text-transform:uppercase;">${ICONS.target} Advance Frames Balance</div>
           <div style="font-size:1.4rem; font-weight:800; color:var(--info);" id="playerDetailAdvanceBalance">0</div>
         </div>
         <div class="stock-card" style="text-align:center;">
-          <div style="color:var(--text-muted); font-size:0.7rem; text-transform:uppercase;">🏆 Walkover Frames Won</div>
+          <div style="color:var(--text-muted); font-size:0.7rem; text-transform:uppercase;">${ICONS.trophy} Walkover Frames Won</div>
           <div style="font-size:1.4rem; font-weight:800; color:var(--accent-green);" id="playerDetailFramesWon">0</div>
         </div>
       </div>
@@ -4229,16 +4247,16 @@
       </div>
 
       <div class="form-group" style="margin-top: 10px;">
-        <label>🎯 Advance Frames & Wallet History</label>
+        <label>${ICONS.target} Advance Frames & Wallet History</label>
         <div style="max-height: 130px; overflow-y: auto; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px;" id="playerDetailAdvanceHistory"></div>
       </div>
 
       <div class="btn-row" style="flex-direction: column; margin-top: 10px;">
-        <button class="btn btn-info" onclick="openAddAdvanceModal(detailPlayerId)">➕ Add Advance Frames &amp; Payment</button>
-        <button class="btn btn-whatsapp" onclick="sendPlayerWhatsApp(detailPlayerId, 'blank')">💬 Message on WhatsApp</button>
-        <button class="btn btn-canteen" onclick="openQuickStatsModalFromDetail()">🎯 Log Break / Update Stats</button>
-        <button class="btn btn-secondary" onclick="editPlayerFromDetail()">✏️ Edit Profile</button>
-        <button class="btn" style="background: var(--danger); color: #fff;" onclick="deletePlayerFromDetail()">🗑️ Delete Profile</button>
+        <button class="btn btn-info" onclick="openAddAdvanceModal(detailPlayerId)">${ICONS.plus} Add Advance Frames &amp; Payment</button>
+        <button class="btn btn-whatsapp" onclick="sendPlayerWhatsApp(detailPlayerId, 'blank')">${ICONS.whatsapp} Message on WhatsApp</button>
+        <button class="btn btn-canteen" onclick="openQuickStatsModalFromDetail()">${ICONS.target} Log Break / Update Stats</button>
+        <button class="btn btn-secondary" onclick="editPlayerFromDetail()">${ICONS.edit} Edit Profile</button>
+        <button class="btn" style="background: var(--danger); color: #fff;" onclick="deletePlayerFromDetail()">${ICONS.trash} Delete Profile</button>
         <button class="btn btn-secondary" onclick="closePlayerDetailModal()">Close</button>
       </div>
     </div>
@@ -4251,7 +4269,7 @@
        credits the player's advance frame balance immediately. -->
   <div id="advanceTopupModal" class="modal-overlay">
     <div class="modal-box">
-      <h3>🎯 Add Advance Frames &amp; Payment — <span id="advanceTopupPlayerName"></span></h3>
+      <h3>${ICONS.target} Add Advance Frames &amp; Payment — <span id="advanceTopupPlayerName"></span></h3>
       <div class="checkout-row"><span>Current Advance Balance</span><span id="advanceTopupCurrentBalance">0 frames</span></div>
       <div class="form-group" style="margin-top: 8px;">
         <label>Advance Frames to Add</label>
@@ -4265,8 +4283,8 @@
       <div class="form-group">
         <label>Payment Mode</label>
         <div class="mode-toggle">
-          <button type="button" id="advanceTopupPayCash" class="toggle-btn active" onclick="setAdvanceTopupPaymentType('cash')">💵 Cash</button>
-          <button type="button" id="advanceTopupPayOnline" class="toggle-btn" onclick="setAdvanceTopupPaymentType('online')">📱 Online</button>
+          <button type="button" id="advanceTopupPayCash" class="toggle-btn active" onclick="setAdvanceTopupPaymentType('cash')">${ICONS.cash} Cash</button>
+          <button type="button" id="advanceTopupPayOnline" class="toggle-btn" onclick="setAdvanceTopupPaymentType('online')">${ICONS.mobile} Online</button>
         </div>
       </div>
       <div class="form-group">
@@ -4274,7 +4292,7 @@
         <input type="text" id="advanceTopupNoteInput" placeholder="e.g. 5-frame package purchase">
       </div>
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="saveAdvanceTopup()">✅ Save Advance Top-up</button>
+        <button class="btn" onclick="saveAdvanceTopup()">${ICONS.check} Save Advance Top-up</button>
         <button class="btn btn-secondary" onclick="closeAdvanceTopupModal()">Cancel</button>
       </div>
     </div>
@@ -4293,7 +4311,7 @@
         <input type="text" id="custPhoneInput" placeholder="03xx-xxxxxxx (optional)" oninput="onCustPhoneInputChange()">
       </div>
       <div class="form-group">
-        <label>🏆 Link Player Profile (optional)</label>
+        <label>${ICONS.trophy} Link Player Profile (optional)</label>
         <select id="custPlayerSelect" onchange="onCustPlayerSelectChange()"></select>
       </div>
 
@@ -4302,7 +4320,7 @@
            table's frames, e.g. "BO3"/"BO7". Selecting it has no side effects: no pairing, no
            tracking, no automatic result calculation — see setMatchTarget(). -->
       <div class="form-group" id="startMatchTargetWrap" style="display:none;">
-        <label>🏷️ Series Tag (optional)</label>
+        <label>${ICONS.tag} Series Tag (optional)</label>
         <div style="display:flex; align-items:center; gap:6px;">
           <select id="startMatchTargetSelect" onchange="onStartMatchTargetChange()"></select>
           <input type="number" min="1" id="startMatchTargetCustomInput" placeholder="e.g. 51" style="display:none; width:80px;" onchange="onStartMatchTargetChange()">
@@ -4338,13 +4356,13 @@
         <label style="margin-top:6px;">Phone Number</label>
         <input type="text" id="tableLinkQuickAddPhone" placeholder="03xx-xxxxxxx" autocomplete="off">
         <div class="btn-row">
-          <button type="button" class="btn" onclick="quickAddAndLinkPlayer()">⚡ Save &amp; Link</button>
+          <button type="button" class="btn" onclick="quickAddAndLinkPlayer()">${ICONS.bolt} Save &amp; Link</button>
           <button type="button" class="btn btn-secondary" onclick="toggleTableLinkQuickAdd()">Cancel</button>
         </div>
       </div>
 
       <div class="btn-row" style="flex-direction: column;" id="tableLinkMainActions">
-        <button class="btn" id="tableLinkSaveBtn" onclick="confirmTableLinkPlayer()">🔗 Save Link</button>
+        <button class="btn" id="tableLinkSaveBtn" onclick="confirmTableLinkPlayer()">${ICONS.link} Save Link</button>
         <button class="btn btn-secondary" onclick="closeTableLinkPlayerModal()">Cancel</button>
       </div>
     </div>
@@ -4369,7 +4387,7 @@
       </div>
 
       <div class="form-group">
-        <label>🏷️ Series Tag (optional)</label>
+        <label>${ICONS.tag} Series Tag (optional)</label>
         <div style="display:flex; align-items:center; gap:6px;">
           <select id="addFrameMatchTargetSelect" onchange="onAddFrameMatchTargetChange()"></select>
           <input type="number" min="1" id="addFrameMatchTargetCustomInput" placeholder="e.g. 51" style="display:none; width:80px;" onchange="onAddFrameMatchTargetCustomChange()">
@@ -4570,7 +4588,7 @@
       <h3>Checkout — <span id="posCheckoutSource"></span></h3>
       <div class="checkout-row"><span>Customer</span><span id="posCheckoutCustomer"></span></div>
       <div class="form-group" style="margin-top: 8px;">
-        <label>🏆 Link Player Profile (optional)</label>
+        <label>${ICONS.trophy} Link Player Profile (optional)</label>
         <select id="posCheckoutPlayerSelect" onchange="onPosCheckoutPlayerSelectChange()"></select>
       </div>
       <div class="form-group" id="posCheckoutStaffTagRow">
@@ -4833,7 +4851,7 @@
        file). -->
   <div id="manageStaffModal" class="modal-overlay">
     <div class="modal-box" style="max-width: 460px;">
-      <h3>🧑‍💼 Manage Staff</h3>
+      <h3>${ICONS.staff} Manage Staff</h3>
       <p class="auth-note" id="manageStaffSyncNote">Synced live via Firebase.</p>
 
       <div id="manageStaffList" class="staff-manage-list"></div>
@@ -4858,7 +4876,7 @@
       </div>
       <div class="auth-error" id="manageStaffError"></div>
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="addStaffClicked()">➕ Add Staff (PIN required)</button>
+        <button class="btn" onclick="addStaffClicked()">${ICONS.plus} Add Staff (PIN required)</button>
         <button class="btn btn-secondary" onclick="closeManageStaffModal()">Close</button>
       </div>
     </div>
@@ -4869,7 +4887,7 @@
        an overall Online/Idle/Offline badge plus a row per currently-tracked staff heartbeat. -->
   <div id="liveStatusModal" class="modal-overlay lsm-modal">
     <div class="modal-box">
-      <h3>🟢 Live System Status</h3>
+      <h3><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent-green);margin-right:2px;"></span> Live System Status</h3>
       <div class="lsm-summary">
         <div>
           <div class="lsm-summary-count" id="lsmTotalOnline">0</div>
@@ -4888,7 +4906,7 @@
   <!-- EDIT STAFF MODAL — opened only after guardFeatureAction('manageStaff', ...) verification. -->
   <div id="editStaffModal" class="modal-overlay">
     <div class="modal-box" style="max-width: 420px;">
-      <h3>✏️ Edit Staff Member</h3>
+      <h3>${ICONS.edit} Edit Staff Member</h3>
       <div class="form-group">
         <label>Staff Name</label>
         <input type="text" id="editStaffNameInput" placeholder="Staff name">
@@ -4909,7 +4927,7 @@
       </div>
       <div class="auth-error" id="editStaffError"></div>
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="saveEditedStaff()">💾 Save Changes</button>
+        <button class="btn" onclick="saveEditedStaff()">${ICONS.download} Save Changes</button>
         <button class="btn btn-secondary" onclick="closeEditStaffModal()">Cancel</button>
       </div>
     </div>
@@ -5039,6 +5057,76 @@
 
   <script>
     const TABLES_COUNT = 5;
+
+    /* ---------- Icon System v2 ----------------------------------------------------
+       Lucide-style inline SVGs replacing emoji glyphs, screen by screen (Dashboard,
+       Active/Live Tables, Reports & Master Summary first). Each entry is a single-line
+       <svg> string so it drops safely into template literals and plain string
+       concatenation alike. 18x18, 1.75px stroke, currentColor — so every icon inherits
+       whatever text color surrounds it (title, button, badge) with zero extra CSS.
+       Usage: `${ICONS.coffee}` inside a template literal, or ICONS.user + ' ' + name
+       in plain concatenation. */
+    const ICONS = {
+      coffee: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8Z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg>',
+      cueball: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg>',
+      cash: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>',
+      mobile: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>',
+      ledger: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 0 1 1 1v18l-3-2-3 2-3-2-3 2-3-2-3 2V4a2 2 0 0 1 2-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+      target: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg>',
+      crown: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18M4 18l-1-9 5 4 4-6 4 6 5-4-1 9"/></svg>',
+      download: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg>',
+      printer: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M6 17h12v5H6z"/></svg>',
+      file: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>',
+      trendUp: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg>',
+      handshake: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/></svg>',
+      wallet: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M18 12a2 2 0 0 0 0 4h3v-4Z"/></svg>',
+      calculator: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>',
+      close: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+      refresh: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>',
+      shield: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5.2 3.4 9.5 8 11 4.6-1.5 8-5.8 8-11V5Z"/></svg>',
+      calendar: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+      receipt: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2-1 2Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>',
+      gift: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7"/><path d="M12 8c-1.5 0-3-1-3-2.5S10 3 12 5c0-2 1.5-3.5 3-2.5S13.5 8 12 8Z"/></svg>',
+      staff: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+      cart: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.5 3h2l2.6 12.5a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 8H6"/></svg>',
+      building: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1"/></svg>',
+      user: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
+      link: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7a5 5 0 0 1 0-10h2M15 7h2a5 5 0 1 1 0 10h-2M8 12h8"/></svg>',
+      flag: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4M4 4h13l-2.5 4L17 12H4"/></svg>',
+      lock: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+      edit: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+      trash: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/><path d="M10 11v6M14 11v6"/></svg>',
+      gamepad: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h4M8 10v4"/><path d="M15 13h.01M18 11h.01"/><path d="M17.32 5H6.68a4 4 0 0 0-3.98 3.55L2 15a2.5 2.5 0 0 0 4.5 1.5l1.05-1.4a2 2 0 0 1 1.6-.8h5.7a2 2 0 0 1 1.6.8l1.05 1.4A2.5 2.5 0 0 0 22 15l-.7-6.45A4 4 0 0 0 17.32 5Z"/></svg>',
+      warning: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>',
+      chart: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16v-7"/></svg>',
+      search: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+      check: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+      trophy: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0Z"/><path d="M7 5H4a1 1 0 0 0-1 1v1a4 4 0 0 0 4 4M17 5h3a1 1 0 0 1 1 1v1a4 4 0 0 1-4 4"/></svg>',
+      medal: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M12 11v8M9 3l3 5 3-5"/></svg>',
+      paperclip: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.4 21a5 5 0 0 1-7-7L14 5.5a3.5 3.5 0 0 1 5 5L10.5 19a2 2 0 0 1-3-3l7-7"/></svg>',
+      card: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',
+      bolt: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg>',
+      scale: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 7l-3 7a3.5 3.5 0 0 0 6 0ZM19 7l-3 7a3.5 3.5 0 0 0 6 0Z"/><path d="M5 7h14M9 21h6"/></svg>',
+      sparkle: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2"/></svg>',
+      key: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M10.5 12.5 20 3M17 6l2 2M14 9l2 2"/></svg>',
+      folder: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/></svg>',
+      ban: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/></svg>',
+      eyeOff: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 5.1A11 11 0 0 1 21 12a11.6 11.6 0 0 1-3 3.9M6.5 6.5A11.6 11.6 0 0 0 3 12a11 11 0 0 0 15.5 5.5M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>',
+      satellite: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="6" height="6" rx="1" transform="rotate(45 12 12)"/><path d="M4 20l3-3M14 8l3-3M17 11l3-3-3-3-3 3M6 16l-3 3 3 3 3-3"/></svg>',
+      plus: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+      phone: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2Z"/></svg>',
+      palette: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 2.5 2.5 0 0 0 1.8-4.2 2 2 0 0 1 1.4-3.4H17a4 4 0 0 0 4-4 8 8 0 0 0-9-8.4Z"/><circle cx="7" cy="12" r="1"/><circle cx="9.5" cy="7.5" r="1"/><circle cx="14.5" cy="7.5" r="1"/></svg>',
+      image: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>',
+      cloud: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.3A6 6 0 1 0 7 15.5"/><path d="M7 15.5A4 4 0 0 0 8 23h9a4.5 4.5 0 0 0 1-8.9"/></svg>',
+      whatsapp: '<svg class="icon-inline" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.3-.4.1-.2 0-.4 0-.5s-.7-1.6-.9-2.2c-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1.1 2.8 1.2 3c.1.2 2.2 3.3 5.2 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.2-.6-.4Z"/><path d="M12 2a10 10 0 0 0-8.5 15.3L2 22l4.8-1.5A10 10 0 1 0 12 2Z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>',
+      tag: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m20.6 12.6-7.9 7.9a2 2 0 0 1-2.8 0L2 12.6V4a2 2 0 0 1 2-2h8.6a2 2 0 0 1 1.4.6l6.6 6.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>',
+      globe: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/></svg>',
+      film: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4"/></svg>',
+      wave: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v5M14 10V4a2 2 0 0 0-4 0v7M10 10.5V6a2 2 0 0 0-4 0v9c0 3.5 2.5 7 7 7 4 0 6-2.5 6-6v-4a2 2 0 0 0-4 0v1"/></svg>',
+      clipboard: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3"/></svg>',
+      eye: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>',
+      mail: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg>'
+    };
     const PAGE_INFO = {
       dashboard: ['Live Floor Dashboard', 'Real-time table & revenue overview'],
       activeTables: ['Active Table', 'Currently running sessions on the floor'],
@@ -6276,7 +6364,7 @@
             <td>${r.staffName || 'Unknown'}<br><span class="staff-role-badge">${r.role || '-'}</span></td>
             <td>${branchLabel(r.branchId)}</td>
             <td>${staffAuthTimeCell(r.loginAt)} ${r.serverTimestamped === false ? '<br><span style="color:var(--accent-gold); font-size:0.65rem;" title="No Firebase configured — this timestamp is this device local clock, not tamper-resistant.">⚠️ local clock</span>' : '<br><span style="color:var(--accent-green); font-size:0.65rem;">✅ server time</span>'}</td>
-            <td>${r.logoutAt ? staffAuthTimeCell(r.logoutAt) : '<span style="color:var(--accent-green);">🟢 Still active</span>'}</td>
+            <td>${r.logoutAt ? staffAuthTimeCell(r.logoutAt) : '<span style="color:var(--accent-green);">${ICONS.check} Still active</span>'}</td>
             <td>${staffAuthLocationCell(r)}</td>
             <td style="font-size:0.7rem; color:var(--text-muted);">${(r.device && r.device.userAgent) ? r.device.userAgent.slice(0, 40) + '…' : '—'}</td>
             <td style="font-size:0.72rem;">${r.ipAddress || '<span style="color:var(--text-muted);">not captured</span>'}</td>
@@ -7063,11 +7151,11 @@
               <span class="sm-name">${s.name}</span>
               <span class="staff-role-badge">${s.role}</span>
             </div>
-            <div class="sm-phone">${s.phone ? '📞 ' + s.phone : 'No phone set'}</div>
+            <div class="sm-phone">${s.phone ? '${ICONS.phone} ' + s.phone : 'No phone set'}</div>
           </div>
           <div class="sm-actions">
-            <button class="sm-edit" onclick="requestEditStaff('${s.id}')">✏️ Edit</button>
-            <button class="sm-del" onclick="deleteStaffClicked('${s.id}')">🗑️ Delete</button>
+            <button class="sm-edit" onclick="requestEditStaff('${s.id}')">${ICONS.edit} Edit</button>
+            <button class="sm-del" onclick="deleteStaffClicked('${s.id}')">${ICONS.trash} Delete</button>
           </div>
         </div>
       `).join('');
@@ -7085,11 +7173,11 @@
       const phone = phoneInput.value.trim();
 
       if (!name) {
-        errEl.innerText = '❌ Please enter a staff name.';
+        errEl.innerText = 'Please enter a staff name.';
         return;
       }
       if (STAFF.some(s => s.name.toLowerCase() === name.toLowerCase())) {
-        errEl.innerText = '❌ A staff member with this name already exists.';
+        errEl.innerText = 'A staff member with this name already exists.';
         return;
       }
 
@@ -7113,7 +7201,7 @@
           document.getElementById('newStaffPhoneInput').value = '';
         }).catch(err => {
           console.error('Snookify: failed to add staff', err);
-          document.getElementById('manageStaffError').innerText = '❌ Could not save to Firebase. Check your connection and try again.';
+          document.getElementById('manageStaffError').innerText = 'Could not save to Firebase. Check your connection and try again.';
         });
       } else {
         const id = genId('staff');
@@ -7158,7 +7246,7 @@
       const phone = document.getElementById('editStaffPhoneInput').value.trim();
       const errEl = document.getElementById('editStaffError');
 
-      if (!name) { errEl.innerText = '❌ Please enter a staff name.'; return; }
+      if (!name) { errEl.innerText = 'Please enter a staff name.'; return; }
       if (STAFF.some(s => s.id !== editingStaffId && s.name.toLowerCase() === name.toLowerCase())) {
         errEl.innerText = '❌ Another staff member already has this name.';
         return;
@@ -7488,7 +7576,7 @@
       }).sort((a, b) => a.title.localeCompare(b.title));
 
       if (!filtered.length) {
-        grid.innerHTML = `<div class="rv-empty">🔗 No links found${search ? ' for "' + escapeRv(search) + '"' : ''}.${RESOURCE_LINKS.length ? ' Try a different filter or search term.' : ' Click "+ Add New Link" to get started.'}</div>`;
+        grid.innerHTML = `<div class="rv-empty">${ICONS.link} No links found${search ? ' for "' + escapeRv(search) + '"' : ''}.${RESOURCE_LINKS.length ? ' Try a different filter or search term.' : ' Click "+ Add New Link" to get started.'}</div>`;
         return;
       }
 
@@ -7503,10 +7591,10 @@
           <div class="rv-card-url">${escapeRv(l.url)}</div>
           ${l.description ? `<div class="rv-card-desc">${escapeRv(l.description)}</div>` : ''}
           <div class="rv-card-actions">
-            <button class="rv-btn rv-btn-open" onclick="openResourceLink('${l.id}')" title="Open in a new tab">🔗 Open Link</button>
-            <button class="rv-btn rv-btn-copy" onclick="copyResourceLink('${l.id}')" title="Copy URL to clipboard">📋 Copy URL</button>
-            <button class="rv-btn rv-btn-edit" onclick="openEditLinkModal('${l.id}')" title="Edit this link">✏️ Edit</button>
-            <button class="rv-btn rv-btn-del" onclick="deleteLinkClicked('${l.id}')" title="Delete this link">🗑️</button>
+            <button class="rv-btn rv-btn-open" onclick="openResourceLink('${l.id}')" title="Open in a new tab">${ICONS.link} Open Link</button>
+            <button class="rv-btn rv-btn-copy" onclick="copyResourceLink('${l.id}')" title="Copy URL to clipboard">${ICONS.clipboard} Copy URL</button>
+            <button class="rv-btn rv-btn-edit" onclick="openEditLinkModal('${l.id}')" title="Edit this link">${ICONS.edit} Edit</button>
+            <button class="rv-btn rv-btn-del" onclick="deleteLinkClicked('${l.id}')" title="Delete this link">${ICONS.trash}</button>
           </div>
         </div>`;
       }).join('');
@@ -10501,7 +10589,7 @@
           return `
             <div class="table-card">
               <div class="card-top">
-                <div class="table-name">🏢 ${b.name}</div>
+                <div class="table-name">${ICONS.building} ${b.name}</div>
                 <div class="badge ${live > 0 ? 'badge-live' : 'badge-free'}">${live > 0 ? `${live} live` : 'all free'}</div>
               </div>
               <div class="rate-info" style="margin-top:8px;">Active tables: <b>${live} / ${total}</b></div>
@@ -10584,12 +10672,12 @@
 
             <div class="live-assign-row">
               <span class="lar-player">
-                <span class="lar-player-name">${linkedPlayer ? '👤 ' + linkedPlayer.name : (t.customerName ? '👤 ' + t.customerName : 'No player linked')}</span>
+                <span class="lar-player-name">${linkedPlayer ? ICONS.user + ' ' + linkedPlayer.name : (t.customerName ? ICONS.user + ' ' + t.customerName : 'No player linked')}</span>
                 <!-- Summary icon — replaces the old standalone "📊 Summary" card-face button;
                      functions identically, opening the same Table Summary slide-over panel. -->
-                <button type="button" class="lar-summary-icon" onclick="openTableSummaryModal(${t.id})" title="Session Summary">📊</button>
+                <button type="button" class="lar-summary-icon" onclick="openTableSummaryModal(${t.id})" title="Session Summary">${ICONS.chart}</button>
               </span>
-              <button type="button" class="lar-assign-btn" onclick="openTableLinkPlayerModal(${t.id})">${linkedPlayer ? '🔗 Change' : '🔗 Assign'}</button>
+              <button type="button" class="lar-assign-btn" onclick="openTableLinkPlayerModal(${t.id})">${ICONS.link} ${linkedPlayer ? 'Change' : 'Assign'}</button>
             </div>
 
             ${t.billType === 'frame' ? `
@@ -10598,7 +10686,7 @@
                  modal (openAddFrameModal()) so staff never have to open Summary first just to
                  assign a player. Match Sessions mode (Standard Series/Finals Decider) is still
                  available from the Table Summary panel via the Series Tag selector. -->
-            <button type="button" class="card-assign-btn" onclick="openAddFrameModal(${t.id})" title="Add Frame / Assign Player">🎯 Assign Player</button>` : ''}
+            <button type="button" class="card-assign-btn" onclick="openAddFrameModal(${t.id})" title="Add Frame / Assign Player">${ICONS.target} Assign Player</button>` : ''}
 
             <div class="live-quick-actions">
               <!-- "+ Frame" removed from the card face — frame tracking is already fully
@@ -10669,7 +10757,7 @@
       let frameTableHTML = '';
       if (t.billType === 'frame' && t.frameLog && t.frameLog.length) {
         const rows = t.frameLog.slice().reverse().map(f => {
-          const who = f.isPenaltyFrame ? '🚩 Penalty' : (f.assigned && f.playerName ? f.playerName : '<span class="fbr-unassigned">Unassigned</span>');
+          const who = f.isPenaltyFrame ? ICONS.flag + ' Penalty' : (f.assigned && f.playerName ? f.playerName : '<span class="fbr-unassigned">Unassigned</span>');
           const started = f.startTime ? formatTime(f.startTime) : '—';
           const completed = f.endTime ? formatTime(f.endTime) : '<span style="color:var(--accent-green);">in progress</span>';
           const type = f.endTime ? frameTypeBadge(f) : '—';
@@ -10687,7 +10775,7 @@
       document.getElementById('summaryPanelBody').innerHTML = `
         <div class="summary-section">
           <div class="summary-section-title">Session</div>
-          ${t.customerName ? `<div class="customer-line">👤 ${t.customerName}${t.customerPhone ? ' · ' + t.customerPhone : ''}</div>` : ''}
+          ${t.customerName ? `<div class="customer-line">${ICONS.user} ${t.customerName}${t.customerPhone ? ' · ' + t.customerPhone : ''}</div>` : ''}
           <div class="customer-line" style="display:flex; align-items:center; gap:6px;">${t.playerId ? renderPlayerLinkLine(t.playerId) : '<span style="color:var(--text-muted); font-size:0.7rem;">No player linked</span>'}<span style="cursor:pointer; color:var(--info); font-size:0.7rem; font-weight:700;" onclick="openTableLinkPlayerModal(${t.id})">🔗 Link</span></div>
           <div class="mode-toggle" style="margin-top:8px;">
             <button class="toggle-btn ${t.mult === 'single' ? 'active' : ''}" onclick="setMultiplier(${t.id}, 'single'); renderTableSummaryPanel(${t.id});">Single</button>
@@ -10767,7 +10855,7 @@
           <td id="atl-bill-${t.id}">Rs ${money(computeRunningBill(t))}</td>
           <td>Rs ${money(t.canteenTotal)}</td>
           <td>
-            ${isAll ? `<span class="auth-note">🔒 Switch to ${branchLabel(t._branch)} to manage</span>` : `
+            ${isAll ? `<span class="auth-note">${ICONS.lock} Switch to ${branchLabel(t._branch)} to manage</span>` : `
             <div class="btn-row">
               ${t.billType === 'frame' ? `<button class="btn btn-secondary" style="margin:0;" onclick="openAddFrameModal(${t.id})">+Frame</button>` : ''}
               <button class="btn btn-canteen" style="margin:0;" onclick="openCanteenModal(${t.id})">+Item</button>
@@ -10793,7 +10881,7 @@
             <div class="atc-row"><span class="atc-label">Elapsed</span><span class="atc-val" id="atl-timer-card-${t.id}">${elapsedStr(t)}</span></div>
             <div class="atc-row"><span class="atc-label">Running Bill</span><span class="atc-val atc-bill" id="atl-bill-card-${t.id}">Rs ${money(computeRunningBill(t))}</span></div>
             <div class="atc-row"><span class="atc-label">Canteen Added</span><span class="atc-val">Rs ${money(t.canteenTotal)}</span></div>
-            ${isAll ? `<div class="atc-row"><span class="auth-note">🔒 Switch to ${branchLabel(t._branch)} to manage</span></div>` : `
+            ${isAll ? `<div class="atc-row"><span class="auth-note">${ICONS.lock} Switch to ${branchLabel(t._branch)} to manage</span></div>` : `
             <div class="btn-row">
               ${t.billType === 'frame' ? `<button class="btn btn-secondary" style="margin:0;" onclick="openAddFrameModal(${t.id})">+Frame</button>` : ''}
               <button class="btn btn-canteen" style="margin:0;" onclick="openCanteenModal(${t.id})">+Item</button>
@@ -10817,8 +10905,8 @@
         return `
         <div class="stock-card ${isLow ? 'low-stock' : ''}">
           <div class="stock-title">
-            <span>${s.name}${isLow ? '<br><span class="low-stock-flag">⚠ LOW STOCK</span>' : ''}</span>
-            <span class="del-x" onclick="deleteStockItem(${s.id})" title="Remove item">✕</span>
+            <span>${s.name}${isLow ? '<br><span class="low-stock-flag">${ICONS.warning} LOW STOCK</span>' : ''}</span>
+            <span class="del-x" onclick="deleteStockItem(${s.id})" title="Remove item">${ICONS.close}</span>
           </div>
           <div class="stock-row"><span>Cost Rs</span><input type="number" value="${s.cost}" onchange="updateStockField(${s.id}, 'cost', this.value)"></div>
           <div class="stock-row"><span>Sell Rs</span><input type="number" value="${s.sell}" onchange="updateStockField(${s.id}, 'sell', this.value)"></div>
@@ -11032,8 +11120,8 @@
         return `
         <div class="stock-card ${isLow ? 'low-stock' : ''}">
           <div class="stock-title">
-            <span>${s.name}<br><span style="color:var(--text-muted); font-weight:600; font-size:0.7rem;">${s.type || 'Accessory'}</span>${isLow ? '<br><span class="low-stock-flag">⚠ LOW STOCK</span>' : ''}</span>
-            <span class="del-x" onclick="deleteStockItem(${s.id})" title="Remove item">✕</span>
+            <span>${s.name}<br><span style="color:var(--text-muted); font-weight:600; font-size:0.7rem;">${s.type || 'Accessory'}</span>${isLow ? '<br><span class="low-stock-flag">${ICONS.warning} LOW STOCK</span>' : ''}</span>
+            <span class="del-x" onclick="deleteStockItem(${s.id})" title="Remove item">${ICONS.close}</span>
           </div>
           <div class="stock-row"><span>Cost Rs</span><input type="number" value="${s.cost}" onchange="updateStockField(${s.id}, 'cost', this.value)"></div>
           <div class="stock-row"><span>Sell Rs</span><input type="number" value="${s.sell}" onchange="updateStockField(${s.id}, 'sell', this.value)"></div>
@@ -11258,7 +11346,7 @@
         playerId: autoMatch ? autoMatch.id : null
       };
 
-      document.getElementById('posCheckoutSource').innerText = source === 'cue' ? '🎱 Cue Shop' : '☕ Cafe & Stock';
+      document.getElementById('posCheckoutSource').innerHTML = source === 'cue' ? '${ICONS.cueball} Cue Shop' : '${ICONS.coffee} Cafe & Stock';
       document.getElementById('posCheckoutCustomer').innerText = customerName ? `${customerName}${customerPhone ? ' · ' + customerPhone : ''}` : 'Walk-in Customer';
       populatePlayerSelect('posCheckoutPlayerSelect', posCheckoutContext.playerId);
       document.getElementById('posCheckoutSubtotal').innerText = 'Rs ' + money(subtotal);
@@ -11655,7 +11743,7 @@
         amount: h.total
       }));
       const walkInReceipts = AB().walkIns.map(w => ({
-        type: w.category === 'cue' ? '🎱 Cue Shop Walk-In' : 'Cafe Walk-In',
+        type: w.category === 'cue' ? `${ICONS.cueball} Cue Shop Walk-In` : 'Cafe Walk-In',
         category: w.category === 'cue' ? 'cue' : 'cafe',
         id: w.id,
         dateISO: w.dateISO,
@@ -11690,11 +11778,11 @@
         <div class="receipt-card">
           <div>
             <div><b>${r.type}</b> — ${r.title}${r.framesPlayed ? ` <span style="color:var(--info); font-size:0.7rem;">(${r.framesPlayed} frame${r.framesPlayed === 1 ? '' : 's'} logged)</span>` : ''}</div>
-            <div class="receipt-meta">${r.meta} · 🧑‍💼 ${r.staffName}</div>
+            <div class="receipt-meta">${r.meta} · ${ICONS.staff} ${r.staffName}</div>
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
             <div style="font-weight: 800; color: var(--accent-gold); font-size: 1rem;">Rs ${money(r.amount)}</div>
-            ${r.type === 'Table Session' ? `<button class="btn btn-secondary" style="width:auto; margin:0; padding:7px 10px;" onclick="viewSessionReceipt('${r.id}')">🧾 View</button>` : ''}
+            ${r.type === 'Table Session' ? `<button class="btn btn-secondary" style="width:auto; margin:0; padding:7px 10px;" onclick="viewSessionReceipt('${r.id}')">${ICONS.receipt} View</button>` : ''}
           </div>
         </div>
       `).join('');
@@ -12192,10 +12280,10 @@
           <td><span class="bin-source-tag">${b.source}</span></td>
           <td><span class="bin-action-badge ${b.action === 'Deleted' ? 'bin-action-deleted' : 'bin-action-edited'}">${b.action}</span></td>
           <td>${b.summary || '-'}</td>
-          <td><span class="staff-role-badge" title="Staff on counter when this was authorized">👤 ${b.performedByStaff || 'Unknown'}</span></td>
+          <td><span class="staff-role-badge" title="Staff on counter when this was authorized">${ICONS.user} ${b.performedByStaff || 'Unknown'}</span></td>
           <td>
             <div class="row-actions">
-              <span class="row-action-icon" title="Inspect (admin password required)" onclick="requestInspectBinEntry('${b.id}')">🔍</span>
+              <span class="row-action-icon" title="Inspect (admin password required)" onclick="requestInspectBinEntry('${b.id}')">${ICONS.search}</span>
             </div>
           </td>
         </tr>
@@ -12636,11 +12724,11 @@
             <td>Rs ${money(h.discount || 0)}</td>
             <td><b>Rs ${money(h.total)}</b></td>
             <td>${paymentTypeLabel(h)}</td>
-            <td><span class="staff-role-badge" title="Staff on counter for this session">👤 ${h.staffName || 'Unknown'}</span></td>
+            <td><span class="staff-role-badge" title="Staff on counter for this session">${ICONS.user} ${h.staffName || 'Unknown'}</span></td>
             <td>
               <div class="row-actions">
-                <span class="row-action-icon edit-icon" title="Edit entry" onclick="requestEditSession('${h.id}')">✏️</span>
-                <span class="row-action-icon delete-icon" title="Delete entry" onclick="requestDeleteSession('${h.id}')">🗑️</span>
+                <span class="row-action-icon edit-icon" title="Edit entry" onclick="requestEditSession('${h.id}')">${ICONS.edit}</span>
+                <span class="row-action-icon delete-icon" title="Delete entry" onclick="requestDeleteSession('${h.id}')">${ICONS.trash}</span>
               </div>
             </td>
           </tr>
@@ -12676,11 +12764,11 @@
             <td>Rs ${money(w.discount || 0)}</td>
             <td>Rs ${money(w.total)}</td>
             <td>${paymentTypeLabel(w)}</td>
-            <td><span class="staff-role-badge" title="Staff who made this sale">👤 ${w.staffName || 'Unknown'}</span></td>
+            <td><span class="staff-role-badge" title="Staff who made this sale">${ICONS.user} ${w.staffName || 'Unknown'}</span></td>
             <td>
               <div class="row-actions">
-                <span class="row-action-icon edit-icon" title="Edit entry" onclick="requestEditWalkIn('${w.id}')">✏️</span>
-                <span class="row-action-icon delete-icon" title="Delete entry" onclick="requestDeleteWalkIn('${w.id}')">🗑️</span>
+                <span class="row-action-icon edit-icon" title="Edit entry" onclick="requestEditWalkIn('${w.id}')">${ICONS.edit}</span>
+                <span class="row-action-icon delete-icon" title="Delete entry" onclick="requestDeleteWalkIn('${w.id}')">${ICONS.trash}</span>
               </div>
             </td>
           </tr>
@@ -12704,11 +12792,11 @@
             <td>Rs ${money(w.discount || 0)}</td>
             <td>Rs ${money(w.total)}</td>
             <td>${paymentTypeLabel(w)}</td>
-            <td><span class="staff-role-badge" title="Staff who made this sale">👤 ${w.staffName || 'Unknown'}</span></td>
+            <td><span class="staff-role-badge" title="Staff who made this sale">${ICONS.user} ${w.staffName || 'Unknown'}</span></td>
             <td>
               <div class="row-actions">
-                <span class="row-action-icon edit-icon" title="Edit entry" onclick="requestEditWalkIn('${w.id}')">✏️</span>
-                <span class="row-action-icon delete-icon" title="Delete entry" onclick="requestDeleteWalkIn('${w.id}')">🗑️</span>
+                <span class="row-action-icon edit-icon" title="Edit entry" onclick="requestEditWalkIn('${w.id}')">${ICONS.edit}</span>
+                <span class="row-action-icon delete-icon" title="Delete entry" onclick="requestDeleteWalkIn('${w.id}')">${ICONS.trash}</span>
               </div>
             </td>
           </tr>
@@ -12727,7 +12815,7 @@
           ...sessions.map(h => ({
             ts: h.timestamp || 0,
             time: getRecordTime(h),
-            source: `🎮 Table (${h.table})`,
+            source: `${ICONS.gamepad} Table (${h.table})`,
             customer: h.customerName || '—',
             details: h.billDetails + ((h.canteenItems && h.canteenItems.length) ? ' + ' + h.canteenItems.map(ci => `${ci.qty}x ${ci.name}`).join(', ') : ''),
             qty: (h.canteenItems || []).reduce((a, ci) => a + (ci.qty || 0), 0),
@@ -12742,7 +12830,7 @@
           ...walkIns.map(w => ({
             ts: w.timestamp || 0,
             time: getRecordTime(w),
-            source: '☕ Cafe',
+            source: `${ICONS.coffee} Cafe`,
             customer: w.customerName || '—',
             details: walkInItemsSummary(w),
             qty: walkInTotalQty(w),
@@ -12757,7 +12845,7 @@
           ...cueWalkIns.map(w => ({
             ts: w.timestamp || 0,
             time: getRecordTime(w),
-            source: '🎱 Cue Shop',
+            source: `${ICONS.cueball} Cue Shop`,
             customer: w.customerName || '—',
             details: walkInItemsSummary(w),
             qty: walkInTotalQty(w),
@@ -12775,7 +12863,7 @@
           ...AB().walkIns.filter(w => w.dateISO === dateVal && w.category === 'advance').map(w => ({
             ts: w.timestamp || 0,
             time: getRecordTime(w),
-            source: '🎯 Advance Top-up',
+            source: `${ICONS.target} Advance Top-up`,
             customer: w.customerName || '—',
             details: w.item || walkInItemsSummary(w),
             qty: walkInTotalQty(w),
@@ -12804,11 +12892,11 @@
             <td>Rs ${money(r.discount)}</td>
             <td>Rs ${money(r.net)}</td>
             <td>${r.payment}</td>
-            <td><span class="staff-role-badge" title="Staff who made this entry">👤 ${r.staff}</span></td>
+            <td><span class="staff-role-badge" title="Staff who made this entry">${ICONS.user} ${r.staff}</span></td>
             <td>
               <div class="row-actions">
-                <span class="row-action-icon edit-icon" title="Edit entry" onclick="${r.kind === 'session' ? `requestEditSession('${r.id}')` : `requestEditWalkIn('${r.id}')`}">✏️</span>
-                <span class="row-action-icon delete-icon" title="Delete entry" onclick="${r.kind === 'session' ? `requestDeleteSession('${r.id}')` : `requestDeleteWalkIn('${r.id}')`}">🗑️</span>
+                <span class="row-action-icon edit-icon" title="Edit entry" onclick="${r.kind === 'session' ? `requestEditSession('${r.id}')` : `requestEditWalkIn('${r.id}')`}">${ICONS.edit}</span>
+                <span class="row-action-icon delete-icon" title="Delete entry" onclick="${r.kind === 'session' ? `requestDeleteSession('${r.id}')` : `requestDeleteWalkIn('${r.id}')`}">${ICONS.trash}</span>
               </div>
             </td>
           </tr>
@@ -12844,7 +12932,7 @@
         document.getElementById('monthlySummaryBody').innerHTML = `
           <tr><td>Total Canteen Sales (table checkouts + cafe/cue walk-ins)</td><td>Rs ${money(mCanteen)}</td></tr>
           <tr><td>— of which Cue Shop / Accessories (table + walk-in)</td><td>Rs ${money(mAccessoriesRevenue)}</td></tr>
-          <tr><td>🎯 Advance Frames Sold (Top-ups)</td><td>Rs ${money(mAdvanceFromWalkIn)}</td></tr>
+          <tr><td>${ICONS.target} Advance Frames Sold (Top-ups)</td><td>Rs ${money(mAdvanceFromWalkIn)}</td></tr>
           <tr><td>Total Discounts Given</td><td>Rs ${money(mDiscount)}</td></tr>
           <tr><td>Total Cash Collected</td><td>Rs ${money(mCash)}</td></tr>
           <tr><td>Total Online Payments Collected</td><td>Rs ${money(mOnline)}</td></tr>
@@ -15671,19 +15759,19 @@
           <td>${p.phone || '-'}</td>
           <td>${p.email || '-'}</td>
           <td>${p.framesPlayed || 0}</td>
-          <td>${(p.framesWon || 0) > 0 ? `<span class="badge badge-free" style="color:var(--accent-green);">🏆 ${p.framesWon}</span>` : '<span style="color:var(--text-muted);">0</span>'}</td>
+          <td>${(p.framesWon || 0) > 0 ? `<span class="badge badge-free" style="color:var(--accent-green);">${ICONS.trophy} ${p.framesWon}</span>` : '<span style="color:var(--text-muted);">0</span>'}</td>
           <td><span class="badge badge-free" style="color:var(--accent-gold);">${p.highestBreak || 0}</span></td>
           <td>Rs ${money(p.totalSpend || 0)}</td>
-          <td>${(p.advanceBalance || 0) > 0 ? `<span class="badge" style="background:rgba(41,182,246,0.18); color:var(--info); font-weight:700;">🎯 ${p.advanceBalance}</span>` : '<span style="color:var(--text-muted);">0</span>'}</td>
+          <td>${(p.advanceBalance || 0) > 0 ? `<span class="badge" style="background:rgba(41,182,246,0.18); color:var(--info); font-weight:700;">${ICONS.target} ${p.advanceBalance}</span>` : '<span style="color:var(--text-muted);">0</span>'}</td>
           <td>${p.memberSince || '-'}</td>
           <td>
             <span style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
-              <button class="btn btn-canteen" style="margin:0;width:auto;padding:6px 10px;" onclick="openPlayerDetailModal('${p.id}')">👁 View</button>
-              <button class="btn btn-secondary" style="margin:0;width:auto;padding:6px 10px;" onclick="openEditPlayerModal('${p.id}')">✏️ Edit</button>
-              <button class="btn btn-secondary" style="margin:0;width:auto;padding:6px 10px;" onclick="openQuickStatsModal('${p.id}')">🎯 Stats</button>
-              <button class="btn btn-info" style="margin:0;width:auto;padding:6px 10px;" onclick="openAddAdvanceModal('${p.id}')">➕ Advance</button>
+              <button class="btn btn-canteen" style="margin:0;width:auto;padding:6px 10px;" onclick="openPlayerDetailModal('${p.id}')">${ICONS.eye} View</button>
+              <button class="btn btn-secondary" style="margin:0;width:auto;padding:6px 10px;" onclick="openEditPlayerModal('${p.id}')">${ICONS.edit} Edit</button>
+              <button class="btn btn-secondary" style="margin:0;width:auto;padding:6px 10px;" onclick="openQuickStatsModal('${p.id}')">${ICONS.target} Stats</button>
+              <button class="btn btn-info" style="margin:0;width:auto;padding:6px 10px;" onclick="openAddAdvanceModal('${p.id}')">${ICONS.plus} Advance</button>
               <div class="wa-btn-wrap">
-                <button class="wa-btn" title="Message on WhatsApp" onclick="toggleWaMenu('${p.id}', event)">💬 ▾</button>
+                <button class="wa-btn" title="Message on WhatsApp" onclick="toggleWaMenu('${p.id}', event)">${ICONS.whatsapp} ▾</button>
                 <div class="wa-dropdown-menu" id="${waMenuId}">
                   <button onclick="sendPlayerWhatsApp('${p.id}', 'reminder'); closeAllWaMenus();">${WA_TEMPLATES.reminder.label}</button>
                   <button onclick="sendPlayerWhatsApp('${p.id}', 'booking'); closeAllWaMenus();">${WA_TEMPLATES.booking.label}</button>
@@ -15824,8 +15912,8 @@
       const tier = getLoyaltyTier(p);
       const balance = getPlayerOutstandingBalance(p.phone);
       document.getElementById('playerDetailName').innerText = p.name;
-      document.getElementById('playerDetailPhone').innerText = '📞 ' + (p.phone || 'No phone on file');
-      document.getElementById('playerDetailEmail').innerText = '✉️ ' + (p.email || 'No email on file');
+      document.getElementById('playerDetailPhone').innerHTML = ICONS.phone + ' ' + (p.phone || 'No phone on file');
+      document.getElementById('playerDetailEmail').innerHTML = ICONS.mail + ' ' + (p.email || 'No email on file');
       document.getElementById('playerDetailTierBadge').innerHTML = `<span class="tier-badge ${tier.className}">${tier.label}</span>`;
       document.getElementById('playerDetailFrames').innerText = p.framesPlayed || 0;
       document.getElementById('playerDetailFramesWon').innerText = p.framesWon || 0;
@@ -16365,7 +16453,7 @@
         const total = state.partnerContributions.filter(c => c.partnerId === p.id).reduce((a, c) => a + c.amount, 0);
         return `
         <div class="partner-card">
-          <span class="p-edit" onclick="openEditPartnerModal('${p.id}')">✏️</span>
+          <span class="p-edit" onclick="openEditPartnerModal('${p.id}')">${ICONS.edit}</span>
           <div class="p-name">${p.name}</div>
           <div class="p-phone">${p.phone || 'No phone on file'}</div>
           <div class="p-total-label">Total Invested</div>
@@ -16403,7 +16491,7 @@
           <td>${c.category}</td>
           <td>${c.description || '-'}</td>
           <td>Rs ${money(c.amount)}</td>
-          <td><span class="row-action-icon delete-icon" title="Delete contribution (admin password required)" onclick="requestDeletePartnerContribution('${c.id}')">🗑️</span></td>
+          <td><span class="row-action-icon delete-icon" title="Delete contribution (admin password required)" onclick="requestDeletePartnerContribution('${c.id}')">${ICONS.trash}</span></td>
         </tr>
       `).join('') : `<tr><td colspan="6" class="empty-note">No contributions logged yet.</td></tr>`;
 
@@ -16628,7 +16716,7 @@
         'shift.pinLabel': '🔑 Security PIN',
         'shift.floatLabel': '💰 Opening Float (cash in drawer right now, Rs)',
         'shift.startBtn': '▶️ Start Shift',
-        'audit.intro': "📜 A record of feature unlocks, access-denied attempts, and sensitive actions (expenses, branch/staff changes, PIN changes). Kept locally (last 2000 entries) and mirrored to Firestore's auditLog collection when Firebase is configured, so it survives even if this device's storage is cleared.",
+        'audit.intro': "${ICONS.ledger} A record of feature unlocks, access-denied attempts, and sensitive actions (expenses, branch/staff changes, PIN changes). Kept locally (last 2000 entries) and mirrored to Firestore's auditLog collection when Firebase is configured, so it survives even if this device's storage is cleared.",
         'audit.title': 'Activity Log',
         'audit.col.time': 'Time', 'audit.col.staff': 'Staff', 'audit.col.branch': 'Branch',
         'audit.col.action': 'Action', 'audit.col.details': 'Details'
@@ -18035,7 +18123,7 @@
       }
       const feature = LOCKABLE_FEATURES.find(f => f.id === featureKey);
       if (feature && feature.minPermission && !hasPermission(feature.minPermission)) {
-        alert(`🚫 Your role (${currentStaffRole()}) doesn't have access to "${label}". Ask a Manager/Admin.`);
+        alert(`Your role (${currentStaffRole()}) doesn't have access to "${label}". Ask a Manager/Admin.`);
         logAudit({ action: 'ACCESS_DENIED', feature: featureKey, label, requiredPermission: feature.minPermission, role: currentStaffRole() });
         return;
       }
@@ -18058,7 +18146,7 @@
           if (!badge) {
             badge = document.createElement('span');
             badge.className = 'locker-badge';
-            badge.textContent = '🔒';
+            badge.innerHTML = ICONS.lock;
             el.appendChild(badge);
           }
           badge.style.display = state[f.id] ? 'inline' : 'none';
