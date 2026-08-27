@@ -57,10 +57,6 @@
        also Save as PDF from the browser's print dialog. -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-  <!-- AI & Direct Voice Command Engine — styles for the floating mic, pulse ring, confirm/undo
-       banner, and self-demo highlight overlay. Uses the existing :root design tokens below so it
-       themes automatically with Dark/Light mode. See voice-engine.js near the end of <body>. -->
-  <link rel="stylesheet" href="voice-engine.css">
   <style>
     :root {
       /* ---- Design System v2 tokens ------------------------------------------------
@@ -20221,12 +20217,6 @@
      Kept as a direct child of <body>, outside every .screen wrapper, so a non-active
      screen's own display:none can never suppress it during printing. -->
 <div id="reportsPrintArea"></div>
-
-<!-- AI & Direct Voice Command Engine — must load AFTER the main app script above, since it
-     calls the app's real globals (AB(), state, showTab, openAddFrameModal, confirmAddFrame,
-     startSession, openCanteenModal, addCanteenSelection, confirmAddCanteen, toggleProtectedMode,
-     saveState, renderTables) instead of duplicating any of that logic. See INTEGRATION.md. -->
-<script src="voice-engine.js"></script>
 
 </body>
 </html>
