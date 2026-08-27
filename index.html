@@ -635,7 +635,7 @@
       transition: filter 0.15s ease;
     }
     .blur-target.blur-active:not(.blur-revealed)::after {
-      content: '👆';
+      content: '↑';
       filter: none;
       margin-left: 6px;
       font-size: 0.75em;
@@ -1908,7 +1908,7 @@
   <div id="loginOverlay">
     <div class="login-box">
       <div class="login-brand">
-        <span style="font-size:1.4rem;">🎱</span>
+        <span style="font-size:1.4rem;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg></span>
         <span class="login-brand-title">Snookify</span>
       </div>
       <div class="login-sub">Sign in to access the club management console</div>
@@ -1953,7 +1953,7 @@
         </div>
       </div>
         <button type="button" class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Collapse sidebar" aria-label="Collapse sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-        <button type="button" class="sidebar-mobile-close-btn" id="sidebarMobileCloseBtn" onclick="closeMobileNav()" title="Close menu" aria-label="Close menu">✕</button>
+        <button type="button" class="sidebar-mobile-close-btn" id="sidebarMobileCloseBtn" onclick="closeMobileNav()" title="Close menu" aria-label="Close menu"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
       </div>
       <script>
         // Captures the pristine built-in dark-mode "SNOOKIFY" wordmark src the instant it's
@@ -1969,31 +1969,31 @@
 
       <div class="nav-section">
         <div class="nav-title" data-i18n="nav.section.operate">Operate</div>
-        <div class="nav-item active" data-tab="dashboard" onclick="showTab('dashboard', this)"><span>📊</span> <span data-i18n="nav.dashboard">Dashboard</span></div>
+        <div class="nav-item active" data-tab="dashboard" onclick="showTab('dashboard', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16v-7"/></svg></span> <span data-i18n="nav.dashboard">Dashboard</span></div>
         <div class="nav-item" data-tab="activeTables" onclick="showTab('activeTables', this)"><span>⏱️</span> <span data-i18n="nav.activeTable">Active Table</span></div>
-        <div class="nav-item" data-tab="cafeStock" onclick="showTab('cafeStock', this)"><span>☕</span> <span data-i18n="nav.cafeStock">Cafe & Stock</span></div>
-        <div class="nav-item" data-tab="cueShop" onclick="showTab('cueShop', this)"><span>🎱</span> <span data-i18n="nav.cueShop">Cue Shop</span></div>
-        <div class="nav-item" data-tab="receipts" onclick="showTab('receipts', this)"><span>🧾</span> <span data-i18n="nav.receipts">Receipts</span></div>
-        <div class="nav-item" data-tab="expenses" onclick="showTab('expenses', this)"><span>💸</span> <span data-i18n="nav.expenses">Expenses</span></div>
+        <div class="nav-item" data-tab="cafeStock" onclick="showTab('cafeStock', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8Z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg></span> <span data-i18n="nav.cafeStock">Cafe & Stock</span></div>
+        <div class="nav-item" data-tab="cueShop" onclick="showTab('cueShop', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg></span> <span data-i18n="nav.cueShop">Cue Shop</span></div>
+        <div class="nav-item" data-tab="receipts" onclick="showTab('receipts', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2-1 2Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span> <span data-i18n="nav.receipts">Receipts</span></div>
+        <div class="nav-item" data-tab="expenses" onclick="showTab('expenses', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M18 12a2 2 0 0 0 0 4h3v-4Z"/></svg></span> <span data-i18n="nav.expenses">Expenses</span></div>
       </div>
 
       <div class="nav-section">
         <div class="nav-title" data-i18n="nav.section.manage">Manage</div>
-        <div class="nav-item" data-tab="setup" onclick="showTab('setup', this)"><span>⚙️</span> <span data-i18n="nav.setup">Setup / Rates</span></div>
-        <div class="nav-item" data-tab="reports" onclick="showTab('reports', this)"><span>📈</span> <span data-i18n="nav.reports">Reports</span></div>
-        <div class="nav-item" data-tab="masterSummary" onclick="showTab('masterSummary', this)"><span>🧮</span> <span data-i18n="nav.masterSummary">Reports & Master Summary</span></div>
-        <div class="nav-item" data-tab="zReport" onclick="showTab('zReport', this)"><span>🔒</span> <span data-i18n="nav.zReport">Shift Closing (Z-Report)</span></div>
-        <div class="nav-item" data-tab="reportArchive" onclick="showTab('reportArchive', this)"><span>🖼️</span> <span data-i18n="nav.reportArchive">Saved Reports / History</span></div>
-        <div class="nav-item" data-tab="udhaar" onclick="showTab('udhaar', this)"><span>💳</span> <span data-i18n="nav.udhaar">Udhaar (Credit)</span></div>
-        <div class="nav-item" data-tab="players" onclick="showTab('players', this)"><span>🏆</span> <span data-i18n="nav.players">Player Profiles</span></div>
-        <div class="nav-item" data-tab="tournaments" onclick="showTab('tournaments', this)"><span>🥇</span> <span data-i18n="nav.tournaments">Tournaments</span></div>
+        <div class="nav-item" data-tab="setup" onclick="showTab('setup', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg></span> <span data-i18n="nav.setup">Setup / Rates</span></div>
+        <div class="nav-item" data-tab="reports" onclick="showTab('reports', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg></span> <span data-i18n="nav.reports">Reports</span></div>
+        <div class="nav-item" data-tab="masterSummary" onclick="showTab('masterSummary', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg></span> <span data-i18n="nav.masterSummary">Reports & Master Summary</span></div>
+        <div class="nav-item" data-tab="zReport" onclick="showTab('zReport', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span> <span data-i18n="nav.zReport">Shift Closing (Z-Report)</span></div>
+        <div class="nav-item" data-tab="reportArchive" onclick="showTab('reportArchive', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></span> <span data-i18n="nav.reportArchive">Saved Reports / History</span></div>
+        <div class="nav-item" data-tab="udhaar" onclick="showTab('udhaar', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span> <span data-i18n="nav.udhaar">Udhaar (Credit)</span></div>
+        <div class="nav-item" data-tab="players" onclick="showTab('players', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0Z"/><path d="M7 5H4a1 1 0 0 0-1 1v1a4 4 0 0 0 4 4M17 5h3a1 1 0 0 1 1 1v1a4 4 0 0 1-4 4"/></svg></span> <span data-i18n="nav.players">Player Profiles</span></div>
+        <div class="nav-item" data-tab="tournaments" onclick="showTab('tournaments', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M12 11v8M9 3l3 5 3-5"/></svg></span> <span data-i18n="nav.tournaments">Tournaments</span></div>
         <div class="nav-item" data-tab="partnersLedger" onclick="showTab('partnersLedger', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/></svg></span> <span data-i18n="nav.partnersLedger">Partners Ledger</span></div>
         <div class="nav-item" data-tab="resourceVault" onclick="showTab('resourceVault', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7a5 5 0 0 1 0-10h2M15 7h2a5 5 0 1 1 0 10h-2M8 12h8"/></svg></span> <span data-i18n="nav.resourceVault">Resource Vault</span></div>
         <div class="nav-item" data-tab="themeEngine" onclick="showTab('themeEngine', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 2.5 2.5 0 0 0 1.8-4.2 2 2 0 0 1 1.4-3.4H17a4 4 0 0 0 4-4 8 8 0 0 0-9-8.4Z"/><circle cx="7" cy="12" r="1"/><circle cx="9.5" cy="7.5" r="1"/><circle cx="14.5" cy="7.5" r="1"/></svg></span> <span data-i18n="nav.themeEngine">Theme & Appearance</span></div>
         <div class="nav-item" data-tab="bin" onclick="showTab('bin', this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/><path d="M10 11v6M14 11v6"/></svg></span> <span data-i18n="nav.bin">Bin</span></div>
         <div class="nav-item" data-tab="auditLog" onclick="requestAuditLogAccess(this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 0 1 1 1v18l-3-2-3 2-3-2-3 2-3-2-3 2V4a2 2 0 0 1 2-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span> <span data-i18n="nav.auditLog">Audit Log</span></div>
-        <div class="nav-item" data-tab="staffAuthHistory" onclick="requestStaffAuthHistoryAccess(this)"><span>🛰️</span> <span data-i18n="nav.staffAuthHistory">Login/Logout & Location History</span></div>
-        <div class="nav-item" data-tab="security" onclick="requestSecurityPanelAccess(this)"><span>🔐</span> <span data-i18n="nav.security">Security & Permissions</span></div>
+        <div class="nav-item" data-tab="staffAuthHistory" onclick="requestStaffAuthHistoryAccess(this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="6" height="6" rx="1" transform="rotate(45 12 12)"/><path d="M4 20l3-3M14 8l3-3M17 11l3-3-3-3-3 3M6 16l-3 3 3 3 3-3"/></svg></span> <span data-i18n="nav.staffAuthHistory">Login/Logout & Location History</span></div>
+        <div class="nav-item" data-tab="security" onclick="requestSecurityPanelAccess(this)"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5.2 3.4 9.5 8 11 4.6-1.5 8-5.8 8-11V5Z"/></svg></span> <span data-i18n="nav.security">Security & Permissions</span></div>
       </div>
     </div>
 
@@ -2022,7 +2022,7 @@
     </div>
 
     <div class="theme-toggle-row">
-      <span class="theme-toggle-label"><span id="themeToggleIcon">🌙</span><span> Dark Mode</span></span>
+      <span class="theme-toggle-label"><span id="themeToggleIcon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></span><span> Dark Mode</span></span>
       <div class="theme-switch">
         <input type="checkbox" id="themeToggle" checked>
         <label class="ts-track" for="themeToggle"></label>
@@ -2038,7 +2038,7 @@
         </div>
       </div>
       <div class="user-profile-details" style="font-size: 0.68rem; color: var(--text-muted); margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="authUserEmailLabel"></div>
-      <button type="button" class="logout-btn" id="logoutBtn" onclick="handleLogout()" title="Logout">🚪 <span class="logout-label">Logout</span></button>
+      <button type="button" class="logout-btn" id="logoutBtn" onclick="handleLogout()" title="Logout"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg> <span class="logout-label">Logout</span></button>
     </div>
   </div>
 
@@ -2051,11 +2051,11 @@
       </div>
       <div>
         <div class="branch-select-wrap">
-          <span class="branch-all-badge" id="branchModeBadge">👑 Consolidated Owner View — read-only</span>
+          <span class="branch-all-badge" id="branchModeBadge"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18M4 18l-1-9 5 4 4-6 4 6 5-4-1 9"/></svg> Consolidated Owner View — read-only</span>
           <select id="branchSelector" onchange="switchBranch(this.value)"></select>
-          <button id="manageBranchesBtn" class="btn btn-info" style="width: auto; padding: 8px 14px;" onclick="openManageBranchesModal()">🏢 Manage Branches</button>
-          <button id="setupModeBtn" class="btn btn-canteen" style="width: auto; padding: 8px 16px;" onclick="showTab('setup', document.querySelector('[data-tab=setup]'))">⚙️ Setup Mode</button>
-          <button class="shutdown-shift-btn" id="shutdownShiftBtn" onclick="confirmShutdownShift()">🔒 Shutdown Shift / Close Counter</button>
+          <button id="manageBranchesBtn" class="btn btn-info" style="width: auto; padding: 8px 14px;" onclick="openManageBranchesModal()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1"/></svg> Manage Branches</button>
+          <button id="setupModeBtn" class="btn btn-canteen" style="width: auto; padding: 8px 16px;" onclick="showTab('setup', document.querySelector('[data-tab=setup]'))"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg> Setup Mode</button>
+          <button class="shutdown-shift-btn" id="shutdownShiftBtn" onclick="confirmShutdownShift()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Shutdown Shift / Close Counter</button>
         </div>
         <!-- ACTIVE STAFF SELECTOR (Shift Tracker) — whoever is sitting at the counter picks their
              name here first, so every expense/sale/session entry they create afterwards is tagged
@@ -2063,10 +2063,10 @@
              while a shift is active — see applyShiftLockUI() / switchActiveStaff() — since the
              staff member is fixed for the whole session; Shutdown Shift is the only way to change it. -->
         <div class="staff-select-wrap">
-          <span class="staff-select-label">👤 Staff on Counter</span>
+          <span class="staff-select-label"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg> Staff on Counter</span>
           <select id="activeStaffSelector" onchange="switchActiveStaff(this.value)"></select>
-          <span class="no-staff-badge" id="noStaffBadge">⚠️ Select your name before making entries</span>
-          <button id="manageStaffBtn" class="btn btn-info" style="width: auto; padding: 8px 14px;" onclick="openManageStaffModal()">🧑‍💼 Manage Staff</button>
+          <span class="no-staff-badge" id="noStaffBadge"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg> Select your name before making entries</span>
+          <button id="manageStaffBtn" class="btn btn-info" style="width: auto; padding: 8px 14px;" onclick="openManageStaffModal()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Manage Staff</button>
         </div>
         <div class="shift-status-bar" id="shiftStatusBar" style="display:none;"></div>
       </div>
@@ -2307,9 +2307,9 @@
           <label>Category</label>
           <select id="receiptsCategoryFilter" onchange="renderReceipts()">
             <option value="all">All Categories</option>
-            <option value="table"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg> Table Sessions</option>
-            <option value="cafe"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8Z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg> Cafe Orders</option>
-            <option value="cue"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg> Cue Shop Sales</option>
+            <option value="table">Table Sessions</option>
+            <option value="cafe">Cafe Orders</option>
+            <option value="cue">Cue Shop Sales</option>
           </select>
         </div>
         <button class="btn btn-secondary" style="width:auto;" onclick="resetReceiptsFilters()">↺ Reset Filters</button>
@@ -2357,8 +2357,8 @@
         <div class="form-group">
           <label>Paid Via</label>
           <select id="expensePaymentTypeInput">
-            <option value="cash"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg> Cash (Drawer)</option>
-            <option value="online"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg> Online / Bank</option>
+            <option value="cash">Cash (Drawer)</option>
+            <option value="online">Online / Bank</option>
           </select>
         </div>
         <div class="form-group">
@@ -2930,7 +2930,7 @@
     <!-- SHIFT / DAILY CLOSING (Z-REPORT) SCREEN -->
     <div id="zReport" class="screen">
       <div class="panel">
-        <h3>🔒 Shift / Daily Closing Report (Z-Report)</h3>
+        <h3><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Shift / Daily Closing Report (Z-Report)</h3>
         <p class="page-sub" style="margin: 4px 0 14px;">Generate a shift-specific end-of-day summary — filter by date, time slot and staff member, then reconcile the physical drawer before closing.</p>
         <div class="filter-row" style="margin-bottom: 0;">
           <div class="form-group" style="margin:0;">
@@ -2971,15 +2971,15 @@
               <option value="all">All Staff</option>
             </select>
           </div>
-          <button class="btn btn-secondary" style="width:auto; align-self:flex-end;" onclick="clearZReportFilters()">✕ Clear</button>
-          <button class="btn" style="width:auto; align-self:flex-end;" onclick="renderZReportScreen()">🔄 Generate Report</button>
-          <button class="btn btn-canteen" style="width:auto; align-self:flex-end;" onclick="printZReport()">🖨️ Print Closing Slip</button>
+          <button class="btn btn-secondary" style="width:auto; align-self:flex-end;" onclick="clearZReportFilters()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg> Clear</button>
+          <button class="btn" style="width:auto; align-self:flex-end;" onclick="renderZReportScreen()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg> Generate Report</button>
+          <button class="btn btn-canteen" style="width:auto; align-self:flex-end;" onclick="printZReport()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M6 17h12v5H6z"/></svg> Print Closing Slip</button>
         </div>
         <p class="zr-prepared-by" id="zrPreparedByLine">Prepared by: —</p>
       </div>
 
       <div class="panel">
-        <div class="section-header"><span>💰 Opening Float (Starting Cash)</span></div>
+        <div class="section-header"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M18 12a2 2 0 0 0 0 4h3v-4Z"/></svg> Opening Float (Starting Cash)</span></div>
         <div class="filter-row" style="margin-bottom:0; align-items:flex-end;">
           <div class="form-group" style="margin:0; max-width:220px;">
             <label>Cash in drawer at shift start (Rs)</label>
@@ -2991,27 +2991,27 @@
 
       <div class="zreport-grid">
         <div class="zreport-card">
-          <div class="zr-label" title="Cash sales collected during the selected date/time-slot/staff filter, before expenses are deducted.">💵 Total Cash Sales</div>
+          <div class="zr-label" title="Cash sales collected during the selected date/time-slot/staff filter, before expenses are deducted."><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg> Total Cash Sales</div>
           <div class="zr-val" id="zrCash">Rs 0</div>
         </div>
         <div class="zreport-card">
-          <div class="zr-label">📱 Total Online Payments</div>
+          <div class="zr-label"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg> Total Online Payments</div>
           <div class="zr-val" id="zrOnline">Rs 0</div>
         </div>
         <div class="zreport-card">
-          <div class="zr-label">💳 Total Udhaar Given</div>
+          <div class="zr-label"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Total Udhaar Given</div>
           <div class="zr-val" id="zrUdhaar">Rs 0</div>
         </div>
         <div class="zreport-card" title="Cash/online received this shift for Advance Frame top-ups — see Player Profiles → Add Advance Frames & Payment.">
-          <div class="zr-label">🎯 Advance Frames Sold</div>
+          <div class="zr-label"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg> Advance Frames Sold</div>
           <div class="zr-val" id="zrAdvanceRevenue">Rs 0</div>
         </div>
         <div class="zreport-card">
-          <div class="zr-label">🎁 Discounts / Complimentary</div>
+          <div class="zr-label"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7"/><path d="M12 8c-1.5 0-3-1-3-2.5S10 3 12 5c0-2 1.5-3.5 3-2.5S13.5 8 12 8Z"/></svg> Discounts / Complimentary</div>
           <div class="zr-val" id="zrDiscounts">Rs 0</div>
         </div>
         <div class="zreport-card">
-          <div class="zr-label">💸 Total Expenses</div>
+          <div class="zr-label"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M18 12a2 2 0 0 0 0 4h3v-4Z"/></svg> Total Expenses</div>
           <div class="zr-val" id="zrExpenses">Rs 0</div>
         </div>
       </div>
@@ -3020,20 +3020,20 @@
            Total Expected in Drawer" layout, so staff can see exactly how the expected figure is
            derived instead of trusting a single opaque number. Populated in renderZReportScreen(). -->
       <div class="panel">
-        <div class="section-header"><span>🧮 Cash Drawer — How the Expected Total is Calculated</span></div>
+        <div class="section-header"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg> Cash Drawer — How the Expected Total is Calculated</span></div>
         <div class="zr-math-row">
           <div class="zreport-card">
-            <div class="zr-label" title="Cash physically left in the drawer by the previous shift's staff — entered above in 'Opening Float'.">📥 Opening Float (Carried Forward)</div>
+            <div class="zr-label" title="Cash physically left in the drawer by the previous shift's staff — entered above in 'Opening Float'."><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Opening Float (Carried Forward)</div>
             <div class="zr-val" id="zrMathOpeningFloat">Rs 0</div>
           </div>
           <div class="zr-math-operator">+</div>
           <div class="zreport-card">
-            <div class="zr-label" title="Cash collected strictly during this shift/filter window, minus any cash expenses paid out of this same drawer during that window.">💵 Current Shift Cash Sales</div>
+            <div class="zr-label" title="Cash collected strictly during this shift/filter window, minus any cash expenses paid out of this same drawer during that window."><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg> Current Shift Cash Sales</div>
             <div class="zr-val" id="zrMathShiftCash">Rs 0</div>
           </div>
           <div class="zr-math-operator">=</div>
           <div class="zreport-card zr-highlight">
-            <div class="zr-label" title="Opening Float + Current Shift Cash Sales — the physical cash that should be sitting in the drawer right now.">🧮 Total Expected in Drawer</div>
+            <div class="zr-label" title="Opening Float + Current Shift Cash Sales — the physical cash that should be sitting in the drawer right now."><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg> Total Expected in Drawer</div>
             <div class="zr-val" id="zrMathTotalExpected">Rs 0</div>
           </div>
         </div>
@@ -3041,7 +3041,7 @@
       </div>
 
       <div class="panel">
-        <div class="section-header"><span>🧾 Cash Denomination Count (Physical Count at Closing)</span></div>
+        <div class="section-header"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2-1 2Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg> Cash Denomination Count (Physical Count at Closing)</span></div>
         <div class="table-scroll-wrap">
           <table id="zrDenomTable">
             <thead><tr><th>Denomination (Rs)</th><th>Count</th><th>Subtotal</th></tr></thead>
@@ -3050,7 +3050,7 @@
               <tr style="font-weight:800;">
                 <td colspan="2">
                   Total Physical Cash Counted
-                  <div style="font-weight:400; font-size:0.68rem; opacity:0.7; margin-top:2px;">⚡ Quick Cash Entry — short on time? Type the total straight in. Otherwise fill in the rows above and this fills in automatically.</div>
+                  <div style="font-weight:400; font-size:0.68rem; opacity:0.7; margin-top:2px;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg> Quick Cash Entry — short on time? Type the total straight in. Otherwise fill in the rows above and this fills in automatically.</div>
                 </td>
                 <td>
                   <span style="opacity:0.8;">Rs</span>
@@ -3062,11 +3062,11 @@
         </div>
         <div class="zreport-grid" style="margin-top:12px;">
           <div class="zreport-card">
-            <div class="zr-label" title="Opening Float + Net Cash Expected in Drawer">🧮 Expected Physical Cash</div>
+            <div class="zr-label" title="Opening Float + Net Cash Expected in Drawer"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg> Expected Physical Cash</div>
             <div class="zr-val" id="zrExpectedCash">Rs 0</div>
           </div>
           <div class="zreport-card zr-highlight" id="zrVarianceCard">
-            <div class="zr-label">⚖️ Cash Variance</div>
+            <div class="zr-label"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 7l-3 7a3.5 3.5 0 0 0 6 0ZM19 7l-3 7a3.5 3.5 0 0 0 6 0Z"/><path d="M5 7h14M9 21h6"/></svg> Cash Variance</div>
             <div class="zr-val" id="zrVariance">Rs 0</div>
           </div>
           <!-- Dedicated Surplus / Extra Cash (overage) card, alongside the variance card above.
@@ -3076,7 +3076,7 @@
                of it being buried inside the shared variance figure. Dims to Rs 0 / inactive when
                there is no surplus. -->
           <div class="zreport-card zr-surplus zr-inactive" id="zrSurplusCard">
-            <div class="zr-label" title="Physical cash counted minus Total Expected in Drawer, only when it's a POSITIVE difference (extra/unaccounted cash found in the drawer).">✨ Surplus / Extra Cash</div>
+            <div class="zr-label" title="Physical cash counted minus Total Expected in Drawer, only when it's a POSITIVE difference (extra/unaccounted cash found in the drawer)."><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2"/></svg> Surplus / Extra Cash</div>
             <div class="zr-val" id="zrSurplus">Rs 0</div>
           </div>
         </div>
@@ -3098,7 +3098,7 @@
            shift someone actually opened and closed, tagged with their name and exact start/end
            times, and it is never cleared. -->
       <div class="panel">
-        <div class="section-header"><span>🗂️ Shift Handover History</span></div>
+        <div class="section-header"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/></svg> Shift Handover History</span></div>
         <p class="page-sub" style="margin: 4px 0 14px;">Every shift closed via Shutdown Shift, staff-wise — permanently archived here even though the live dashboard resets after each one.</p>
         <div class="filter-row" style="margin-bottom: 12px;">
           <div class="form-group" style="margin:0;">
@@ -3121,10 +3121,10 @@
               <option value="all">All Staff</option>
             </select>
           </div>
-          <button class="btn btn-secondary" style="width:auto; align-self:flex-end;" onclick="clearShiftArchiveFilters()">✕ Clear</button>
-          <button class="btn btn-canteen" style="width:auto; align-self:flex-end;" onclick="exportShiftArchiveCSV()">⬇️ Export to CSV</button>
-          <button class="btn btn-canteen" style="width:auto; align-self:flex-end;" onclick="exportShiftArchivePDF()">📄 Export to PDF</button>
-          <button class="btn" style="width:auto; align-self:flex-end;" onclick="printShiftArchiveReport()">🖨️ Print Report</button>
+          <button class="btn btn-secondary" style="width:auto; align-self:flex-end;" onclick="clearShiftArchiveFilters()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg> Clear</button>
+          <button class="btn btn-canteen" style="width:auto; align-self:flex-end;" onclick="exportShiftArchiveCSV()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Export to CSV</button>
+          <button class="btn btn-canteen" style="width:auto; align-self:flex-end;" onclick="exportShiftArchivePDF()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg> Export to PDF</button>
+          <button class="btn" style="width:auto; align-self:flex-end;" onclick="printShiftArchiveReport()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M6 17h12v5H6z"/></svg> Print Report</button>
         </div>
         <div class="table-scroll-wrap">
           <table id="shiftArchiveTable">
@@ -3320,9 +3320,9 @@
         <div class="form-group">
           <label>Payment Method</label>
           <select id="settleUdhaarMethodInput">
-            <option value="cash"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg> Cash</option>
-            <option value="online"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg> Online</option>
-            <option value="card"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Card</option>
+            <option value="cash">Cash</option>
+            <option value="online">Online</option>
+            <option value="card">Card</option>
           </select>
         </div>
         <div class="form-group">
@@ -3380,9 +3380,9 @@
           <label>Tier</label>
           <select id="playerTierFilter" onchange="renderPlayersScreen()">
             <option value="all">All Tiers</option>
-            <option value="gold"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0Z"/><path d="M7 5H4a1 1 0 0 0-1 1v1a4 4 0 0 0 4 4M17 5h3a1 1 0 0 1 1 1v1a4 4 0 0 1-4 4"/></svg> Gold</option>
-            <option value="silver"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M12 11v8M9 3l3 5 3-5"/></svg> Silver</option>
-            <option value="bronze"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M12 11v8M9 3l3 5 3-5"/></svg> Bronze</option>
+            <option value="gold">Gold</option>
+            <option value="silver">Silver</option>
+            <option value="bronze">Bronze</option>
           </select>
         </div>
         <button class="btn btn-secondary" onclick="clearPlayerFilters()">Clear Filters</button>
@@ -3488,11 +3488,11 @@
         <div class="form-group">
           <label>Category</label>
           <select id="rvCategoryInput">
-            <option value="Social Media"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg> Social Media</option>
-            <option value="E-Commerce"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.5 3h2l2.6 12.5a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 8H6"/></svg> E-Commerce</option>
-            <option value="Videos"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4"/></svg> Videos</option>
-            <option value="Websites"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/></svg> Websites</option>
-            <option value="Other"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/></svg> Other</option>
+            <option value="Social Media">Social Media</option>
+            <option value="E-Commerce">E-Commerce</option>
+            <option value="Videos">Videos</option>
+            <option value="Websites">Websites</option>
+            <option value="Other">Other</option>
           </select>
         </div>
         <div class="form-group">
@@ -4090,14 +4090,14 @@
        current Master PIN (default 1122), changeable in the panel above. -->
   <div id="featurePinModal" class="modal-overlay">
     <div class="modal-box" id="featurePinBox" style="max-width: 340px;">
-      <h3>🔒 <span id="featurePinTitle">Locked</span></h3>
+      <h3><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> <span id="featurePinTitle">Locked</span></h3>
       <p class="auth-note">Enter the 4-digit Security PIN to continue.</p>
       <div class="form-group" style="margin-top: 10px;">
         <input type="password" id="featurePinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter') confirmFeaturePin();">
       </div>
       <div class="auth-error" id="featurePinError"></div>
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="confirmFeaturePin()">✅ Unlock</button>
+        <button class="btn" onclick="confirmFeaturePin()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Unlock</button>
         <button class="btn btn-secondary" onclick="closeFeaturePinModal()">Cancel</button>
       </div>
     </div>
@@ -4145,9 +4145,9 @@
       <div class="form-group">
         <label>Player Tier</label>
         <select id="playerTierInput">
-          <option value="gold"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0Z"/><path d="M7 5H4a1 1 0 0 0-1 1v1a4 4 0 0 0 4 4M17 5h3a1 1 0 0 1 1 1v1a4 4 0 0 1-4 4"/></svg> Gold</option>
-          <option value="silver"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M12 11v8M9 3l3 5 3-5"/></svg> Silver</option>
-          <option value="bronze"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M12 11v8M9 3l3 5 3-5"/></svg> Bronze</option>
+          <option value="gold">Gold</option>
+          <option value="silver">Silver</option>
+          <option value="bronze">Bronze</option>
         </select>
         <span class="sub" style="color: var(--text-muted); font-size: 0.7rem;">Manually sets the tier shown everywhere for this player, overriding the automatic Gold/Silver/Bronze calculation from frames played &amp; lifetime spend.</span>
       </div>
@@ -4436,7 +4436,7 @@
     <div class="modal-box">
       <div class="summary-panel-header">
         <h3 id="summaryPanelTitle">Table Summary<span class="spx-sub" id="summaryPanelSub"></span></h3>
-        <button type="button" class="summary-panel-close" onclick="closeTableSummaryModal()">✕</button>
+        <button type="button" class="summary-panel-close" onclick="closeTableSummaryModal()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
       </div>
       <div class="summary-panel-body" id="summaryPanelBody"></div>
       <div class="summary-panel-footer" id="summaryPanelFooter"></div>
@@ -4448,7 +4448,7 @@
     <div class="modal-box">
       <h3>
         <span>Checkout — <span id="checkoutTableName"></span></span>
-        <span class="co-staff-chip">👤 <span id="checkoutStaffTagName"></span></span>
+        <span class="co-staff-chip"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg> <span id="checkoutStaffTagName"></span></span>
       </h3>
 
       <!-- Editable right up to bill completion: lets staff correct a walk-in / placeholder
@@ -4478,17 +4478,17 @@
            the bill is completed — see finalizeSession(). -->
       <div class="co-adv-banner" id="checkoutAdvanceBox">
         <div class="co-adv-top">
-          <span>🎯</span>
+          <span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></span>
           <span class="adv-text"><strong id="checkoutAdvanceBalance">0</strong> advance frame(s) available</span>
-          <button type="button" class="co-adv-use-all" onclick="useAllAdvanceFrames()">⚡ Use All</button>
+          <button type="button" class="co-adv-use-all" onclick="useAllAdvanceFrames()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg> Use All</button>
         </div>
         <div class="co-adv-custom">
           <input type="number" id="checkoutAdvanceRedeemInput" min="1" placeholder="Custom frame qty">
           <button type="button" onclick="applyAdvanceRedeem()">Apply</button>
         </div>
         <div class="co-adv-applied" id="checkoutAdvanceAppliedRow">
-          <span>✅ Redeeming <span id="checkoutAdvanceAppliedText"></span></span>
-          <span class="undo" onclick="clearAdvanceRedeem()">✕ Undo</span>
+          <span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Redeeming <span id="checkoutAdvanceAppliedText"></span></span>
+          <span class="undo" onclick="clearAdvanceRedeem()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg> Undo</span>
         </div>
       </div>
 
@@ -4519,11 +4519,11 @@
 
       <div class="co-tender-grid">
         <div class="co-tender-cell">
-          <label>💵 Cash</label>
+          <label><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg> Cash</label>
           <input type="number" id="checkoutCashInput" value="0" min="0" oninput="onCheckoutCashChange()">
         </div>
         <div class="co-tender-cell">
-          <label>📱 Online</label>
+          <label><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg> Online</label>
           <input type="number" id="checkoutOnlineInput" value="0" min="0" oninput="onCheckoutOnlineChange()">
         </div>
       </div>
@@ -4535,15 +4535,15 @@
 
       <!-- Only shown when part of the bill is going to Khata — see updateCheckoutSplitState(). -->
       <div class="form-group" id="checkoutNoteGroup" style="display:none; margin-bottom:8px;">
-        <label id="checkoutNoteLabel">📝 Reason for Khata</label>
+        <label id="checkoutNoteLabel"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Reason for Khata</label>
         <input type="text" id="checkoutNoteInput" placeholder="e.g. Regular customer, will settle next visit" oninput="onCheckoutNoteChange()">
       </div>
 
       <div class="co-actions">
-        <button class="btn" id="checkoutFullPayBtn" onclick="completeAndPrintReceipt()">✅ Complete &amp; Print</button>
+        <button class="btn" id="checkoutFullPayBtn" onclick="completeAndPrintReceipt()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Complete &amp; Print</button>
         <div class="co-actions-secondary">
-          <button class="btn btn-info" id="checkoutUdhaarBtn" onclick="saveCheckoutAsUdhaar()">💳 Save to Khata</button>
-          <button class="btn btn-split" id="checkoutSplitBtn" onclick="saveCheckoutSplitPayment()">🔀 Split Payment</button>
+          <button class="btn btn-info" id="checkoutUdhaarBtn" onclick="saveCheckoutAsUdhaar()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Save to Khata</button>
+          <button class="btn btn-split" id="checkoutSplitBtn" onclick="saveCheckoutSplitPayment()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m18 4 3 3-3 3M2 7h9c2 0 3 1 4.5 3M2 17h9c2 0 3-1 4.5-3M18 20l3-3-3-3"/></svg> Split Payment</button>
           <button class="btn btn-secondary" onclick="closeCheckoutModal()">Cancel</button>
         </div>
       </div>
@@ -4569,14 +4569,14 @@
        from the Master PIN — see CANCEL_SESSION_PIN_KEY. -->
   <div id="cancelSessionPinModal" class="modal-overlay">
     <div class="modal-box" style="max-width: 340px;">
-      <h3>🔒 Cancel Session</h3>
+      <h3><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Cancel Session</h3>
       <p class="auth-note">Enter the 4-digit Authorization Code to continue.</p>
       <div class="form-group" style="margin-top: 10px;">
         <input type="password" id="cancelSessionPinInputField" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter') confirmCancelSessionPin();">
       </div>
       <div class="auth-error" id="cancelSessionPinError"></div>
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="confirmCancelSessionPin()">✅ Verify</button>
+        <button class="btn" onclick="confirmCancelSessionPin()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Verify</button>
         <button class="btn btn-secondary" onclick="closeCancelSessionPinModal()">Cancel</button>
       </div>
     </div>
@@ -4592,7 +4592,7 @@
         <select id="posCheckoutPlayerSelect" onchange="onPosCheckoutPlayerSelectChange()"></select>
       </div>
       <div class="form-group" id="posCheckoutStaffTagRow">
-        <span class="sub">🧑‍💼 Billed by <strong id="posCheckoutStaffTagName"></strong> — recorded with this transaction and printed on the receipt for accountability.</span>
+        <span class="sub"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Billed by <strong id="posCheckoutStaffTagName"></strong> — recorded with this transaction and printed on the receipt for accountability.</span>
       </div>
       <div class="checkout-row">
         <span>Items<br><span class="sub" id="posCheckoutItemsDetails"></span></span>
@@ -4607,22 +4607,22 @@
       <div class="form-group" style="margin-top: 10px;">
         <label>Payment Type</label>
         <div class="mode-toggle">
-          <button type="button" id="posCheckoutPayCash" class="toggle-btn active" onclick="setPosCheckoutPaymentType('cash')">💵 Cash</button>
-          <button type="button" id="posCheckoutPayOnline" class="toggle-btn" onclick="setPosCheckoutPaymentType('online')">📱 Online</button>
+          <button type="button" id="posCheckoutPayCash" class="toggle-btn active" onclick="setPosCheckoutPaymentType('cash')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg> Cash</button>
+          <button type="button" id="posCheckoutPayOnline" class="toggle-btn" onclick="setPosCheckoutPaymentType('online')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg> Online</button>
         </div>
         <span class="sub">Applies to "Complete & Print Receipt". Udhaar entries record payment type once settled.</span>
       </div>
 
       <div class="form-group" id="posCheckoutNoteGroup">
-        <label id="posCheckoutNoteLabel">📝 Payment Note / Reason</label>
+        <label id="posCheckoutNoteLabel"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Payment Note / Reason</label>
         <input type="text" id="posCheckoutNoteInput" placeholder="e.g. Regular customer, will settle next visit" oninput="onPosCheckoutNoteChange()">
         <span class="sub">Required if this sale is saved as Udhaar (Credit).</span>
       </div>
 
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn btn-info" onclick="savePosSaleAsUdhaar()">💳 Save as Udhaar (Credit)</button>
-        <button class="btn" onclick="completePosSaleAndPrint()">✅ Complete & Print Receipt</button>
-        <button class="btn btn-secondary" onclick="saveCurrentPlayerDetails('pos')">💾 Save Player Details</button>
+        <button class="btn btn-info" onclick="savePosSaleAsUdhaar()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Save as Udhaar (Credit)</button>
+        <button class="btn" onclick="completePosSaleAndPrint()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Complete & Print Receipt</button>
+        <button class="btn btn-secondary" onclick="saveCurrentPlayerDetails('pos')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Save Player Details</button>
         <button class="btn btn-secondary" onclick="closePosCheckoutModal()">Cancel</button>
       </div>
     </div>
@@ -4633,10 +4633,10 @@
     <div class="modal-box" style="max-width: 460px;">
       <h3>Add Items — <span id="canteenModalTableName"></span></h3>
       <div class="form-group" id="canteenPlayerTagGroup">
-        <label>👤 Tag New Items To</label>
+        <label><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg> Tag New Items To</label>
         <select id="canteenPlayerSelect" onchange="onCanteenPlayerSelectChange()"></select>
         <input type="text" id="canteenManualPlayerInput" placeholder="Type player's name..." style="display:none; margin-top:6px;" oninput="onCanteenManualPlayerInput()">
-        <span class="sub">Auto-suggested from players active on this table. Pick "➕ Someone else" to tag a guest by name.</span>
+        <span class="sub">Auto-suggested from players active on this table. Pick "<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Someone else" to tag a guest by name.</span>
       </div>
       <div class="form-group">
         <label>Search Catalog (Cafe & Cue Shop)</label>
@@ -4661,16 +4661,16 @@
       <div id="receiptContent" class="receipt-thermal"></div>
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="closeReceiptModal()">Close</button>
-        <button class="btn" id="receiptPrintBtn" onclick="printReceipt()">🖨️ Print</button>
+        <button class="btn" id="receiptPrintBtn" onclick="printReceipt()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M6 17h12v5H6z"/></svg> Print</button>
       </div>
-      <button class="btn btn-whatsapp" id="receiptWhatsAppBtn" style="display:none;" onclick="sendReceiptWhatsApp()">💬 Send Digital Receipt via WhatsApp</button>
+      <button class="btn btn-whatsapp" id="receiptWhatsAppBtn" style="display:none;" onclick="sendReceiptWhatsApp()"><svg class="icon-inline" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.3-.4.1-.2 0-.4 0-.5s-.7-1.6-.9-2.2c-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1.1 2.8 1.2 3c.1.2 2.2 3.3 5.2 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.2-.6-.4Z"/><path d="M12 2a10 10 0 0 0-8.5 15.3L2 22l4.8-1.5A10 10 0 1 0 12 2Z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg> Send Digital Receipt via WhatsApp</button>
     </div>
   </div>
 
   <!-- CREATE TOURNAMENT MODAL -->
   <div id="tournamentModal" class="modal-overlay">
     <div class="modal-box" style="max-width: 460px;">
-      <h3>🥇 Create Tournament</h3>
+      <h3><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M12 11v8M9 3l3 5 3-5"/></svg> Create Tournament</h3>
       <div class="form-group">
         <label>Tournament Name</label>
         <input type="text" id="tNameInput" placeholder="e.g. Snookify Winter Championship">
@@ -4718,7 +4718,7 @@
       <div class="selected-players-wrap" id="tSelectedChips"></div>
 
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="saveTournament()">💾 Create Tournament</button>
+        <button class="btn" onclick="saveTournament()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Create Tournament</button>
         <button class="btn btn-secondary" onclick="closeCreateTournamentModal()">Cancel</button>
       </div>
     </div>
@@ -4727,7 +4727,7 @@
   <!-- MATCH SCORE UPDATE MODAL -->
   <div id="matchScoreModal" class="modal-overlay">
     <div class="modal-box" style="max-width: 380px;">
-      <h3>🎯 Update Match Score</h3>
+      <h3><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg> Update Match Score</h3>
       <div style="color:var(--text-muted); font-size:0.7rem; margin-bottom:12px;" id="matchScoreFormatNote"></div>
 
       <div class="score-vs-row">
@@ -4744,7 +4744,7 @@
       <p class="sub" style="color: var(--text-muted); font-size: 0.68rem; margin-bottom: 10px;" id="matchScoreHint"></p>
 
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="saveMatchScore()">✅ Save Score</button>
+        <button class="btn" onclick="saveMatchScore()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Save Score</button>
         <button class="btn btn-secondary" onclick="closeMatchScoreModal()">Cancel</button>
       </div>
     </div>
@@ -4763,7 +4763,7 @@
         <input type="text" id="partnerPhoneInput" placeholder="03xx-xxxxxxx">
       </div>
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="savePartnerProfile()">💾 Save Partner</button>
+        <button class="btn" onclick="savePartnerProfile()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Save Partner</button>
         <button class="btn btn-secondary" onclick="closePartnerModal()">Cancel</button>
       </div>
     </div>
@@ -4775,7 +4775,7 @@
        file). No separate password system / modal is needed here anymore. -->
   <div id="manageBranchesModal" class="modal-overlay">
     <div class="modal-box" style="max-width: 460px;">
-      <h3>🏢 Manage Branches</h3>
+      <h3><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1"/></svg> Manage Branches</h3>
       <p class="auth-note" id="manageBranchesSyncNote">Synced live via Firebase.</p>
 
       <div id="manageBranchesList" class="branch-manage-list"></div>
@@ -4790,7 +4790,7 @@
       </div>
       <div class="auth-error" id="manageBranchesError"></div>
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="addBranchClicked()">➕ Add Branch (PIN required)</button>
+        <button class="btn" onclick="addBranchClicked()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Add Branch (PIN required)</button>
         <button class="btn btn-secondary" onclick="closeManageBranchesModal()">Close</button>
       </div>
     </div>
@@ -4812,7 +4812,7 @@
            live status and, on denial/timeout, becomes the blocking message + retry action. -->
       <div class="gps-status-box gps-checking" id="gpsStatusBox">
         <span class="gps-spinner"></span>
-        <span id="gpsStatusText">📡 Fetching GPS Location...</span>
+        <span id="gpsStatusText"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="6" height="6" rx="1" transform="rotate(45 12 12)"/><path d="M4 20l3-3M14 8l3-3M17 11l3-3-3-3-3 3M6 16l-3 3 3 3 3-3"/></svg> Fetching GPS Location...</span>
       </div>
 
       <div class="sl-sub" id="shiftLoginFirstRunHint" style="display:none; margin-bottom:10px; opacity:0.9;">
@@ -4956,14 +4956,14 @@
       <div class="form-group">
         <label>Payment</label>
         <select id="editSessionPayment">
-          <option value="cash">💵 Cash</option>
-          <option value="online">📱 Online / Bank</option>
+          <option value="cash">Cash</option>
+          <option value="online">Online / Bank</option>
           <option value="unsettled">Udhaar (unsettled)</option>
         </select>
       </div>
       <p class="auth-note">Total is recalculated automatically as Table Bill + Canteen − Discount.</p>
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="saveEditedSession()">💾 Save Changes</button>
+        <button class="btn" onclick="saveEditedSession()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Save Changes</button>
         <button class="btn btn-secondary" onclick="closeEditSessionModal()">Cancel</button>
       </div>
     </div>
@@ -4992,14 +4992,14 @@
       <div class="form-group">
         <label>Payment</label>
         <select id="editWalkInPayment">
-          <option value="cash">💵 Cash</option>
-          <option value="online">📱 Online / Bank</option>
+          <option value="cash">Cash</option>
+          <option value="online">Online / Bank</option>
           <option value="unsettled">Udhaar (unsettled)</option>
         </select>
       </div>
       <p class="auth-note">Net total is recalculated automatically as Gross − Discount. Item quantities aren't editable here — to change items, delete this entry and ring up a fresh sale.</p>
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="saveEditedWalkIn()">💾 Save Changes</button>
+        <button class="btn" onclick="saveEditedWalkIn()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Save Changes</button>
         <button class="btn btn-secondary" onclick="closeEditWalkInModal()">Cancel</button>
       </div>
     </div>
@@ -5044,12 +5044,12 @@
       <div class="form-group">
         <label>Paid Via</label>
         <select id="editExpensePaymentType">
-          <option value="cash">💵 Cash (Drawer)</option>
-          <option value="online">📱 Online / Bank</option>
+          <option value="cash">Cash (Drawer)</option>
+          <option value="online">Online / Bank</option>
         </select>
       </div>
       <div class="btn-row" style="flex-direction: column;">
-        <button class="btn" onclick="saveEditedExpense()">💾 Save Changes</button>
+        <button class="btn" onclick="saveEditedExpense()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Save Changes</button>
         <button class="btn btn-secondary" onclick="closeEditExpenseModal()">Cancel</button>
       </div>
     </div>
@@ -5125,7 +5125,17 @@
       wave: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v5M14 10V4a2 2 0 0 0-4 0v7M10 10.5V6a2 2 0 0 0-4 0v9c0 3.5 2.5 7 7 7 4 0 6-2.5 6-6v-4a2 2 0 0 0-4 0v1"/></svg>',
       clipboard: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3"/></svg>',
       eye: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>',
-      mail: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg>'
+      mail: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg>',
+      moon: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>',
+      sun: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+      doorOut: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>',
+      pin: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-12.5A7 7 0 0 0 5 9.5C5 14.5 12 22 12 22Z"/><circle cx="12" cy="9.5" r="2.3"/></svg>',
+      shuffle: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m18 4 3 3-3 3M2 7h9c2 0 3 1 4.5 3M2 17h9c2 0 3-1 4.5-3M18 20l3-3-3-3"/></svg>',
+      dice: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg>',
+      unlock: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.2-2.4"/></svg>',
+      pin2: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-12.5A7 7 0 0 0 5 9.5C5 14.5 12 22 12 22Z"/><circle cx="12" cy="9.5" r="2.3"/></svg>',
+      dot: '<span class="status-dot"></span>',
+      clock: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>'
     };
     const PAGE_INFO = {
       dashboard: ['Live Floor Dashboard', 'Real-time table & revenue overview'],
@@ -5397,7 +5407,7 @@
       const emailLabel = document.getElementById('authUserEmailLabel');
 
       if (!auth) {
-        errorBox.textContent = '⚠️ Firebase isn\'t configured — set firebaseConfig above to enable login.';
+        errorBox.textContent = "Firebase isn't configured — set firebaseConfig above to enable login.";
         return;
       }
 
@@ -5738,7 +5748,7 @@
         // another device via Firestore — the caller passes forceRebuild=true to rebuild it.
         if (forceRebuild || !sel.options.length) {
           sel.innerHTML = BRANCHES.map(b => `<option value="${b.id}">${b.name}</option>`).join('')
-            + `<option value="${ALL_BRANCHES_ID}">👑 All Branches View (Owner)</option>`;
+            + `<option value="${ALL_BRANCHES_ID}">All Branches View (Owner)</option>`;
         }
         sel.value = state.activeBranch;
       }
@@ -5748,7 +5758,7 @@
 
       const sidebarLabel = document.getElementById('sidebarBranchLabel');
       if (sidebarLabel) {
-        sidebarLabel.innerText = isAll ? '👑 All Branches (Owner)' : (BRANCHES.find(b => b.id === state.activeBranch) || BRANCHES[0]).name;
+        sidebarLabel.innerText = isAll ? 'All Branches (Owner)' : (BRANCHES.find(b => b.id === state.activeBranch) || BRANCHES[0]).name;
       }
 
       const reportsNote = document.getElementById('reportsBranchScopeNote');
@@ -5824,8 +5834,8 @@
       document.getElementById('newBranchLocationInput').value = '';
       document.getElementById('manageBranchesError').innerText = '';
       document.getElementById('manageBranchesSyncNote').innerText = firebaseReady
-        ? '☁️ Synced live via Firebase — changes appear on every device.'
-        : '⚠️ Firebase isn\'t configured yet (see firebaseConfig in the code) — branches are saved on this device only for now.';
+        ? 'Synced live via Firebase — changes appear on every device.'
+        : "Firebase isn't configured yet (see firebaseConfig in the code) — branches are saved on this device only for now.";
       renderManageBranchesList();
       document.getElementById('manageBranchesModal').classList.add('open');
     }
@@ -5845,9 +5855,9 @@
         <div class="branch-manage-row">
           <div class="bm-info">
             <div class="bm-name">${b.name}</div>
-            <div class="bm-location">${b.location ? '📍 ' + b.location : 'No location set'}</div>
+            <div class="bm-location">${b.location ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-12.5A7 7 0 0 0 5 9.5C5 14.5 12 22 12 22Z"/><circle cx="12" cy="9.5" r="2.3"/></svg> ` + b.location : 'No location set'}</div>
           </div>
-          <button class="bm-del" onclick="deleteBranchClicked('${b.id}')">🗑️ Delete</button>
+          <button class="bm-del" onclick="deleteBranchClicked('${b.id}')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/><path d="M10 11v6M14 11v6"/></svg> Delete</button>
         </div>
       `).join('');
     }
@@ -5862,11 +5872,11 @@
       const location = locInput.value.trim();
 
       if (!name) {
-        errEl.innerText = '❌ Please enter a branch name.';
+        errEl.innerText = 'Please enter a branch name.';
         return;
       }
       if (BRANCHES.some(b => b.name.toLowerCase() === name.toLowerCase())) {
-        errEl.innerText = '❌ A branch with this name already exists.';
+        errEl.innerText = 'A branch with this name already exists.';
         return;
       }
 
@@ -5891,7 +5901,7 @@
           document.getElementById('newBranchLocationInput').value = '';
         }).catch(err => {
           console.error('Snookify: failed to add branch', err);
-          document.getElementById('manageBranchesError').innerText = '❌ Could not save to Firebase. Check your connection and try again.';
+          document.getElementById('manageBranchesError').innerText = 'Could not save to Firebase. Check your connection and try again.';
         });
       } else {
         // Local-only fallback when Firebase isn't configured.
@@ -5912,7 +5922,7 @@
       if (!branch) return;
 
       if (BRANCHES.length <= 1) {
-        document.getElementById('manageBranchesError').innerText = '❌ At least one branch must remain.';
+        document.getElementById('manageBranchesError').innerText = 'At least one branch must remain.';
         return;
       }
       if (!confirm(`Delete "${branch.name}"? Its sessions, sales and expense history will no longer be reachable from the branch selector. This cannot be undone.`)) return;
@@ -5926,7 +5936,7 @@
       if (firebaseReady && branchesCollection) {
         branchesCollection.doc(branchId).delete().catch(err => {
           console.error('Snookify: failed to delete branch', err);
-          document.getElementById('manageBranchesError').innerText = '❌ Could not delete from Firebase. Check your connection and try again.';
+          document.getElementById('manageBranchesError').innerText = 'Could not delete from Firebase. Check your connection and try again.';
         });
         // state.branches[branchId]'s local data bucket is left in place on purpose (it's just
         // history sitting under an id no longer in BRANCHES) — applyBranchesSnapshot() handles
@@ -6018,7 +6028,7 @@
       // Checkout modals just display the locked staff read-only. Shutdown Shift is the only
       // way to hand the counter to someone else. See the Staff Shift Login & Shutdown System below.
       if (shiftActive() && staffId !== state.activeStaffId) {
-        alert(`A shift is currently open for ${state.currentShift.staffName}. Use "🔒 Shutdown Shift / Close Counter" (top of the screen) to close it out before another staff member logs in.`);
+        alert(`A shift is currently open for ${state.currentShift.staffName}. Use "Shutdown Shift / Close Counter" (top of the screen) to close it out before another staff member logs in.`);
         renderActiveStaffSelectorUI(); // snap every synced dropdown back to the locked value
         return;
       }
@@ -6105,29 +6115,29 @@
 
       if (shiftGpsState.status === 'checking') {
         box.classList.add('gps-checking');
-        box.innerHTML = '<span class="gps-spinner"></span><span id="gpsStatusText">📡 Fetching GPS Location...</span>';
+        box.innerHTML = '<span class="gps-spinner"></span><span id="gpsStatusText"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="6" height="6" rx="1" transform="rotate(45 12 12)"/><path d="M4 20l3-3M14 8l3-3M17 11l3-3-3-3-3 3M6 16l-3 3 3 3 3-3"/></svg> Fetching GPS Location...</span>';
         startBtn.disabled = true;
       } else if (shiftGpsState.status === 'resolving') {
         box.classList.add('gps-checking');
-        box.innerHTML = '<span class="gps-spinner"></span><span id="gpsStatusText">📡 Resolving area name...</span>';
+        box.innerHTML = '<span class="gps-spinner"></span><span id="gpsStatusText">' + ICONS.satellite + ' Resolving area name...</span>';
         startBtn.disabled = true;
       } else if (shiftGpsState.status === 'granted') {
         box.classList.add('gps-verified');
         const locationText = shiftGpsState.label
-          ? `✅ Location Verified: ${shiftGpsState.label}`
-          : `✅ Location Verified: ${shiftGpsState.lat.toFixed(5)}, ${shiftGpsState.lng.toFixed(5)}`;
-        box.innerHTML = `<span>📍</span><span id="gpsStatusText">${locationText}</span>`;
+          ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Location Verified: ${shiftGpsState.label}`
+          : `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Location Verified: ${shiftGpsState.lat.toFixed(5)}, ${shiftGpsState.lng.toFixed(5)}`;
+        box.innerHTML = `<span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-12.5A7 7 0 0 0 5 9.5C5 14.5 12 22 12 22Z"/><circle cx="12" cy="9.5" r="2.3"/></svg></span><span id="gpsStatusText">${locationText}</span>`;
         startBtn.disabled = false;
       } else {
         // denied / timeout / unavailable — mandatory blocking state
         box.classList.add('gps-blocked');
         const reason = shiftGpsState.status === 'timeout'
           ? '⏱️ Location request timed out.'
-          : '⚠️ Please Allow Location Permission';
+          : 'Please Allow Location Permission';
         box.innerHTML = `
           <span id="gpsStatusText">${reason}</span>
           <span style="font-weight:600; font-size:0.72rem; color:var(--text-main);">Location access is required to operate Snookify. Please enable location permissions in your browser settings to proceed.</span>
-          <button type="button" class="gps-retry-btn" onclick="runMandatoryGpsCheck()">🔄 Retry Location Access</button>
+          <button type="button" class="gps-retry-btn" onclick="runMandatoryGpsCheck()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg> Retry Location Access</button>
         `;
         startBtn.disabled = true;
       }
@@ -6335,9 +6345,9 @@
 
     function staffAuthLocationCell(rec) {
       const loc = rec.location || { status: 'unavailable' };
-      if (loc.status === 'granted' && loc.label) return `📍 ${loc.label}`;
-      if (loc.status === 'granted') return `📍 ${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)} <span style="color:var(--text-muted); font-size:0.68rem;">(name lookup unavailable)</span>`;
-      if (loc.status === 'denied') return `<span style="color:var(--danger);">🚫 Permission denied</span>`;
+      if (loc.status === 'granted' && loc.label) return `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-12.5A7 7 0 0 0 5 9.5C5 14.5 12 22 12 22Z"/><circle cx="12" cy="9.5" r="2.3"/></svg> ${loc.label}`;
+      if (loc.status === 'granted') return `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-12.5A7 7 0 0 0 5 9.5C5 14.5 12 22 12 22Z"/><circle cx="12" cy="9.5" r="2.3"/></svg> ${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)} <span style="color:var(--text-muted); font-size:0.68rem;">(name lookup unavailable)</span>`;
+      if (loc.status === 'denied') return `<span style="color:var(--danger);"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/></svg> Permission denied</span>`;
       if (loc.status === 'timeout') return `<span style="color:var(--accent-gold);">⏱️ Timed out</span>`;
       return `<span style="color:var(--text-muted);">— Unavailable</span>`;
     }
@@ -6363,7 +6373,7 @@
           <tr>
             <td>${r.staffName || 'Unknown'}<br><span class="staff-role-badge">${r.role || '-'}</span></td>
             <td>${branchLabel(r.branchId)}</td>
-            <td>${staffAuthTimeCell(r.loginAt)} ${r.serverTimestamped === false ? '<br><span style="color:var(--accent-gold); font-size:0.65rem;" title="No Firebase configured — this timestamp is this device local clock, not tamper-resistant.">⚠️ local clock</span>' : '<br><span style="color:var(--accent-green); font-size:0.65rem;">✅ server time</span>'}</td>
+            <td>${staffAuthTimeCell(r.loginAt)} ${r.serverTimestamped === false ? `<br><span style="color:var(--accent-gold); font-size:0.65rem;" title="No Firebase configured — this timestamp is this device local clock, not tamper-resistant.">${ICONS.warning} local clock</span>` : `<br><span style="color:var(--accent-green); font-size:0.65rem;">${ICONS.check} server time</span>`}</td>
             <td>${r.logoutAt ? staffAuthTimeCell(r.logoutAt) : `<span style="color:var(--accent-green);">${ICONS.check} Still active</span>`}</td>
             <td>${staffAuthLocationCell(r)}</td>
             <td style="font-size:0.7rem; color:var(--text-muted);">${(r.device && r.device.userAgent) ? r.device.userAgent.slice(0, 40) + '…' : '—'}</td>
@@ -6487,7 +6497,7 @@
       // --- Step 0: MANDATORY GPS GATE — defense-in-depth behind the disabled button above, so
       // Enter-key submission from a password field can't bypass it either. ---
       if (shiftGpsState.status !== 'granted') {
-        err.innerText = '⚠️ Location access is required to operate Snookify. Please enable location permissions in your browser settings to proceed.';
+        err.innerText = 'Location access is required to operate Snookify. Please enable location permissions in your browser settings to proceed.';
         renderGpsStatusUI();
         return;
       }
@@ -6511,7 +6521,7 @@
         return;
       }
       if (enteredStaffPin !== staff.securityCode) {
-        err.innerText = '❌ Incorrect Staff Security PIN.';
+        err.innerText = 'Incorrect Staff Security PIN.';
         return;
       }
 
@@ -6522,7 +6532,7 @@
         return;
       }
       if (enteredBranchPin !== branch.securityCode) {
-        err.innerText = '❌ Incorrect Branch Security PIN for the selected branch.';
+        err.innerText = 'Incorrect Branch Security PIN for the selected branch.';
         return;
       }
 
@@ -6597,7 +6607,7 @@
       const s = state.currentShift;
       if (el) {
         el.style.display = 'flex';
-        el.innerHTML = `🟢 Shift active — <b>${s.staffName}</b> · ${branchLabel(s.branchId)} · started ${formatTime(new Date(s.startISO))}`;
+        el.innerHTML = `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Shift active — <b>${s.staffName}</b> · ${branchLabel(s.branchId)} · started ${formatTime(new Date(s.startISO))}`;
       }
       if (mDot) mDot.classList.add('on');
       if (mLabel) mLabel.textContent = `${s.staffName} · ${formatTime(new Date(s.startISO))}`;
@@ -6729,7 +6739,7 @@
         <div class="r-row"><span>Games Revenue</span><span>Rs ${money(t.gamesRevenue)}</span></div>
         <div class="r-row"><span>Cafe Revenue</span><span>Rs ${money(t.cafeRevenue)}</span></div>
         <div class="r-row"><span>Cue Shop Revenue</span><span>Rs ${money(t.accessoriesRevenue)}</span></div>
-        <div class="r-row"><span>🎯 Advance Frames Sold</span><span>Rs ${money(t.advanceRevenue || 0)}</span></div>
+        <div class="r-row"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg> Advance Frames Sold</span><span>Rs ${money(t.advanceRevenue || 0)}</span></div>
         <div class="r-row"><span>Discounts / Complimentary Given</span><span>-Rs ${money(t.discountsTotal)}</span></div>
         <div class="r-row" style="font-weight:700;"><span>Total Revenue (Net)</span><span>Rs ${money(t.totalRevenue)}</span></div>
         <hr>
@@ -6745,7 +6755,7 @@
         <hr>
         <div class="r-row" style="font-weight:700;"><span>Physical Cash Counted</span><span>Rs ${money(rec.physicalCashCounted)}</span></div>
         <div class="r-row" style="font-weight:800; font-size:0.95rem;"><span>VARIANCE (${rec.variance === 0 ? 'MATCHED' : rec.variance > 0 ? 'EXCESS' : 'SHORTAGE'})</span><span>${rec.variance >= 0 ? '+' : ''}Rs ${money(rec.variance)}</span></div>
-        ${rec.surplus > 0 ? `<div class="r-row" style="font-weight:800; font-size:0.95rem;"><span>✨ SURPLUS / EXTRA CASH</span><span>Rs ${money(rec.surplus)}</span></div>` : ''}
+        ${rec.surplus > 0 ? `<div class="r-row" style="font-weight:800; font-size:0.95rem;"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2"/></svg> SURPLUS / EXTRA CASH</span><span>Rs ${money(rec.surplus)}</span></div>` : ''}
         ` : ''}
         <hr>
         <div class="r-center">Handed Over By: ${rec.staffName}</div>
@@ -6948,7 +6958,7 @@
       if (!rows.length) { alert('No shifts match the current filter — nothing to export.'); return; }
 
       if (!window.jspdf || !window.jspdf.jsPDF) {
-        alert('The PDF library failed to load (check your internet connection). Use "🖨️ Print Report" instead — its print dialog can also Save as PDF.');
+        alert('The PDF library failed to load (check your internet connection). Use "Print Report" instead — its print dialog can also Save as PDF.');
         return;
       }
 
@@ -7127,8 +7137,8 @@
       document.getElementById('newStaffPhoneInput').value = '';
       document.getElementById('manageStaffError').innerText = '';
       document.getElementById('manageStaffSyncNote').innerText = firebaseReady
-        ? '☁️ Synced live via Firebase — changes appear on every device.'
-        : '⚠️ Firebase isn\'t configured yet (see firebaseConfig in the code) — staff are saved on this device only for now.';
+        ? 'Synced live via Firebase — changes appear on every device.'
+        : "Firebase isn't configured yet (see firebaseConfig in the code) — staff are saved on this device only for now.";
       renderManageStaffList();
       document.getElementById('manageStaffModal').classList.add('open');
     }
@@ -7248,7 +7258,7 @@
 
       if (!name) { errEl.innerText = 'Please enter a staff name.'; return; }
       if (STAFF.some(s => s.id !== editingStaffId && s.name.toLowerCase() === name.toLowerCase())) {
-        errEl.innerText = '❌ Another staff member already has this name.';
+        errEl.innerText = 'Another staff member already has this name.';
         return;
       }
 
@@ -7257,7 +7267,7 @@
           closeEditStaffModal();
         }).catch(err => {
           console.error('Snookify: failed to update staff', err);
-          errEl.innerText = '❌ Could not save to Firebase. Check your connection and try again.';
+          errEl.innerText = 'Could not save to Firebase. Check your connection and try again.';
         });
       } else {
         const s = STAFF.find(x => x.id === editingStaffId);
@@ -7281,7 +7291,7 @@
       if (firebaseReady && staffCollection) {
         staffCollection.doc(staffId).delete().catch(err => {
           console.error('Snookify: failed to delete staff', err);
-          document.getElementById('manageStaffError').innerText = '❌ Could not delete from Firebase. Check your connection and try again.';
+          document.getElementById('manageStaffError').innerText = 'Could not delete from Firebase. Check your connection and try again.';
         });
       } else {
         STAFF = STAFF.filter(s => s.id !== staffId);
@@ -7376,17 +7386,17 @@
 
     const RV_CATEGORIES = ['Social Media', 'E-Commerce', 'Videos', 'Websites', 'Other'];
     const RV_CATEGORY_META = {
-      'Social Media': { icon: '📱', color: '#29b6f6' },
-      'E-Commerce':   { icon: '🛒', color: '#ffb300' },
-      'Videos':       { icon: '🎬', color: '#ff5252' },
-      'Websites':     { icon: '🌐', color: '#00e676' },
-      'Other':        { icon: '📁', color: '#8b95a5' }
+      'Social Media': { icon: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>', color: '#29b6f6' },
+      'E-Commerce':   { icon: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.5 3h2l2.6 12.5a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 8H6"/></svg>', color: '#ffb300' },
+      'Videos':       { icon: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4"/></svg>', color: '#ff5252' },
+      'Websites':     { icon: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/></svg>', color: '#00e676' },
+      'Other':        { icon: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/></svg>', color: '#8b95a5' }
     };
 
     function openAddLinkModal() {
       guardFeatureAction('resourceVault', 'Add New Link', () => {
         editingLinkId = null;
-        document.getElementById('resourceLinkModalTitle').innerText = '🔗 Add New Link';
+        document.getElementById('resourceLinkModalTitle').innerText = 'Add New Link';
         document.getElementById('rvTitleInput').value = '';
         document.getElementById('rvUrlInput').value = '';
         document.getElementById('rvCategoryInput').value = 'Social Media';
@@ -7401,7 +7411,7 @@
       if (!link) return;
       guardFeatureAction('resourceVault', `Edit Link "${link.title}"`, () => {
         editingLinkId = linkId;
-        document.getElementById('resourceLinkModalTitle').innerText = '✏️ Edit Link';
+        document.getElementById('resourceLinkModalTitle').innerText = 'Edit Link';
         document.getElementById('rvTitleInput').value = link.title;
         document.getElementById('rvUrlInput').value = link.url;
         document.getElementById('rvCategoryInput').value = link.category;
@@ -7433,11 +7443,11 @@
       const errEl = document.getElementById('resourceLinkError');
       errEl.innerText = '';
 
-      if (!title) { errEl.innerText = '❌ Please enter a title.'; return; }
-      if (!urlRaw) { errEl.innerText = '❌ Please enter a URL.'; return; }
+      if (!title) { errEl.innerText = 'Please enter a title.'; return; }
+      if (!urlRaw) { errEl.innerText = 'Please enter a URL.'; return; }
 
       const url = normalizeUrl(urlRaw);
-      try { new URL(url); } catch (e) { errEl.innerText = "❌ That URL doesn't look valid."; return; }
+      try { new URL(url); } catch (e) { errEl.innerText = "That URL doesn't look valid."; return; }
 
       if (editingLinkId) {
         performUpdateLink(editingLinkId, { title, url, category, description });
@@ -7457,10 +7467,10 @@
           // this up and calls applyResourceLinksSnapshot() -> renderResourceVaultScreen()
           // automatically, on this device and any other open device/tab.
           closeResourceLinkModal();
-          showToast(`✅ "${data.title}" added to Resource Vault`);
+          showToast(`<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> "${data.title}" added to Resource Vault`);
         }).catch(err => {
           console.error('Snookify: failed to add link', err);
-          document.getElementById('resourceLinkError').innerText = '❌ Could not save to Firebase. Check your connection and try again.';
+          document.getElementById('resourceLinkError').innerText = 'Could not save to Firebase. Check your connection and try again.';
         });
       } else {
         const now = new Date().toISOString();
@@ -7469,7 +7479,7 @@
         saveState();
         renderResourceVaultScreen();
         closeResourceLinkModal();
-        showToast(`✅ "${data.title}" added to Resource Vault`);
+        showToast(`<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> "${data.title}" added to Resource Vault`);
       }
     }
 
@@ -7480,10 +7490,10 @@
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
           closeResourceLinkModal();
-          showToast(`✅ "${data.title}" updated`);
+          showToast(`<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> "${data.title}" updated`);
         }).catch(err => {
           console.error('Snookify: failed to update link', err);
-          document.getElementById('resourceLinkError').innerText = '❌ Could not save to Firebase. Check your connection and try again.';
+          document.getElementById('resourceLinkError').innerText = 'Could not save to Firebase. Check your connection and try again.';
         });
       } else {
         const link = RESOURCE_LINKS.find(l => l.id === linkId);
@@ -7492,7 +7502,7 @@
         saveState();
         renderResourceVaultScreen();
         closeResourceLinkModal();
-        showToast(`✅ "${data.title}" updated`);
+        showToast(`<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> "${data.title}" updated`);
       }
     }
 
@@ -7506,17 +7516,17 @@
     function performDeleteLink(linkId, title) {
       if (firebaseReady && resourceLinksCollection) {
         resourceLinksCollection.doc(linkId).delete().then(() => {
-          showToast(`🗑️ "${title}" deleted`);
+          showToast(`<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/><path d="M10 11v6M14 11v6"/></svg> "${title}" deleted`);
         }).catch(err => {
           console.error('Snookify: failed to delete link', err);
-          showToast('❌ Could not delete from Firebase.', 'error');
+          showToast('Could not delete from Firebase.', 'error');
         });
       } else {
         RESOURCE_LINKS = RESOURCE_LINKS.filter(l => l.id !== linkId);
         state.resourceLinks = RESOURCE_LINKS;
         saveState();
         renderResourceVaultScreen();
-        showToast(`🗑️ "${title}" deleted`);
+        showToast(`<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/><path d="M10 11v6M14 11v6"/></svg> "${title}" deleted`);
       }
     }
 
@@ -7531,7 +7541,7 @@
       const link = RESOURCE_LINKS.find(l => l.id === linkId);
       if (!link) return;
       const finish = (ok) => showToast(
-        ok ? `📋 Copied "${link.title}" URL to clipboard` : '❌ Could not copy — please copy it manually',
+        ok ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3"/></svg> Copied "${link.title}" URL to clipboard` : 'Could not copy — please copy it manually',
         ok ? 'success' : 'error'
       );
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -7743,9 +7753,9 @@
     function paymentTypeLabel(record) {
       const { cash, online } = getTenderAmounts(record);
       let modeLabel;
-      if (cash > 0 && online > 0) modeLabel = `💵 Rs ${money(cash)} + 📱 Rs ${money(online)}`;
-      else if (online > 0) modeLabel = '📱 Online';
-      else if (cash > 0) modeLabel = '💵 Cash';
+      if (cash > 0 && online > 0) modeLabel = `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg> Rs ${money(cash)} + <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg> Rs ${money(online)}`;
+      else if (online > 0) modeLabel = `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg> Online`;
+      else if (cash > 0) modeLabel = `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg> Cash`;
       else modeLabel = null;
 
       if (record.paymentStatus === 'split') {
@@ -8029,7 +8039,7 @@
         <div class="stock-card">
           <div class="stock-title">
             <span>${t.name}</span>
-            <span class="del-x" onclick="deleteTable(${t.id})" title="Remove table">✕</span>
+            <span class="del-x" onclick="deleteTable(${t.id})" title="Remove table"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
           </div>
           <div class="stock-row"><span>Hourly override</span><input type="number" placeholder="global: ${AB().hourlyRate}" value="${t.customHourly !== null && t.customHourly !== undefined ? t.customHourly : ''}" onchange="updateTableRate(${t.id}, 'customHourly', this.value)"></div>
           <div class="stock-row"><span>Frame override</span><input type="number" placeholder="global: ${AB().frameRate}" value="${t.customFrame !== null && t.customFrame !== undefined ? t.customFrame : ''}" onchange="updateTableRate(${t.id}, 'customFrame', this.value)"></div>
@@ -8335,7 +8345,7 @@
       return gameFee + t.canteenTotal;
     }
 
-    const SESSION_EVENT_ICON = { frame: '🎱', series: '🏆', penalty: '🚩', advance: '🎯' };
+    const SESSION_EVENT_ICON = { frame: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg>', series: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0Z"/><path d="M7 5H4a1 1 0 0 0-1 1v1a4 4 0 0 0 4 4M17 5h3a1 1 0 0 1 1 1v1a4 4 0 0 1-4 4"/></svg>', penalty: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4M4 4h13l-2.5 4L17 12H4"/></svg>', advance: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg>' };
 
     // Summary component's "Session Events" section — maps activeSessionEvents in the exact
     // order they occurred (Frame 1, Frame 2, Series Session, ...), then appends one more row
@@ -8363,7 +8373,7 @@
       const projected = getOpenFrameProjectedCost(t);
       const projectedRow = projected ? `
           <div class="frame-summary-row" style="opacity:0.7;">
-            <span class="fsr-label">🎱 <b>Frame ${projected.frame.frameNo}</b> <span style="color:var(--text-muted);">— ${frameModeLabel(projected.mode, t.matchTarget || null)} · ${projected.frame.playerName || 'Unassigned'} · <i>in progress (est.)</i></span></span>
+            <span class="fsr-label">${ICONS.cueball} <b>Frame ${projected.frame.frameNo}</b> <span style="color:var(--text-muted);">— ${frameModeLabel(projected.mode, t.matchTarget || null)} · ${projected.frame.playerName || 'Unassigned'} · <i>in progress (est.)</i></span></span>
             <span class="fsr-amount" style="color:var(--text-muted);">~Rs ${money(projected.amount)}</span>
           </div>` : '';
       const total = computeActiveSessionEventsTotal(t);
@@ -8407,7 +8417,7 @@
         const modeTag = modeTagParts.length ? ` <span class="fbr-mode-tag">(${modeTagParts.join(' · ')})</span>` : '';
         let priceOrStatus;
         if (f.isPenaltyFrame) {
-          priceOrStatus = `🚩 Penalty — Rs ${money(f.cost || 0)}${modeTag}`;
+          priceOrStatus = `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4M4 4h13l-2.5 4L17 12H4"/></svg> Penalty — Rs ${money(f.cost || 0)}${modeTag}`;
         } else if (!hasAssignedPlayer) {
           priceOrStatus = f.endTime ? 'Completed' : 'in progress';
         } else {
@@ -8791,7 +8801,7 @@
         document.getElementById('voidSessionModal').classList.add('open');
         // pendingVoidTableId is left set — confirmVoidSession() below reads it
       } else {
-        if (err) err.innerText = '❌ Invalid Security Code';
+        if (err) err.innerText = 'Invalid Security Code';
         if (input) { input.value = ''; input.focus(); } // reset the PIN field after every attempt
         logAudit({ action: 'CANCEL_SESSION_PIN_FAILED', tableId: pendingVoidTableId });
       }
@@ -9058,11 +9068,11 @@
       if (t.customerName || t.customerPhone) {
         quickBtn.style.display = '';
         quickBtn.disabled = false;
-        quickBtn.innerText = `⚡ Use Current Player: ${t.customerName || 'Walk-in'}${t.customerPhone ? ' (' + t.customerPhone + ')' : ''}`;
+        quickBtn.innerText = `Use Current Player: ${t.customerName || 'Walk-in'}${t.customerPhone ? ' (' + t.customerPhone + ')' : ''}`;
       } else {
         quickBtn.style.display = '';
         quickBtn.disabled = true;
-        quickBtn.innerText = '⚡ No current player on file — enter details below';
+        quickBtn.innerText = 'No current player on file — enter details below';
       }
 
       document.getElementById('addFrameModal').classList.add('open');
@@ -9510,7 +9520,7 @@
       const names = canteenModalContext.activePlayers.length ? canteenModalContext.activePlayers : [];
       let html = names.map(n => `<option value="${n}" ${n === selectedValue ? 'selected' : ''}>${n}</option>`).join('');
       if (!names.length) html += `<option value="Walk-in" ${selectedValue === 'Walk-in' ? 'selected' : ''}>Walk-in</option>`;
-      html += `<option value="__other__" ${selectedValue === '__other__' ? 'selected' : ''}>➕ Someone else...</option>`;
+      html += `<option value="__other__" ${selectedValue === '__other__' ? 'selected' : ''}>Someone else...</option>`;
       return html;
     }
 
@@ -9589,7 +9599,7 @@
       container.innerHTML = matches.map(s => {
         const remaining = canteenRemainingStock(s);
         const disabled = remaining <= 0 ? 'disabled' : '';
-        const catTag = s.category === 'cue' ? '🎱 Cue Shop' : '☕ Cafe';
+        const catTag = s.category === 'cue' ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg> Cue Shop` : `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8Z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg> Cafe`;
         return `
           <div class="stock-row" style="align-items:center;">
             <span>${s.name} <span style="color:var(--accent-gold); font-size:0.65rem;">${catTag}</span><br><span style="color:var(--text-muted); font-size:0.7rem;">Rs ${s.sell} · ${remaining} in stock</span></span>
@@ -9870,7 +9880,7 @@
     function updateCheckoutPlayerLinkHint() {
       const hint = document.getElementById('checkoutPlayerLinkHint');
       if (!hint || !checkoutContext) return;
-      hint.innerText = checkoutContext.playerId ? '✓ Linked' : '';
+      hint.innerText = checkoutContext.playerId ? 'Linked' : '';
     }
 
     // Per-frame cash value used to convert redeemed Advance Frames into a bill discount —
@@ -10532,7 +10542,7 @@
         `}
         ${playerBreakdown ? `
         <hr>
-        <div class="r-row" style="font-weight:700;"><span>🧑‍🤝‍🧑 Player-by-Player Breakdown</span><span></span></div>
+        <div class="r-row" style="font-weight:700;"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Player-by-Player Breakdown</span><span></span></div>
         ${!isFrameSession ? `<div style="color:var(--text-muted); font-size:0.65rem; margin-bottom:2px;">Table time is billed as one shared session — only canteen/cue items are split by player below.</div>` : ''}
         ${playerBreakdown.map(p => `
           <div class="r-row" style="font-weight:700; margin-top:6px;"><span>${p.name}</span><span>Rs ${money(p.subtotal)}</span></div>
@@ -10545,7 +10555,7 @@
         <hr>
         <div class="r-row"><span>Gross Total</span><span>Rs ${money(record.tableBill + record.canteen)}</span></div>
         <div class="r-row"><span>Discount Applied</span><span>-Rs ${money(record.discount)}</span></div>
-        ${record.advanceRedeemFrames ? `<div class="r-row" style="font-size:0.7rem; color:var(--text-muted);"><span>&nbsp;&nbsp;incl. 🎯 ${record.advanceRedeemFrames} Advance Frame${record.advanceRedeemFrames === 1 ? '' : 's'} redeemed</span><span>-Rs ${money(record.advanceRedeemAmount || 0)}</span></div>` : ''}
+        ${record.advanceRedeemFrames ? `<div class="r-row" style="font-size:0.7rem; color:var(--text-muted);"><span>&nbsp;&nbsp;incl. ${ICONS.target} ${record.advanceRedeemFrames} Advance Frame${record.advanceRedeemFrames === 1 ? '' : 's'} redeemed</span><span>-Rs ${money(record.advanceRedeemAmount || 0)}</span></div>` : ''}
         <div class="r-row" style="font-weight:800; font-size:0.95rem;"><span>NET PAYABLE</span><span>Rs ${money(record.total)}</span></div>
         <div class="r-row"><span>Payment Type</span><span>${paymentTypeLabel(record)}</span></div>
         ${record.paymentStatus === 'split' ? `
@@ -10592,7 +10602,7 @@
         window.print();
       } catch (e) {
         console.error('Snookify: receipt print failed', e);
-        alert('The print dialog could not be opened. The transaction is already saved — use "🖨️ Print" again or your browser\'s print option to print this receipt.');
+        alert('The print dialog could not be opened. The transaction is already saved — use "Print" again or your browser\'s print option to print this receipt.');
       }
     }
 
@@ -10818,7 +10828,7 @@
         <div class="summary-section">
           <div class="summary-section-title">Session</div>
           ${t.customerName ? `<div class="customer-line">${ICONS.user} ${t.customerName}${t.customerPhone ? ' · ' + t.customerPhone : ''}</div>` : ''}
-          <div class="customer-line" style="display:flex; align-items:center; gap:6px;">${t.playerId ? renderPlayerLinkLine(t.playerId) : '<span style="color:var(--text-muted); font-size:0.7rem;">No player linked</span>'}<span style="cursor:pointer; color:var(--info); font-size:0.7rem; font-weight:700;" onclick="openTableLinkPlayerModal(${t.id})">🔗 Link</span></div>
+          <div class="customer-line" style="display:flex; align-items:center; gap:6px;">${t.playerId ? renderPlayerLinkLine(t.playerId) : '<span style="color:var(--text-muted); font-size:0.7rem;">No player linked</span>'}<span style="cursor:pointer; color:var(--info); font-size:0.7rem; font-weight:700;" onclick="openTableLinkPlayerModal(${t.id})"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7a5 5 0 0 1 0-10h2M15 7h2a5 5 0 1 1 0 10h-2M8 12h8"/></svg> Link</span></div>
           <div class="mode-toggle" style="margin-top:8px;">
             <button class="toggle-btn ${t.mult === 'single' ? 'active' : ''}" onclick="setMultiplier(${t.id}, 'single'); renderTableSummaryPanel(${t.id});">Single</button>
             <button class="toggle-btn ${t.mult === 'double' ? 'active' : ''}" onclick="setMultiplier(${t.id}, 'double'); renderTableSummaryPanel(${t.id});">Double</button>
@@ -10862,7 +10872,7 @@
           <button class="btn btn-canteen" onclick="openCanteenModal(${t.id})">+ Add Item</button>
         </div>
         <button class="btn btn-stop" onclick="openCheckoutModal(${t.id})">■ Stop Session</button>
-        ${isFeatureHidden('cancelSessionButton') ? '' : `<button class="btn btn-void${(isFeatureBlurred('cancelSessionButton') && !cancelSessionRevealedTables.has(t.id)) ? ' blur-target blur-active' : ''}" onclick="handleCancelSessionClick(${t.id}, this)">🚫 Cancel Session</button>`}
+        ${isFeatureHidden('cancelSessionButton') ? '' : `<button class="btn btn-void${(isFeatureBlurred('cancelSessionButton') && !cancelSessionRevealedTables.has(t.id)) ? ' blur-target blur-active' : ''}" onclick="handleCancelSessionClick(${t.id}, this)"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/></svg> Cancel Session</button>`}
       `;
     }
 
@@ -11575,7 +11585,7 @@
         document.getElementById('posCheckoutCustomer').innerText = `${player.name}${player.phone ? ' · ' + player.phone : ''}`;
       }
 
-      alert('✅ Player details saved successfully!');
+      alert('Player details saved successfully!');
     }
 
     function finalizePosSale(opts) {
@@ -11950,7 +11960,7 @@
         clearExpenseBillSelection();
       } finally {
         _expenseBillProcessing = false;
-        if (attachBtn) { attachBtn.disabled = false; attachBtn.textContent = '📎 + Attach Bill'; }
+        if (attachBtn) { attachBtn.disabled = false; attachBtn.textContent = '+ Attach Bill'; }
         // Reset the input's value after every selection (success AND failure), not just on
         // validation errors — otherwise picking the exact same file again (e.g. remove-and-
         // reattach, or retrying after a failure) won't fire another change event in some
@@ -12250,15 +12260,15 @@
           <td>${e.dateISO}</td>
           <td>${e.category}</td>
           <td><span class="type-pill ${e.type === 'Capital' ? 'type-capital' : 'type-operational'}">${e.type === 'Capital' ? 'Capital' : 'Operational'}</span></td>
-          <td>${e.description || '-'}${e.bill ? `<span class="expense-bill-icon" title="View attached bill: ${e.bill.name}" onclick="viewExpenseBill('${e.id}')">📎</span>` : ''}</td>
+          <td>${e.description || '-'}${e.bill ? `<span class="expense-bill-icon" title="View attached bill: ${e.bill.name}" onclick="viewExpenseBill('${e.id}')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.4 21a5 5 0 0 1-7-7L14 5.5a3.5 3.5 0 0 1 5 5L10.5 19a2 2 0 0 1-3-3l7-7"/></svg></span>` : ''}</td>
           <td>Rs ${money(e.amount)}</td>
-          <td>${(e.paymentType || 'cash') === 'online' ? '📱 Online' : '💵 Cash'}</td>
-          <td><span class="staff-role-badge" title="Staff member who logged this entry">👤 ${e.staffName || 'Unknown'}</span></td>
+          <td>${(e.paymentType || 'cash') === 'online' ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg> Online` : `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg> Cash`}</td>
+          <td><span class="staff-role-badge" title="Staff member who logged this entry"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg> ${e.staffName || 'Unknown'}</span></td>
           <td>
-            ${isAll ? `<span class="auth-note">🔒 Read-only</span>` : `
+            ${isAll ? `<span class="auth-note"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Read-only</span>` : `
             <div class="row-actions">
-              <span class="row-action-icon edit-icon" title="Edit expense" onclick="requestEditExpense('${e.id}')">✏️</span>
-              <span class="row-action-icon delete-icon" title="Delete expense" onclick="requestDeleteExpense('${e.id}')">🗑️</span>
+              <span class="row-action-icon edit-icon" title="Edit expense" onclick="requestEditExpense('${e.id}')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+              <span class="row-action-icon delete-icon" title="Delete expense" onclick="requestDeleteExpense('${e.id}')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/><path d="M10 11v6M14 11v6"/></svg></span>
             </div>`}
           </td>
         </tr>
@@ -14195,10 +14205,10 @@
       dot.classList.remove('ok', 'bad');
       if (a.overallOk) {
         panel.classList.add('audit-ok'); pill.classList.add('ok'); dot.classList.add('ok');
-        text.innerText = '✅ System Balanced & Verified';
+        text.innerText = 'System Balanced & Verified';
       } else {
         panel.classList.add('audit-bad'); pill.classList.add('bad'); dot.classList.add('bad');
-        text.innerText = '⚠️ Discrepancy Detected';
+        text.innerText = 'Discrepancy Detected';
       }
 
       document.getElementById('auditRevenueReported').innerText = 'Rs ' + money(a.totalRevenue);
@@ -14223,7 +14233,7 @@
           </div>
         `).join('') + (a.orphans.length > 50 ? `<div class="audit-empty-note">+ ${a.orphans.length - 50} more not shown</div>` : '');
       } else {
-        orphanListEl.innerHTML = `<div class="audit-empty-note">✅ No orphaned or unmatched records found in scope.</div>`;
+        orphanListEl.innerHTML = `<div class="audit-empty-note"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> No orphaned or unmatched records found in scope.</div>`;
       }
 
       const logEl = document.getElementById('auditDiscrepancyLog');
@@ -14337,7 +14347,7 @@
       const d = window._msLastData;
       if (!d) { renderMasterSummary(); return; }
       if (!window.jspdf || !window.jspdf.jsPDF) {
-        alert('The PDF library failed to load (check your internet connection). Use "🖨️ Print Summary Report" instead — its print dialog can also Save as PDF.');
+        alert('The PDF library failed to load (check your internet connection). Use "Print Summary Report" instead — its print dialog can also Save as PDF.');
         return;
       }
 
@@ -14388,7 +14398,7 @@
           ['Table / Game Sessions', money(d.gamesRevenue)],
           ['Cafe Orders', money(d.cafeRevenue)],
           ['Cue Shop Sales', money(d.cueRevenue)],
-          ['🎯 Advance Frames Sold (Top-ups)', money(d.advanceRevenue || 0)],
+          ['<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg> Advance Frames Sold (Top-ups)', money(d.advanceRevenue || 0)],
           ['Discounts / Complimentary', `-${money(d.discountsTotal)}`]
         ],
         foot: [['Total Revenue (net of discounts)', money(d.totalRevenue)]],
@@ -14981,13 +14991,13 @@
       varianceEl.innerText = (variance > 0 ? '+' : '') + 'Rs ' + money(variance);
       if (variance === 0) {
         varianceEl.style.color = 'var(--accent-green)';
-        varianceCard.querySelector('.zr-label').innerText = '⚖️ Cash Variance (Matched)';
+        varianceCard.querySelector('.zr-label').innerText = 'Cash Variance (Matched)';
       } else if (variance > 0) {
         varianceEl.style.color = 'var(--accent-gold)';
-        varianceCard.querySelector('.zr-label').innerText = '⚖️ Cash Variance (Excess)';
+        varianceCard.querySelector('.zr-label').innerText = 'Cash Variance (Excess)';
       } else {
         varianceEl.style.color = 'var(--danger)';
-        varianceCard.querySelector('.zr-label').innerText = '⚖️ Cash Variance (Shortage)';
+        varianceCard.querySelector('.zr-label').innerText = 'Cash Variance (Shortage)';
       }
 
       // --- Dedicated Surplus / Extra Cash card ---
@@ -15072,7 +15082,7 @@
         <div class="r-row"><span>Games Revenue</span><span>Rs ${money(t.gamesRevenue)}</span></div>
         <div class="r-row"><span>Cafe Revenue</span><span>Rs ${money(t.cafeRevenue)}</span></div>
         <div class="r-row"><span>Cue Shop Revenue</span><span>Rs ${money(t.accessoriesRevenue)}</span></div>
-        <div class="r-row"><span>🎯 Advance Frames Sold</span><span>Rs ${money(t.advanceRevenue || 0)}</span></div>
+        <div class="r-row"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg> Advance Frames Sold</span><span>Rs ${money(t.advanceRevenue || 0)}</span></div>
         <div class="r-row"><span>Discounts / Complimentary Given</span><span>-Rs ${money(t.discountsTotal)}</span></div>
         <div class="r-row" style="font-weight:700;"><span>Total Revenue (Net)</span><span>Rs ${money(t.totalRevenue)}</span></div>
         <hr>
@@ -15092,11 +15102,11 @@
         <hr>
         <div class="r-center" style="font-size:0.7rem;">Cash Denomination Count</div>
         ${denomRows || (drawerRec.quickTotalMode && (drawerRec.manualPhysicalTotal || 0) > 0
-          ? '<div class="r-row"><span style="font-size:0.7rem;">⚡ Entered as a quick total (denomination breakdown skipped)</span><span></span></div>'
+          ? '<div class="r-row"><span style="font-size:0.7rem;">Entered as a quick total (denomination breakdown skipped)</span><span></span></div>'
           : '<div class="r-row"><span style="font-size:0.7rem;">No physical count entered</span><span></span></div>')}
         <div class="r-row" style="font-weight:700;"><span>Physical Cash Counted</span><span>Rs ${money(physicalTotal)}</span></div>
         <div class="r-row" style="font-weight:800; font-size:0.95rem;"><span>VARIANCE (${variance === 0 ? 'MATCHED' : variance > 0 ? 'EXCESS' : 'SHORTAGE'})</span><span>${variance >= 0 ? '+' : ''}Rs ${money(variance)}</span></div>
-        ${surplus > 0 ? `<div class="r-row" style="font-weight:800; font-size:0.95rem;"><span>✨ SURPLUS / EXTRA CASH</span><span>Rs ${money(surplus)}</span></div>` : ''}
+        ${surplus > 0 ? `<div class="r-row" style="font-weight:800; font-size:0.95rem;"><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2"/></svg> SURPLUS / EXTRA CASH</span><span>Rs ${money(surplus)}</span></div>` : ''}
         <hr>
         <div class="r-center">Verified & Closed By: ______________</div>
         <div class="r-center" style="margin-top:4px;">Signature: ______________</div>
@@ -15212,10 +15222,10 @@
 
       banner.style.display = 'block';
       banner.innerHTML = `
-        <div class="alert-title">🔴 Low Stock Alert — ${items.length} item${items.length === 1 ? '' : 's'} need restocking</div>
+        <div class="alert-title"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg> Low Stock Alert — ${items.length} item${items.length === 1 ? '' : 's'} need restocking</div>
         <div style="display:flex; flex-wrap:wrap; gap:8px;">
           ${items.map(s => `
-            <span class="low-stock-chip">${s.category === 'cue' ? '🎱' : '☕'} ${s.name}: <strong>${s.stock} left</strong> (alert at ${s.lowStockThreshold})</span>
+            <span class="low-stock-chip">${s.category === 'cue' ? '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg>' : '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8Z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg>'} ${s.name}: <strong>${s.stock} left</strong> (alert at ${s.lowStockThreshold})</span>
           `).join('')}
         </div>
       `;
@@ -15613,19 +15623,19 @@
           ? '—'
           : `<div class="udhaar-action-btns">
                <button class="${c.status === 'partial' ? 'btn-edit-settle' : 'btn-settle'}" onclick="openSettleUdhaarModal('${c.id}')">${settleLabel}</button>
-               <button class="btn-remind" onclick="remindUdhaar('${c.id}')" title="Send WhatsApp reminder">📱 Remind</button>
+               <button class="btn-remind" onclick="remindUdhaar('${c.id}')" title="Send WhatsApp reminder"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg> Remind</button>
              </div>`;
         return `
         <tr>
           <td>${c.dateISO}</td>
           <td>${c.name}</td>
           <td>${c.phone || '-'}</td>
-          <td>${c.source === 'cue' ? '🎱 Cue Shop' : c.source === 'cafe' ? '☕ Cafe' : c.source === 'table' ? '🎮 Table' : 'Manual'}</td>
+          <td>${c.source === 'cue' ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg> Cue Shop` : c.source === 'cafe' ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8Z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg> Cafe` : c.source === 'table' ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h4M8 10v4"/><path d="M15 13h.01M18 11h.01"/><path d="M17.32 5H6.68a4 4 0 0 0-3.98 3.55L2 15a2.5 2.5 0 0 0 4.5 1.5l1.05-1.4a2 2 0 0 1 1.6-.8h5.7a2 2 0 0 1 1.6.8l1.05 1.4A2.5 2.5 0 0 0 22 15l-.7-6.45A4 4 0 0 0 17.32 5Z"/></svg> Table` : 'Manual'}</td>
           <td>${c.note || '-'}</td>
           <td>${amountCell}</td>
           <td>${c.dueDateISO || '-'}</td>
           <td><span class="badge ${badgeClass}">${displayStatus}</span></td>
-          <td>${c.paymentType === 'cash' ? '💵 Cash' : c.paymentType === 'online' ? '📱 Online' : c.paymentType === 'card' ? '💳 Card' : '—'}</td>
+          <td>${c.paymentType === 'cash' ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg> Cash` : c.paymentType === 'online' ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg> Online` : c.paymentType === 'card' ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Card` : '—'}</td>
           <td>${actions}</td>
         </tr>
       `;
@@ -15644,9 +15654,9 @@
     // modal — that choice is stored on player.manualTier and always wins over the calculation,
     // so a manually-set Gold player stays Gold even if their stats would only earn Bronze.
     const LOYALTY_TIERS = {
-      gold:   { key: 'gold',   label: '🏆 Gold',   className: 'tier-gold',   frames: 250, spend: 60000 },
-      silver: { key: 'silver', label: '🥈 Silver', className: 'tier-silver', frames: 100, spend: 25000 },
-      bronze: { key: 'bronze', label: '🥉 Bronze', className: 'tier-bronze', frames: 0,   spend: 0 }
+      gold:   { key: 'gold',   label: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0Z"/><path d="M7 5H4a1 1 0 0 0-1 1v1a4 4 0 0 0 4 4M17 5h3a1 1 0 0 1 1 1v1a4 4 0 0 1-4 4"/></svg> Gold',   className: 'tier-gold',   frames: 250, spend: 60000 },
+      silver: { key: 'silver', label: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M12 11v8M9 3l3 5 3-5"/></svg> Silver', className: 'tier-silver', frames: 100, spend: 25000 },
+      bronze: { key: 'bronze', label: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M12 11v8M9 3l3 5 3-5"/></svg> Bronze', className: 'tier-bronze', frames: 0,   spend: 0 }
     };
 
     function getLoyaltyTier(player) {
@@ -15667,7 +15677,7 @@
       if (!p) return '<span style="color:var(--text-muted); font-size:0.7rem;">Linked player not found</span>';
       const tier = getLoyaltyTier(p);
       const advBadge = (p.advanceBalance || 0) > 0
-        ? `<span class="badge" style="background:rgba(41,182,246,0.18); color:var(--info); padding:1px 8px; font-size:0.55rem; font-weight:700;" title="${p.name} has ${p.advanceBalance} advance frame(s) available — redeem them at checkout.">🎯 ${p.advanceBalance} adv. frame${p.advanceBalance === 1 ? '' : 's'}</span>`
+        ? `<span class="badge" style="background:rgba(41,182,246,0.18); color:var(--info); padding:1px 8px; font-size:0.55rem; font-weight:700;" title="${p.name} has ${p.advanceBalance} advance frame(s) available — redeem them at checkout.">${ICONS.target} ${p.advanceBalance} adv. frame${p.advanceBalance === 1 ? '' : 's'}</span>`
         : '';
       return `<span style="font-size:0.7rem;">${p.name}</span><span class="tier-badge ${tier.className}" style="padding:1px 8px; font-size:0.55rem;">${tier.label}</span>${advBadge}`;
     }
@@ -15701,13 +15711,13 @@
 
     // ---- WhatsApp quick-message templates (used from the Player Profiles table & detail view) ----
     const WA_TEMPLATES = {
-      reminder: { label: '💰 Payment Reminder', build: (p, bal) =>
+      reminder: { label: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M18 12a2 2 0 0 0 0 4h3v-4Z"/></svg> Payment Reminder', build: (p, bal) =>
         `Hi ${p.name}, this is a friendly reminder from Snookify that you have an outstanding balance of Rs ${money(bal)}. Please settle it at your earliest convenience. Thank you!` },
-      booking: { label: '📅 Booking Confirmation', build: (p) =>
+      booking: { label: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Booking Confirmation', build: (p) =>
         `Hi ${p.name}, this confirms your table booking at Snookify. We look forward to seeing you — let us know if you need to reschedule.` },
-      tournament: { label: '🥇 Tournament Invite', build: (p) =>
+      tournament: { label: '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M12 11v8M9 3l3 5 3-5"/></svg> Tournament Invite', build: (p) =>
         `Hi ${p.name}, you're invited to our upcoming tournament at Snookify! Reply to this message to confirm your entry.` },
-      blank: { label: '💬 Custom Message', build: () => '' }
+      blank: { label: '<svg class="icon-inline" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.3-.4.1-.2 0-.4 0-.5s-.7-1.6-.9-2.2c-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1.1 2.8 1.2 3c.1.2 2.2 3.3 5.2 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.2-.6-.4Z"/><path d="M12 2a10 10 0 0 0-8.5 15.3L2 22l4.8-1.5A10 10 0 1 0 12 2Z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg> Custom Message', build: () => '' }
     };
 
     // Sums unpaid udhaar for a phone number across every real branch (players are shared
@@ -16119,7 +16129,7 @@
       renderActiveTableList();
       updateMetrics();
       if (detailPlayerId === p.id) renderPlayerDetail(p.id);
-      alert(`✅ Added ${frames} advance frame(s) for ${p.name}. New balance: ${p.advanceBalance} frame(s).`);
+      alert(`Added ${frames} advance frame(s) for ${p.name}. New balance: ${p.advanceBalance} frame(s).`);
     }
 
     /* ================= TOURNAMENT MANAGER ================= */
@@ -16179,14 +16189,14 @@
           <div class="tourney-meta">
             Best of <b>${t.frameFormat}</b> &middot; <b>${t.players.length}/${t.maxPlayers}</b> players &middot; Entry Rs <b>${money(t.entryFee)}</b><br>
             Starts <b>${t.startDate || '—'}</b>
-            ${t.champion ? `<br>🏆 Champion: <b style="color:var(--accent-gold);">${t.champion.name}</b>` : ''}
+            ${t.champion ? `<br><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0Z"/><path d="M7 5H4a1 1 0 0 0-1 1v1a4 4 0 0 0 4 4M17 5h3a1 1 0 0 1 1 1v1a4 4 0 0 1-4 4"/></svg> Champion: <b style="color:var(--accent-gold);">${t.champion.name}</b>` : ''}
           </div>
           ${t.bracket.length ? `<div class="tourney-progress-bar"><div class="tourney-progress-fill" style="width:${pct}%;"></div></div>` : ''}
           <div class="btn-row" style="flex-direction:column;">
             ${t.bracket.length
-              ? `<button class="btn btn-canteen" onclick="openTournamentBracket('${t.id}')">🏟️ View Bracket</button>`
-              : `<button class="btn btn-canteen" onclick="generateBracket('${t.id}')" ${t.players.length < 2 ? 'disabled' : ''}>🎲 Generate Fixtures / Draw Brackets</button>`}
-            <button class="btn btn-secondary" style="background: var(--danger); color:#fff;" onclick="deleteTournament('${t.id}')">🗑️ Delete</button>
+              ? `<button class="btn btn-canteen" onclick="openTournamentBracket('${t.id}')">View Bracket</button>`
+              : `<button class="btn btn-canteen" onclick="generateBracket('${t.id}')" ${t.players.length < 2 ? 'disabled' : ''}><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg> Generate Fixtures / Draw Brackets</button>`}
+            <button class="btn btn-secondary" style="background: var(--danger); color:#fff;" onclick="deleteTournament('${t.id}')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/><path d="M10 11v6M14 11v6"/></svg> Delete</button>
           </div>
         </div>`;
       }).join('');
@@ -16268,7 +16278,7 @@
       const maxP = parseInt(document.getElementById('tMaxPlayersInput').value, 10) || 8;
       document.getElementById('tSelectedCount').innerText = `${tNewPlayers.length} / ${maxP} players registered`;
       document.getElementById('tSelectedChips').innerHTML = tNewPlayers.map(p =>
-        `<span class="selected-chip">${p.name}${p.isGuest ? ' (guest)' : ''} <span class="x" onclick="removeTPlayer('${p.id}')">✕</span></span>`
+        `<span class="selected-chip">${p.name}${p.isGuest ? ' (guest)' : ''} <span class="x" onclick="removeTPlayer('${p.id}')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span></span>`
       ).join('');
     }
     function saveTournament() {
@@ -16374,13 +16384,13 @@
 
       document.getElementById('championBannerSlot').innerHTML = t.champion ? `
         <div class="champion-banner">
-          <div class="trophy">🏆</div>
+          <div class="trophy"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0Z"/><path d="M7 5H4a1 1 0 0 0-1 1v1a4 4 0 0 0 4 4M17 5h3a1 1 0 0 1 1 1v1a4 4 0 0 1-4 4"/></svg></div>
           <div class="c-title">Champion Crowned</div>
           <div class="c-name">${t.champion.name}</div>
         </div>` : '';
 
       document.getElementById('bracketGenerateSlot').innerHTML = (!t.bracket || t.bracket.length === 0) ? `
-        <div class="empty-note">No bracket yet. <button class="btn btn-canteen" style="width:auto; padding:8px 16px; display:inline-block;" onclick="generateBracket('${t.id}')">🎲 Generate Fixtures / Draw Brackets</button></div>` : '';
+        <div class="empty-note">No bracket yet. <button class="btn btn-canteen" style="width:auto; padding:8px 16px; display:inline-block;" onclick="generateBracket('${t.id}')"> Generate Fixtures / Draw Brackets</button></div>` : '';
 
       const tree = document.getElementById('bracketTree');
       if (!t.bracket || t.bracket.length === 0) { tree.innerHTML = ''; return; }
@@ -16390,7 +16400,7 @@
         const title = roundName(totalRounds, rIdx);
         const matches = round.map((m, mIdx) => {
           const p1 = m.player1, p2 = m.player2;
-          const statusTag = m.status === 'completed' ? `<span class="match-status-tag done-tag">✔ Completed</span>`
+          const statusTag = m.status === 'completed' ? `<span class="match-status-tag done-tag"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Completed</span>`
             : (m.status === 'live' ? `<span class="match-status-tag live-tag">● Live</span>` : `<span class="match-status-tag pending">Pending</span>`);
           const slot1 = p1 ? `<div class="match-slot ${m.winner && m.winner.id === p1.id ? 'winner-slot' : ''}"><span class="p-name">${p1.name}</span><span class="p-score">${m.score1}</span></div>`
             : `<div class="match-slot tbd"><span class="p-name">TBD</span><span class="p-score">-</span></div>`;
@@ -17052,7 +17062,7 @@
       document.getElementById('lsmUpdatedAt').innerText = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       document.getElementById('lsmSyncNote').innerText = firebaseReady
         ? 'Presence syncs live across every branch device via Firebase. Idle after 5 minutes of inactivity, offline after 2 minutes without a heartbeat.'
-        : '⚠️ Firebase isn\'t configured yet (see firebaseConfig in the code) — Live Status currently reflects this device/browser only.';
+        : "Firebase isn't configured yet (see firebaseConfig in the code) — Live Status currently reflects this device/browser only.";
 
       const listEl = document.getElementById('lsmBranchList');
       listEl.innerHTML = BRANCHES.map(branch => {
@@ -17060,7 +17070,7 @@
         const statuses = staffHere.map(effectiveStatus);
         const branchBadge = statuses.includes('online') ? 'on' : (statuses.includes('idle') ? 'warn' : 'off');
         const branchBadgeText = statuses.includes('online') ? 'Online' : (statuses.includes('idle') ? 'Idle' : 'Offline');
-        const branchDotIcon = branchBadge === 'on' ? '🟢' : (branchBadge === 'warn' ? '🟡' : '🔴');
+        const branchDotIcon = branchBadge === 'on' ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent-green);"></span>' : (branchBadge === 'warn' ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent-gold);"></span>' : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--danger);"></span>');
 
         const rows = staffHere
           .sort((a, b) => a.lastPing < b.lastPing ? 1 : -1)
@@ -17082,7 +17092,7 @@
         return `
           <div class="lsm-branch">
             <div class="lsm-branch-header">
-              <div class="lsm-branch-name">🏢 ${escapeLsm(branch.name)}</div>
+              <div class="lsm-branch-name"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1"/></svg> ${escapeLsm(branch.name)}</div>
               <div class="lsm-branch-badge ${branchBadge}">${branchDotIcon} ${branchBadgeText}</div>
             </div>
             <div class="lsm-staff-list">
@@ -17304,7 +17314,7 @@
 
     function refreshRecoveryCodeStatus() {
       const el = document.getElementById('recoveryCodeStatus');
-      if (el) el.innerText = hasRecoveryCode() ? '✅ Set' : '⚠️ Not set — click Generate below';
+      if (el) el.innerText = hasRecoveryCode() ? 'Set' : 'Not set — click Generate below';
     }
 
     function openForgotPinModal() {
@@ -17331,14 +17341,14 @@
       const nw = (document.getElementById('recoveryNewPin').value || '').trim();
       const conf = (document.getElementById('recoveryConfirmPin').value || '').trim();
 
-      if (!entered) { msg.innerText = '❌ Enter the recovery code.'; return; }
-      if (!/^\d{4}$/.test(nw)) { msg.innerText = '❌ New PIN must be exactly 4 digits.'; return; }
-      if (nw !== conf) { msg.innerText = '❌ New PIN and confirmation do not match.'; return; }
+      if (!entered) { msg.innerText = 'Enter the recovery code.'; return; }
+      if (!/^\d{4}$/.test(nw)) { msg.innerText = 'New PIN must be exactly 4 digits.'; return; }
+      if (nw !== conf) { msg.innerText = 'New PIN and confirmation do not match.'; return; }
 
       const enteredHash = await sha256Hex(entered);
       const storedHash = localStorage.getItem(RECOVERY_HASH_KEY);
       if (!storedHash || enteredHash !== storedHash) {
-        msg.innerText = '❌ Invalid recovery code. Access denied.';
+        msg.innerText = 'Invalid recovery code. Access denied.';
         logAudit({ action: 'MASTER_PIN_RECOVERY_FAILED' });
         return;
       }
@@ -17347,7 +17357,7 @@
       setMasterPin(nw);
       logAudit({ action: 'MASTER_PIN_RESET_VIA_RECOVERY_CODE' });
       msg.style.color = 'var(--accent-green)';
-      msg.innerText = '✅ Master PIN reset successfully via recovery code!';
+      msg.innerText = 'Master PIN reset successfully via recovery code!';
       setTimeout(closeForgotPinModal, 1500);
     }
 
@@ -17379,12 +17389,12 @@
       const code = (input.value || '').trim();
       const msg = document.getElementById('cancelSessionPinMsg');
       if (!/^\d{4}$/.test(code)) {
-        if (msg) { msg.innerText = '❌ Must be 4 digits'; msg.className = 'sec-code-msg err'; setTimeout(() => { if (msg) { msg.innerText = ''; msg.className = 'sec-code-msg'; } }, 2500); }
+        if (msg) { msg.innerText = 'Must be 4 digits'; msg.className = 'sec-code-msg err'; setTimeout(() => { if (msg) { msg.innerText = ''; msg.className = 'sec-code-msg'; } }, 2500); }
         return;
       }
       setCancelSessionPinCode(code);
       logAudit({ action: 'CANCEL_SESSION_PIN_CHANGED' });
-      if (msg) { msg.innerText = '✅ Saved'; msg.className = 'sec-code-msg ok'; setTimeout(() => { if (msg) { msg.innerText = ''; msg.className = 'sec-code-msg'; } }, 2500); }
+      if (msg) { msg.innerText = 'Saved'; msg.className = 'sec-code-msg ok'; setTimeout(() => { if (msg) { msg.innerText = ''; msg.className = 'sec-code-msg'; } }, 2500); }
     }
 
     /* ---------- Per-feature lock state (persisted) ---------- */
@@ -17746,7 +17756,7 @@
         el.classList.add('nav-visibility-blurred', 'nav-visibility-has-overlay');
         const overlay = document.createElement('span');
         overlay.className = 'visibility-block-overlay';
-        overlay.textContent = '🔒';
+        overlay.innerHTML = ICONS.lock;
         overlay.addEventListener('click', function (e) {
           e.preventDefault();
           e.stopPropagation();
@@ -17783,7 +17793,7 @@
         tip.className = 'feature-upgrade-tooltip';
         document.body.appendChild(tip);
       }
-      tip.innerHTML = `🔒 <strong>${label}</strong><span class="fut-sub">Upgrade / Admin Authorization Required</span>`;
+      tip.innerHTML = `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> <strong>${label}</strong><span class="fut-sub">Upgrade / Admin Authorization Required</span>`;
       const rect = anchorEl.getBoundingClientRect();
       const top = Math.max(8, Math.min(rect.top, window.innerHeight - 70));
       let left = rect.right + 10;
@@ -17822,10 +17832,10 @@
         groups[groupName].forEach(f => {
           const mode = getFeatureVisibility(role, f.id);
           const protectedRow = isProtectedVisibility(role, f.id);
-          const lockedNote = protectedRow ? '<span class="sec-protected-note" title="Essential for this role — always stays Visible">🛡️ Protected</span>' : '';
+          const lockedNote = protectedRow ? '<span class="sec-protected-note" title="Essential for this role — always stays Visible"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5.2 3.4 9.5 8 11 4.6-1.5 8-5.8 8-11V5Z"/></svg> Protected</span>' : '';
           html += `
             <div class="sec-feature-row sec-visibility-row">
-              <div class="sec-feature-label"><span class="lb-icon">${mode === 'hidden' ? '🚫' : mode === 'blurred' ? '🌫️' : '✅'}</span> ${f.label} ${lockedNote}</div>
+              <div class="sec-feature-label"><span class="lb-icon">${mode === 'hidden' ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/></svg>` : mode === 'blurred' ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 5.1A11 11 0 0 1 21 12a11.6 11.6 0 0 1-3 3.9M6.5 6.5A11.6 11.6 0 0 0 3 12a11 11 0 0 0 15.5 5.5M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>` : `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`}</span> ${f.label} ${lockedNote}</div>
               <div class="visibility-mode-toggle">
                 <button type="button" class="${mode === 'visible' ? 'vm-visible' : ''}" onclick="setFeatureVisibility('${role}','${f.id}','visible')">Visible</button>
                 <button type="button" class="${mode === 'blurred' ? 'vm-blurred' : ''}" ${protectedRow ? 'disabled title="Essential for this role — cannot be blurred"' : ''} onclick="setFeatureVisibility('${role}','${f.id}','blurred')">Blurred</button>
@@ -18251,7 +18261,7 @@
           <div class="sec-code-label">${s.name}<span class="sc-sub">${s.role}</span></div>
           <div class="sec-code-controls">
             <input type="text" maxlength="4" inputmode="numeric" id="secCode_staff_${s.id}" value="${s.securityCode || ''}" placeholder="••••">
-            <button class="sec-code-save" onclick="updateStaffSecurityCode('${s.id}')">💾 Save</button>
+            <button class="sec-code-save" onclick="updateStaffSecurityCode('${s.id}')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Save</button>
             <span class="sec-code-msg" id="secCodeMsg_staff_${s.id}"></span>
           </div>
         </div>
@@ -18259,10 +18269,10 @@
 
       branchEl.innerHTML = BRANCHES.length ? BRANCHES.map(b => `
         <div class="sec-code-row">
-          <div class="sec-code-label">${b.name}<span class="sc-sub">${b.location ? '📍 ' + b.location : 'No location set'}</span></div>
+          <div class="sec-code-label">${b.name}<span class="sc-sub">${b.location ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-12.5A7 7 0 0 0 5 9.5C5 14.5 12 22 12 22Z"/><circle cx="12" cy="9.5" r="2.3"/></svg> ` + b.location : 'No location set'}</span></div>
           <div class="sec-code-controls">
             <input type="text" maxlength="4" inputmode="numeric" id="secCode_branch_${b.id}" value="${b.securityCode || ''}" placeholder="••••">
-            <button class="sec-code-save" onclick="updateBranchSecurityCode('${b.id}')">💾 Save</button>
+            <button class="sec-code-save" onclick="updateBranchSecurityCode('${b.id}')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Save</button>
             <span class="sec-code-msg" id="secCodeMsg_branch_${b.id}"></span>
           </div>
         </div>
@@ -18280,36 +18290,36 @@
     function updateStaffSecurityCode(staffId) {
       const input = document.getElementById(`secCode_staff_${staffId}`);
       const code = (input.value || '').trim();
-      if (!/^\d{4}$/.test(code)) { showSecCodeMsg('staff', staffId, '❌ Must be 4 digits', true); return; }
+      if (!/^\d{4}$/.test(code)) { showSecCodeMsg('staff', staffId, 'Must be 4 digits', true); return; }
 
       if (firebaseReady && staffCollection) {
         staffCollection.doc(staffId).update({ securityCode: code }).then(() => {
-          showSecCodeMsg('staff', staffId, '✅ Saved', false);
+          showSecCodeMsg('staff', staffId, 'Saved', false);
         }).catch(err => {
           console.error('Snookify: failed to update staff security code', err);
-          showSecCodeMsg('staff', staffId, '❌ Save failed', true);
+          showSecCodeMsg('staff', staffId, 'Save failed', true);
         });
       } else {
         const s = STAFF.find(x => x.id === staffId);
-        if (s) { s.securityCode = code; saveState(); showSecCodeMsg('staff', staffId, '✅ Saved', false); }
+        if (s) { s.securityCode = code; saveState(); showSecCodeMsg('staff', staffId, 'Saved', false); }
       }
     }
 
     function updateBranchSecurityCode(branchId) {
       const input = document.getElementById(`secCode_branch_${branchId}`);
       const code = (input.value || '').trim();
-      if (!/^\d{4}$/.test(code)) { showSecCodeMsg('branch', branchId, '❌ Must be 4 digits', true); return; }
+      if (!/^\d{4}$/.test(code)) { showSecCodeMsg('branch', branchId, 'Must be 4 digits', true); return; }
 
       if (firebaseReady && branchesCollection) {
         branchesCollection.doc(branchId).update({ securityCode: code }).then(() => {
-          showSecCodeMsg('branch', branchId, '✅ Saved', false);
+          showSecCodeMsg('branch', branchId, 'Saved', false);
         }).catch(err => {
           console.error('Snookify: failed to update branch security code', err);
-          showSecCodeMsg('branch', branchId, '❌ Save failed', true);
+          showSecCodeMsg('branch', branchId, 'Save failed', true);
         });
       } else {
         const b = BRANCHES.find(x => x.id === branchId);
-        if (b) { b.securityCode = code; saveState(); showSecCodeMsg('branch', branchId, '✅ Saved', false); }
+        if (b) { b.securityCode = code; saveState(); showSecCodeMsg('branch', branchId, 'Saved', false); }
       }
     }
 
@@ -18325,7 +18335,7 @@
           const locked = !!state[f.id];
           html += `
             <div class="sec-feature-row">
-              <div class="sec-feature-label"><span class="lb-icon">${locked ? '🔒' : '🔓'}</span> ${f.label}</div>
+              <div class="sec-feature-label"><span class="lb-icon">${locked ? `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>` : `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.2-2.4"/></svg>`}</span> ${f.label}</div>
               <label class="sec-toggle">
                 <input type="checkbox" ${locked ? 'checked' : ''} onchange="toggleFeatureLock('${f.id}', this.checked)">
                 <span class="sec-toggle-slider"></span>
@@ -18473,7 +18483,7 @@
         const locked = !!lockState[item.id];
         const blurred = !!blurState[item.id];
         const hidden = !!hideState[item.id];
-        const icon = hidden ? '🚫' : locked ? '🔒' : blurred ? '🌫️' : '🔓';
+        const icon = hidden ? ICONS.ban : locked ? ICONS.lock : blurred ? ICONS.eyeOff : ICONS.unlock;
         html += `
           <div class="sec-feature-row sec-privacy-row">
             <div class="sec-feature-label"><span class="lb-icon">${icon}</span> ${item.label}</div>
@@ -18503,10 +18513,10 @@
       const msg = document.getElementById('secPinChangeMsg');
       msg.style.color = 'var(--danger)';
 
-      if (cur !== getMasterPin()) { msg.innerText = '❌ Current PIN is incorrect.'; return; }
-      if (!/^\d{4}$/.test(nw)) { msg.innerText = '❌ New PIN must be exactly 4 digits.'; return; }
-      if (nw !== conf) { msg.innerText = '❌ New PIN and confirmation do not match.'; return; }
-      if (nw === cur) { msg.innerText = '⚠️ New PIN must be different from the current PIN.'; return; }
+      if (cur !== getMasterPin()) { msg.innerText = 'Current PIN is incorrect.'; return; }
+      if (!/^\d{4}$/.test(nw)) { msg.innerText = 'New PIN must be exactly 4 digits.'; return; }
+      if (nw !== conf) { msg.innerText = 'New PIN and confirmation do not match.'; return; }
+      if (nw === cur) { msg.innerText = 'New PIN must be different from the current PIN.'; return; }
 
       setMasterPin(nw);
       logAudit({ action: 'MASTER_PIN_CHANGED' });
@@ -18514,7 +18524,7 @@
       document.getElementById('secNewPin').value = '';
       document.getElementById('secConfirmPin').value = '';
       msg.style.color = 'var(--accent-green)';
-      msg.innerText = '✅ Master PIN updated successfully.';
+      msg.innerText = 'Master PIN updated successfully.';
     }
 
     /* ---------- Feature PIN modal (shared) ---------- */
@@ -18537,7 +18547,7 @@
     function confirmFeaturePin() {
       const entered = (document.getElementById('featurePinInput').value || '').trim();
       if (entered !== getMasterPin()) {
-        document.getElementById('featurePinError').innerText = '❌ Incorrect PIN. Try again.';
+        document.getElementById('featurePinError').innerText = 'Incorrect PIN. Try again.';
         document.getElementById('featurePinInput').value = '';
         document.getElementById('featurePinInput').focus();
         const box = document.getElementById('featurePinBox');
@@ -18766,9 +18776,9 @@
   let currentViewerUrl = null;
 
   function typeLabel(t) {
-    if (t === 'SHIFT_CLOSING') return '🔒 Shift Closing';
-    if (t === 'DAILY_REPORT') return '🧾 Z-Report';
-    if (t === 'SUMMARY') return '🧮 Master Summary';
+    if (t === 'SHIFT_CLOSING') return '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Shift Closing';
+    if (t === 'DAILY_REPORT') return '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2-1 2Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg> Z-Report';
+    if (t === 'SUMMARY') return '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg> Master Summary';
     return t;
   }
 
@@ -18819,7 +18829,7 @@
             <div style="font-weight:700; font-size:0.75rem;">${typeLabel(r.reportType)}</div>
             <div style="color:var(--text-muted); font-size:0.68rem;">${new Date(r.timestamp).toLocaleString()}</div>
             <div style="color:var(--text-muted); font-size:0.68rem;">${r.staffName}</div>
-            <div style="margin-top:4px; font-size:0.62rem; font-weight:800; padding:2px 6px; border-radius:8px; display:inline-block; ${r.syncedToCloud ? 'background:rgba(76,175,80,0.14); color:var(--accent-green);' : 'background:rgba(255,179,0,0.14); color:var(--accent-gold);'}">${r.syncedToCloud ? '☁️ Synced' : '⏳ Pending'}</div>
+            <div style="margin-top:4px; font-size:0.62rem; font-weight:800; padding:2px 6px; border-radius:8px; display:inline-block; ${r.syncedToCloud ? 'background:rgba(76,175,80,0.14); color:var(--accent-green);' : 'background:rgba(255,179,0,0.14); color:var(--accent-gold);'}">${r.syncedToCloud ? `${ICONS.cloud} Synced` : `${ICONS.clock} Pending`}</div>
           </div>
         </div>
       `).join('');
@@ -19569,7 +19579,7 @@
         if(mode === 'light') document.documentElement.setAttribute('data-theme', 'light');
         else document.documentElement.removeAttribute('data-theme');
         toggle.checked = (mode === 'dark');
-        if(icon) icon.textContent = (mode === 'dark') ? '🌙' : '☀️';
+        if(icon) icon.innerHTML = (mode === 'dark') ? ICONS.moon : ICONS.sun;
         applyBrandLogoForTheme(mode);
       }
 
