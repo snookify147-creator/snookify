@@ -25,7 +25,10 @@
        the Stripe/Linear pairing. See the :root token block below for the full palette. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- UI Launcher & Theme Engine — additional font families available to the Typography
+       switcher (see the Theme Engine module near the end of <body>). Loaded alongside the
+       existing Plus Jakarta Sans / Inter pairing so switching fonts never requires a reload. -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
   <!-- Firebase (compat SDK — plain <script> tags, no bundler required) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
@@ -2051,6 +2054,25 @@
       </div>
       <div>
         <div class="branch-select-wrap">
+          <!-- UI Launcher & Theme Engine — Top-Bar Quick Launcher & Customizer. Subtle icon,
+               opens a small dropdown with the same 1-click presets plus a custom accent color
+               picker, so the theme can be switched without opening the full Theme & Appearance
+               screen. See the Theme Engine module near the end of <body> for the logic. -->
+          <div class="te-quick-launcher" id="teQuickLauncher">
+            <button type="button" class="te-quick-btn" id="teQuickBtn" onclick="toggleTeQuickMenu(event)" title="Quick theme switch" aria-label="Quick theme switch" aria-haspopup="true" aria-expanded="false">
+              <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 2.5 2.5 0 0 0 1.8-4.2 2 2 0 0 1 1.4-3.4H17a4 4 0 0 0 4-4 8 8 0 0 0-9-8.4Z"/><circle cx="7" cy="12" r="1"/><circle cx="9.5" cy="7.5" r="1"/><circle cx="14.5" cy="7.5" r="1"/></svg>
+            </button>
+            <div class="te-quick-menu" id="teQuickMenu" style="display:none;">
+              <div class="te-quick-title">Quick Theme Switch</div>
+              <div class="te-preset-swatches te-quick-swatches" id="teQuickPresets"></div>
+              <div class="te-quick-divider"></div>
+              <div class="te-quick-custom-row">
+                <span>Custom accent color</span>
+                <input type="color" id="teQuickCustomColor" title="Pick a custom brand accent color">
+              </div>
+              <button type="button" class="te-btn" id="teQuickOpenFull" onclick="showTab('themeEngine', document.querySelector('[data-tab=themeEngine]')); toggleTeQuickMenu();">Open full Theme &amp; Appearance</button>
+            </div>
+          </div>
           <span class="branch-all-badge" id="branchModeBadge"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18M4 18l-1-9 5 4 4-6 4 6 5-4-1 9"/></svg> Consolidated Owner View — read-only</span>
           <select id="branchSelector" onchange="switchBranch(this.value)"></select>
           <button id="manageBranchesBtn" class="btn btn-info" style="width: auto; padding: 8px 14px;" onclick="openManageBranchesModal()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1"/></svg> Manage Branches</button>
@@ -3518,14 +3540,27 @@
 
       <div id="teCard">
         <div class="te-tabs">
-          <button class="te-tab-btn active" data-tab="wallpaper">Wallpaper</button>
+          <button class="te-tab-btn active" data-tab="launchers">UI Launchers</button>
+          <button class="te-tab-btn" data-tab="wallpaper">Wallpaper</button>
           <button class="te-tab-btn" data-tab="colors">Colors</button>
+          <button class="te-tab-btn" data-tab="typography">Typography</button>
           <button class="te-tab-btn" data-tab="effects">Effects</button>
           <button class="te-tab-btn" data-tab="branding">Logo</button>
         </div>
 
+        <!-- UI Launcher & Theme Engine — Preset Launcher (1-click full-app style presets,
+             Android-launcher style). See LAUNCHER_PRESETS in the Theme Engine module for the
+             full color/effects/typography payload each card applies. -->
+        <div class="te-section active" data-section="launchers">
+          <div class="te-row">
+            <label>UI Launchers / Presets</label>
+            <div class="te-hint">Instantly restyle the whole app — colors, effects, typography and density — with one tap. Your current customizations in the other tabs are overwritten.</div>
+          </div>
+          <div class="te-launcher-grid" id="teLauncherGrid"></div>
+        </div>
+
         <!-- Wallpaper -->
-        <div class="te-section active" data-section="wallpaper">
+        <div class="te-section" data-section="wallpaper">
           <div class="te-row">
             <label>Upload custom wallpaper</label>
             <input type="file" id="teWallpaperFile" accept="image/*">
@@ -3555,36 +3590,82 @@
           <div class="te-row te-color-grid" id="teColorGrid"></div>
         </div>
 
+        <!-- Typography / Writing Style & Workspace Density -->
+        <div class="te-section" data-section="typography">
+          <div class="te-row">
+            <label>Font family (applies app-wide)</label>
+            <select id="teFontFamily">
+              <option value="Inter">Inter (default)</option>
+              <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+              <option value="Outfit">Outfit</option>
+              <option value="Roboto">Roboto</option>
+              <option value="System UI">System UI</option>
+            </select>
+          </div>
+          <div class="te-row">
+            <label>Workspace Density</label>
+            <div class="te-segmented" id="teDensitySegment">
+              <button type="button" class="te-seg-btn" data-density="compact">Compact <span class="te-seg-sub">Fast billing/POS grid</span></button>
+              <button type="button" class="te-seg-btn" data-density="comfortable">Comfortable <span class="te-seg-sub">Larger text &amp; spacing</span></button>
+            </div>
+          </div>
+        </div>
+
         <!-- Effects -->
         <div class="te-section" data-section="effects">
+          <div class="te-row">
+            <label>Card Glow Intensity</label>
+            <div class="te-segmented" id="teGlowSegment">
+              <button type="button" class="te-seg-btn" data-glow="off">Off</button>
+              <button type="button" class="te-seg-btn" data-glow="low">Low</button>
+              <button type="button" class="te-seg-btn" data-glow="high">High</button>
+            </div>
+          </div>
+          <div class="te-row">
+            <label>Glassmorphism Blur</label>
+            <div class="te-segmented" id="teGlassSegment">
+              <button type="button" class="te-seg-btn" data-glass="heavy">Heavy blur</button>
+              <button type="button" class="te-seg-btn" data-glass="subtle">Subtle blur</button>
+              <button type="button" class="te-seg-btn" data-glass="flat">Flat / solid</button>
+            </div>
+          </div>
           <div class="te-toggle-row">
-            <label>Glassmorphism (blur panels)</label>
-            <label class="te-switch"><input type="checkbox" id="teGlassToggle"><span class="te-slider"></span></label>
+            <label>Add-to-cart flash/pulse feedback</label>
+            <label class="te-switch"><input type="checkbox" id="teCartPulseToggle"><span class="te-slider"></span></label>
           </div>
-          <div class="te-row">
-            <label>Glass blur strength</label>
-            <input type="range" id="teGlassBlur" min="0" max="30" step="1">
+          <div class="te-row te-advanced-toggle">
+            <button type="button" class="te-btn" id="teAdvancedEffectsBtn">Show advanced sliders ▾</button>
           </div>
-          <div class="te-row">
-            <label>Panel transparency</label>
-            <input type="range" id="teGlassAlpha" min="0.2" max="1" step="0.05">
-          </div>
-          <div class="te-toggle-row">
-            <label>Glow effects</label>
-            <label class="te-switch"><input type="checkbox" id="teGlowToggle"><span class="te-slider"></span></label>
-          </div>
-          <div class="te-row">
-            <label>Glow strength</label>
-            <input type="range" id="teGlowStrength" min="0" max="30" step="1">
-          </div>
-          <div class="te-row">
-            <label>Corner roundness</label>
-            <input type="range" id="teRadius" min="0" max="24" step="1">
-          </div>
-          <div class="te-row">
-            <label>Animation speed</label>
-            <input type="range" id="teAnimSpeed" min="0.05" max="0.6" step="0.05">
-            <div class="te-hint">Lower = snappier, higher = smoother/slower.</div>
+          <div id="teAdvancedEffects" style="display:none;">
+            <div class="te-toggle-row">
+              <label>Glassmorphism (blur panels)</label>
+              <label class="te-switch"><input type="checkbox" id="teGlassToggle"><span class="te-slider"></span></label>
+            </div>
+            <div class="te-row">
+              <label>Glass blur strength</label>
+              <input type="range" id="teGlassBlur" min="0" max="30" step="1">
+            </div>
+            <div class="te-row">
+              <label>Panel transparency</label>
+              <input type="range" id="teGlassAlpha" min="0.2" max="1" step="0.05">
+            </div>
+            <div class="te-toggle-row">
+              <label>Glow effects</label>
+              <label class="te-switch"><input type="checkbox" id="teGlowToggle"><span class="te-slider"></span></label>
+            </div>
+            <div class="te-row">
+              <label>Glow strength</label>
+              <input type="range" id="teGlowStrength" min="0" max="30" step="1">
+            </div>
+            <div class="te-row">
+              <label>Corner roundness</label>
+              <input type="range" id="teRadius" min="0" max="24" step="1">
+            </div>
+            <div class="te-row">
+              <label>Animation speed</label>
+              <input type="range" id="teAnimSpeed" min="0.05" max="0.6" step="0.05">
+              <div class="te-hint">Lower = snappier, higher = smoother/slower.</div>
+            </div>
           </div>
         </div>
 
@@ -9640,6 +9721,7 @@
       renderCanteenPlayerSelect();
       renderCanteenItemList();
       renderCanteenSelectedList();
+      if (typeof window.teCartFlash === 'function') window.teCartFlash('canteenModalTotal');
     }
 
     function updateCanteenSelectionQty(idx, value) {
@@ -11065,6 +11147,7 @@
 
       renderWalkInItemList();
       renderWalkInCart();
+      if (typeof window.teCartFlash === 'function') window.teCartFlash('walkInCartTotal');
     }
 
     function updateWalkInCartQty(itemId, value) {
@@ -11258,6 +11341,7 @@
 
       renderCueItemList();
       renderCueCart();
+      if (typeof window.teCartFlash === 'function') window.teCartFlash('cueCartTotal');
     }
 
     function updateCueCartQty(itemId, value) {
@@ -18923,7 +19007,25 @@
     --te-glow-color: var(--accent-green);
     --te-radius: 8px;
     --te-anim-speed: 0.2s;
+    /* UI Launcher & Theme Engine — Typography / Density tokens. Left unset by default so the
+       app's original font stack and sizing (declared earlier in <head>) keep winning the
+       cascade until the user actually touches Typography — see applyTypography() below. */
+    --te-font-family: 'Inter', 'Segoe UI', sans-serif;
+    --te-heading-font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    --te-density-scale: 1;
   }
+
+  /* Global font-family + density hooks. Same selectors/specificity as the base rules in <head>
+     (universal selector, and the h1/h2/h3/h4/.metric-val/.num-display heading list) but this
+     stylesheet is parsed later in source order, so it wins the cascade without needing
+     !important — exactly like the rest of this module overrides --bg-dark/--card-bg/etc. */
+  * { font-family: var(--te-font-family); }
+  h1, h2, h3, h4, .metric-val, .num-display { font-family: var(--te-heading-font-family); }
+  /* Density scales the root font size, which every rem-based font-size/spacing value in the
+     app (the vast majority of them) is computed from — a real, app-wide density change without
+     having to touch every individual padding rule. Pixel-based paddings are intentionally left
+     alone so the compact POS grid layout itself never reflows or breaks. */
+  html { font-size: calc(16px * var(--te-density-scale)); }
 
   /* Wallpaper layer — sits behind the app, body's own background-color
      stays as the fallback if no wallpaper is set. */
@@ -19015,6 +19117,62 @@
   .te-footer-row { display: flex; gap: 8px; margin-top: 18px; }
   .te-footer-row .te-btn { margin-top: 0; }
   #teLogoPreview { width: 100%; max-height: 60px; object-fit: contain; margin-bottom: 8px; display: none; background: var(--bg-dark,#0f1115); border-radius: 6px; padding: 6px; }
+
+  /* ---------- UI Launcher grid (1-click full-style presets) ---------- */
+  .te-launcher-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 8px; }
+  .te-launcher-card {
+    position: relative; border: 2px solid var(--border-color, #2a2f3d); border-radius: 12px;
+    padding: 14px 10px 10px; cursor: pointer; text-align: left; overflow: hidden;
+    background: var(--card-bg, #1e222b); transition: border-color .2s ease, transform .15s ease;
+  }
+  .te-launcher-card:hover { transform: translateY(-2px); }
+  .te-launcher-card.active { border-color: var(--accent-green, #00e676); box-shadow: 0 0 0 1px var(--accent-green, #00e676); }
+  .te-launcher-swatch { height: 34px; border-radius: 8px; margin-bottom: 8px; }
+  .te-launcher-name { font-size: .74rem; font-weight: 800; color: var(--text-main, #f0f4f8); display: block; }
+  .te-launcher-tag { font-size: .6rem; color: var(--text-muted, #8b95a5); display: block; margin-top: 3px; line-height: 1.3; }
+  .te-launcher-check { position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--accent-green, #00e676); color: #06210f; font-size: .6rem; font-weight: 900; display: none; align-items: center; justify-content: center; }
+  .te-launcher-card.active .te-launcher-check { display: flex; }
+
+  /* ---------- Segmented controls (glow / glass / density) ---------- */
+  .te-segmented { display: flex; gap: 6px; flex-wrap: wrap; }
+  .te-seg-btn {
+    flex: 1; min-width: 78px; padding: 8px 6px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--border-color, #2a2f3d); background: transparent; color: var(--text-muted, #8b95a5);
+    font-size: .72rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .te-seg-btn.active { background: rgba(0,230,118,.14); color: var(--accent-green, #00e676); border-color: var(--accent-green, #00e676); }
+  .te-seg-sub { font-size: .58rem; font-weight: 600; opacity: .8; }
+  .te-advanced-toggle .te-btn { width: auto; padding: 6px 12px; font-size: .7rem; margin: 4px 0 0; }
+
+  /* ---------- Top-bar Quick Launcher & Customizer ---------- */
+  .te-quick-launcher { position: relative; display: inline-block; }
+  .te-quick-btn {
+    width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border-color, #2a2f3d);
+    background: var(--card-bg, #1e222b); color: var(--text-muted, #8b95a5); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; transition: color .15s ease, border-color .15s ease;
+  }
+  .te-quick-btn:hover { color: var(--accent-green, #00e676); border-color: var(--accent-green, #00e676); }
+  .te-quick-btn svg { width: 18px; height: 18px; }
+  .te-quick-menu {
+    position: absolute; top: calc(100% + 8px); left: 0; z-index: 500; width: 250px;
+    background: var(--card-bg, #1e222b); border: 1px solid var(--border-color, #2a2f3d); border-radius: 12px;
+    padding: 12px; box-shadow: 0 18px 40px rgba(0,0,0,.4);
+  }
+  .te-quick-title { font-size: .7rem; font-weight: 800; color: var(--info, #29b6f6); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .04em; }
+  .te-quick-swatches { margin-top: 0; }
+  .te-quick-divider { height: 1px; background: var(--border-color, #2a2f3d); margin: 10px 0; }
+  .te-quick-custom-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: .72rem; color: var(--text-muted, #8b95a5); font-weight: 700; margin-bottom: 8px; }
+  .te-quick-custom-row input[type="color"] { width: 40px; height: 28px; border: none; border-radius: 6px; cursor: pointer; background: none; }
+  #teQuickOpenFull { margin-top: 4px; font-size: .68rem; padding: 7px; }
+
+  /* ---------- Add-to-cart flash / pulse feedback ---------- */
+  @keyframes teCartPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(0,230,118,.55); transform: scale(1); }
+    35%  { box-shadow: 0 0 0 8px rgba(0,230,118,0); transform: scale(1.045); }
+    100% { box-shadow: 0 0 0 0 rgba(0,230,118,0); transform: scale(1); }
+  }
+  .te-cart-flash { animation: teCartPulse var(--te-anim-speed, .2s) ease-out 1; animation-duration: .45s; }
 </style>
 
 <script>
@@ -19056,6 +19214,68 @@
     'Aurora': 'linear-gradient(135deg,#0f1115 0%,#062a1c 45%,#04101c 100%)'
   };
 
+  // Font stacks available to the Typography switcher. 'body' drives every element (incl.
+  // headings by default); 'heading' lets a preset give headings/numbers their own accent
+  // font while still switching the base app font — matches the pairing already used by the
+  // app's own default design (Plus Jakarta Sans headings + Inter body).
+  const FONT_STACKS = {
+    'Inter':              { body: "'Inter','Segoe UI',sans-serif",         heading: "'Plus Jakarta Sans','Inter',sans-serif" },
+    'Plus Jakarta Sans':  { body: "'Plus Jakarta Sans','Inter',sans-serif", heading: "'Plus Jakarta Sans','Inter',sans-serif" },
+    'Outfit':             { body: "'Outfit','Inter',sans-serif",           heading: "'Outfit','Inter',sans-serif" },
+    'Roboto':             { body: "'Roboto','Inter',sans-serif",           heading: "'Roboto','Inter',sans-serif" },
+    'System UI':          { body: "system-ui,-apple-system,'Segoe UI',sans-serif", heading: "system-ui,-apple-system,'Segoe UI',sans-serif" }
+  };
+
+  // ---------- UI Launcher & Theme Engine — Preset Launcher ----------
+  // Each launcher is a complete, 1-click app style: colors, effects (glass/glow/radius/anim),
+  // typography (font + density) and wallpaper, all applied together — similar to switching an
+  // Android launcher's whole look. Colors reuse the same COLOR_VARS keys as the Colors tab, so
+  // every existing panel/button picks these up automatically via applyColors().
+  const LAUNCHER_PRESETS = {
+    'Classic Snookify': {
+      tagline: 'Original vibrant green on dark charcoal, clean sans font.',
+      colors: { bgDark:'#0f1115', sidebarBg:'#161920', cardBg:'#1e222b', borderColor:'#2a2f3d', accentGold:'#ffb300', accentGreen:'#00e676', textMain:'#f0f4f8', danger:'#ff5252', info:'#29b6f6' },
+      effects: { glass:false, glassBlur:0, glassAlpha:0.6, glow:false, glowStrength:0, radius:8, animSpeed:0.2, glowLevel:'off', glassLevel:'flat' },
+      typography: { fontFamily:'Inter', density:'compact' },
+      wallpaper: { preset:'None', dataUrl:null, opacity:1, blur:0 }
+    },
+    'Stripe Monochromatic': {
+      tagline: 'Deep pure black background, crisp white active blocks, extreme minimalism.',
+      colors: { bgDark:'#000000', sidebarBg:'#0a0a0a', cardBg:'#111111', borderColor:'#2b2b2b', accentGold:'#ffffff', accentGreen:'#ffffff', textMain:'#ffffff', danger:'#ff453a', info:'#ffffff' },
+      effects: { glass:false, glassBlur:0, glassAlpha:0.6, glow:false, glowStrength:0, radius:4, animSpeed:0.15, glowLevel:'off', glassLevel:'flat' },
+      typography: { fontFamily:'Inter', density:'compact' },
+      wallpaper: { preset:'None', dataUrl:null, opacity:1, blur:0 }
+    },
+    'Cyberpunk Neon': {
+      tagline: 'Translucent glassmorphism with electric neon-green glowing pills.',
+      colors: { bgDark:'#05010f', sidebarBg:'#0d0221', cardBg:'#120a2e', borderColor:'#3b1e78', accentGold:'#00fff2', accentGreen:'#39ff14', textMain:'#eafcff', danger:'#ff2079', info:'#00e5ff' },
+      effects: { glass:true, glassBlur:22, glassAlpha:0.5, glow:true, glowStrength:22, radius:16, animSpeed:0.25, glowLevel:'high', glassLevel:'heavy' },
+      typography: { fontFamily:'Outfit', density:'compact' },
+      wallpaper: { preset:'Aurora', dataUrl:null, opacity:0.9, blur:2 }
+    },
+    'Executive Emerald': {
+      tagline: 'Rich emerald-to-forest green gradients with subtle metallic gold accents.',
+      colors: { bgDark:'#04140d', sidebarBg:'#062a1c', cardBg:'#0b3d27', borderColor:'#1f6b46', accentGold:'#d4af37', accentGreen:'#2ecc71', textMain:'#eafff2', danger:'#ff5252', info:'#d4af37' },
+      effects: { glass:false, glassBlur:0, glassAlpha:0.6, glow:true, glowStrength:10, radius:10, animSpeed:0.2, glowLevel:'low', glassLevel:'flat' },
+      typography: { fontFamily:'Plus Jakarta Sans', density:'compact' },
+      wallpaper: { preset:'Emerald Fade', dataUrl:null, opacity:1, blur:0 }
+    },
+    'Midnight Blue / Indigo': {
+      tagline: 'Deep navy background with cool blue glowing highlights, modern tech feel.',
+      colors: { bgDark:'#050914', sidebarBg:'#0a1128', cardBg:'#101a3d', borderColor:'#26325c', accentGold:'#7c9cff', accentGreen:'#5b8dee', textMain:'#eaf0ff', danger:'#ff5c7a', info:'#5b8dee' },
+      effects: { glass:true, glassBlur:14, glassAlpha:0.65, glow:true, glowStrength:16, radius:14, animSpeed:0.2, glowLevel:'high', glassLevel:'subtle' },
+      typography: { fontFamily:'Inter', density:'compact' },
+      wallpaper: { preset:'Deep Ocean', dataUrl:null, opacity:1, blur:0 }
+    },
+    'Crimson Eclipse': {
+      tagline: 'Deep dark theme with striking blood-red accents for a bold look.',
+      colors: { bgDark:'#0d0505', sidebarBg:'#170707', cardBg:'#210a0a', borderColor:'#4a1414', accentGold:'#ff6b6b', accentGreen:'#e53950', textMain:'#fdf0f0', danger:'#ff1744', info:'#ff6b6b' },
+      effects: { glass:false, glassBlur:0, glassAlpha:0.6, glow:true, glowStrength:14, radius:8, animSpeed:0.2, glowLevel:'low', glassLevel:'flat' },
+      typography: { fontFamily:'Roboto', density:'compact' },
+      wallpaper: { preset:'None', dataUrl:null, opacity:1, blur:0 }
+    }
+  };
+
   let defaults = null;   // captured from live computed styles on first run
   let settings = null;   // active settings object
 
@@ -19066,8 +19286,18 @@
     return {
       wallpaper: { dataUrl: null, preset: 'None', opacity: 1, blur: 0 },
       colors,
-      effects: { glass: false, glassBlur: 12, glassAlpha: 0.6, glow: false, glowStrength: 10, radius: 8, animSpeed: 0.2 },
+      effects: { glass: false, glassBlur: 12, glassAlpha: 0.6, glow: false, glowStrength: 10, radius: 8, animSpeed: 0.2, glowLevel: 'off', glassLevel: 'flat', cartPulse: true },
       logo: { dataUrl: null },
+      // UI Launcher & Theme Engine — Typography / Density. Left at the app's own original
+      // font pairing + compact spacing until the user actually changes them (see
+      // applyTypography() below), same "untouched = don't override" pattern colorsCustomized
+      // uses for the accent palette.
+      typography: { fontFamily: 'Inter', density: 'compact' },
+      // Name of the last 1-click launcher preset applied (if any) — purely so the UI
+      // Launchers grid can highlight which card is currently active; never required for any
+      // apply/save/load logic, since the individual colors/effects/typography/wallpaper
+      // fields above are always the actual source of truth.
+      activeLauncher: null,
       // Tracks whether the user has actually chosen a custom accent palette (a color swatch
       // edit, a palette preset, or an imported theme file) — see applyColors() below for why
       // this matters: it's what stops the engine from permanently overriding the Dark/Light
@@ -19111,6 +19341,8 @@
         colors: Object.assign({}, defaults.colors, saved.colors),
         effects: Object.assign({}, defaults.effects, saved.effects),
         logo: Object.assign({}, defaults.logo, saved.logo),
+        typography: Object.assign({}, defaults.typography, saved.typography),
+        activeLauncher: typeof saved.activeLauncher === 'string' ? saved.activeLauncher : null,
         colorsCustomized: typeof saved.colorsCustomized === 'boolean'
           ? saved.colorsCustomized
           : inferColorsCustomized(saved.colors)
@@ -19198,11 +19430,41 @@
     });
   }
 
+  // UI Launcher & Theme Engine — Typography / Density. Sets the font-family + heading-font
+  // CSS variables (see :root in themeEngineStyles) and the root density scale that every
+  // rem-based font-size/spacing in the app is computed from.
+  function applyTypography() {
+    const t = settings.typography;
+    const stack = FONT_STACKS[t.fontFamily] || FONT_STACKS['Inter'];
+    root.style.setProperty('--te-font-family', stack.body);
+    root.style.setProperty('--te-heading-font-family', stack.heading);
+    root.style.setProperty('--te-density-scale', t.density === 'comfortable' ? '1.14' : '1');
+  }
+
   function applyAll() {
     applyColors();
     applyWallpaper();
     applyEffects();
     applyLogo();
+    applyTypography();
+  }
+
+  // UI Launcher & Theme Engine — Preset Launcher: applies a full LAUNCHER_PRESETS entry
+  // (colors + effects + typography + wallpaper) in one shot, the way switching an Android
+  // launcher profile restyles the whole home screen at once.
+  function applyLauncherPreset(name) {
+    const p = LAUNCHER_PRESETS[name];
+    if (!p) return;
+    settings.colors = Object.assign({}, p.colors);
+    settings.colorsCustomized = true; // an explicit launcher choice — see applyColors()
+    settings.effects = Object.assign({}, defaults.effects, p.effects);
+    settings.typography = Object.assign({}, defaults.typography, p.typography);
+    settings.wallpaper = Object.assign({}, defaults.wallpaper, p.wallpaper);
+    settings.activeLauncher = name;
+    applyAll();
+    saveSettings();
+    refreshUI();
+    notify(name + ' launcher applied.');
   }
 
   // ---------- Image compression (keeps localStorage usage sane) ----------
@@ -19318,6 +19580,54 @@
     });
   }
 
+  // UI Launcher & Theme Engine — builds the 1-click preset cards. Renders into #teLauncherGrid
+  // (the full "UI Launchers" tab) and, more compactly, into #teQuickPresets (the top-bar Quick
+  // Launcher dropdown) — both call this so the two stay in sync automatically.
+  function buildLauncherPresets() {
+    const fullGrid = document.getElementById('teLauncherGrid');
+    const quickGrid = document.getElementById('teQuickPresets');
+    if (fullGrid) {
+      fullGrid.innerHTML = '';
+      Object.keys(LAUNCHER_PRESETS).forEach(name => {
+        const p = LAUNCHER_PRESETS[name];
+        const card = document.createElement('div');
+        card.className = 'te-launcher-card';
+        card.dataset.launcher = name;
+        card.innerHTML = `
+          <div class="te-launcher-check">✓</div>
+          <div class="te-launcher-swatch" style="background:linear-gradient(135deg, ${p.colors.bgDark}, ${p.colors.cardBg} 55%, ${p.colors.accentGreen})"></div>
+          <span class="te-launcher-name">${name}</span>
+          <span class="te-launcher-tag">${p.tagline}</span>
+        `;
+        card.addEventListener('click', () => { applyLauncherPreset(name); });
+        fullGrid.appendChild(card);
+      });
+    }
+    if (quickGrid) {
+      quickGrid.innerHTML = '';
+      Object.keys(LAUNCHER_PRESETS).forEach(name => {
+        const p = LAUNCHER_PRESETS[name];
+        const sw = document.createElement('div');
+        sw.className = 'te-swatch';
+        sw.title = name;
+        sw.dataset.launcher = name;
+        sw.style.background = `linear-gradient(135deg, ${p.colors.bgDark}, ${p.colors.accentGreen})`;
+        sw.addEventListener('click', () => { applyLauncherPreset(name); });
+        quickGrid.appendChild(sw);
+      });
+    }
+    syncLauncherActiveState();
+  }
+
+  function syncLauncherActiveState() {
+    document.querySelectorAll('#teLauncherGrid .te-launcher-card').forEach(card => {
+      card.classList.toggle('active', card.dataset.launcher === settings.activeLauncher);
+    });
+    document.querySelectorAll('#teQuickPresets .te-swatch').forEach(sw => {
+      sw.style.borderColor = (sw.dataset.launcher === settings.activeLauncher) ? 'var(--accent-green, #00e676)' : 'transparent';
+    });
+  }
+
   function buildWallpaperPresets() {
     const wrap = document.getElementById('teWallpaperPresets');
     wrap.innerHTML = '';
@@ -19344,6 +19654,15 @@
     document.getElementById('teGlowStrength').value = e.glowStrength;
     document.getElementById('teRadius').value = e.radius;
     document.getElementById('teAnimSpeed').value = e.animSpeed;
+    const cartPulseEl = document.getElementById('teCartPulseToggle');
+    if (cartPulseEl) cartPulseEl.checked = e.cartPulse !== false;
+
+    document.querySelectorAll('#teGlowSegment .te-seg-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.glow === (e.glowLevel || 'off'));
+    });
+    document.querySelectorAll('#teGlassSegment .te-seg-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.glass === (e.glassLevel || 'flat'));
+    });
 
     const w = settings.wallpaper;
     document.getElementById('teWallpaperOpacity').value = w.opacity;
@@ -19354,11 +19673,23 @@
     else { logoPrev.style.display = 'none'; }
   }
 
+  // UI Launcher & Theme Engine — Typography / Density panel sync.
+  function syncTypographyInputs() {
+    const t = settings.typography;
+    const fontEl = document.getElementById('teFontFamily');
+    if (fontEl) fontEl.value = t.fontFamily;
+    document.querySelectorAll('#teDensitySegment .te-seg-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.density === t.density);
+    });
+  }
+
   // Called whenever the "Theme & Appearance" tab is opened (see showTab() in the main
   // script), so the panel always reflects the currently-saved settings.
   function refreshUI() {
     syncColorInputs();
     syncEffectInputs();
+    syncTypographyInputs();
+    syncLauncherActiveState();
   }
 
   function bindPanel() {
@@ -19418,6 +19749,71 @@
       settings.effects.animSpeed = parseFloat(e.target.value); applyEffects(); saveSettings();
     });
 
+    // Card Glow Intensity (Off / Low / High) — discrete segmented control, drives the same
+    // underlying glow/glowStrength fields the advanced sliders use, so both stay in sync.
+    const GLOW_LEVELS = { off: { glow: false, glowStrength: 0 }, low: { glow: true, glowStrength: 8 }, high: { glow: true, glowStrength: 22 } };
+    document.querySelectorAll('#teGlowSegment .te-seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const level = btn.dataset.glow;
+        const cfg = GLOW_LEVELS[level] || GLOW_LEVELS.off;
+        settings.effects.glowLevel = level;
+        settings.effects.glow = cfg.glow;
+        settings.effects.glowStrength = cfg.glowStrength;
+        applyEffects(); saveSettings(); syncEffectInputs();
+      });
+    });
+
+    // Glassmorphism Blur (Heavy / Subtle / Flat) — discrete segmented control, drives the
+    // same underlying glass/glassBlur fields the advanced sliders use.
+    const GLASS_LEVELS = { heavy: { glass: true, glassBlur: 24 }, subtle: { glass: true, glassBlur: 8 }, flat: { glass: false, glassBlur: 0 } };
+    document.querySelectorAll('#teGlassSegment .te-seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const level = btn.dataset.glass;
+        const cfg = GLASS_LEVELS[level] || GLASS_LEVELS.flat;
+        settings.effects.glassLevel = level;
+        settings.effects.glass = cfg.glass;
+        settings.effects.glassBlur = cfg.glassBlur;
+        applyColors(); applyEffects(); saveSettings(); syncEffectInputs();
+      });
+    });
+
+    // Add-to-cart flash/pulse feedback toggle — see teCartFlash() (exposed on window) and its
+    // call sites in the Walk-In / Cue Shop / in-session Canteen "Add" buttons.
+    const cartPulseToggle = document.getElementById('teCartPulseToggle');
+    if (cartPulseToggle) {
+      cartPulseToggle.addEventListener('change', (e) => {
+        settings.effects.cartPulse = e.target.checked; saveSettings();
+      });
+    }
+
+    // Advanced sliders stay tucked away by default — the segmented controls above cover the
+    // common cases; power users can still reach the fine-grained blur/strength/radius/speed
+    // sliders underneath.
+    const advBtn = document.getElementById('teAdvancedEffectsBtn');
+    if (advBtn) {
+      advBtn.addEventListener('click', () => {
+        const panel = document.getElementById('teAdvancedEffects');
+        const showing = panel.style.display !== 'none';
+        panel.style.display = showing ? 'none' : 'block';
+        advBtn.textContent = showing ? 'Show advanced sliders ▾' : 'Hide advanced sliders ▴';
+      });
+    }
+
+    // Typography — font family dropdown + Workspace Density segmented control.
+    const fontSelect = document.getElementById('teFontFamily');
+    if (fontSelect) {
+      fontSelect.addEventListener('change', (e) => {
+        settings.typography.fontFamily = e.target.value;
+        applyTypography(); saveSettings();
+      });
+    }
+    document.querySelectorAll('#teDensitySegment .te-seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        settings.typography.density = btn.dataset.density;
+        applyTypography(); saveSettings(); syncTypographyInputs();
+      });
+    });
+
     // Branding
     document.getElementById('teLogoFile').addEventListener('change', async (e) => {
       const file = e.target.files[0];
@@ -19458,6 +19854,8 @@
             colors: Object.assign({}, defaults.colors, imported.colors),
             effects: Object.assign({}, defaults.effects, imported.effects),
             logo: Object.assign({}, defaults.logo, imported.logo),
+            typography: Object.assign({}, defaults.typography, imported.typography),
+            activeLauncher: typeof imported.activeLauncher === 'string' ? imported.activeLauncher : null,
             colorsCustomized: true // an imported theme file is an explicit choice — see applyColors()
           };
           applyAll(); saveSettings(); refreshUI();
@@ -19475,13 +19873,73 @@
     });
   }
 
+  // UI Launcher & Theme Engine — Top-Bar Quick Launcher & Customizer wiring. Kept separate
+  // from bindPanel() because the quick launcher lives in the top header (always in the DOM),
+  // not inside the "Theme & Appearance" screen (only bound once that screen exists).
+  function bindQuickLauncher() {
+    const customColorInput = document.getElementById('teQuickCustomColor');
+    if (customColorInput) {
+      customColorInput.addEventListener('input', (e) => {
+        settings.colors.accentGreen = e.target.value;
+        settings.colorsCustomized = true; // an explicit custom accent pick — see applyColors()
+        applyColors(); saveSettings(); syncColorInputs();
+      });
+    }
+    // Close the dropdown on any outside click / Escape, same UX pattern as the mobile nav
+    // drawer and other dropdowns elsewhere in this app.
+    document.addEventListener('click', (e) => {
+      const launcher = document.getElementById('teQuickLauncher');
+      const menu = document.getElementById('teQuickMenu');
+      if (!launcher || !menu || menu.style.display === 'none') return;
+      if (!launcher.contains(e.target)) { menu.style.display = 'none'; document.getElementById('teQuickBtn').setAttribute('aria-expanded', 'false'); }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const menu = document.getElementById('teQuickMenu');
+        if (menu) menu.style.display = 'none';
+        const btn = document.getElementById('teQuickBtn');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  // Toggles the top-bar quick launcher dropdown. Exposed on window since the header markup
+  // calls it directly via onclick, same convention as showTab()/toggleMobileNav() elsewhere.
+  window.toggleTeQuickMenu = function (e) {
+    if (e) e.stopPropagation();
+    const menu = document.getElementById('teQuickMenu');
+    const btn = document.getElementById('teQuickBtn');
+    if (!menu) return;
+    const showing = menu.style.display !== 'none';
+    menu.style.display = showing ? 'none' : 'block';
+    if (btn) btn.setAttribute('aria-expanded', showing ? 'false' : 'true');
+    if (!showing) syncLauncherActiveState();
+  };
+
+  // Add-to-cart flash/pulse feedback — exposed on window so the Walk-In / Cue Shop /
+  // in-session Canteen "Add" buttons (defined in the main app script, outside this module)
+  // can trigger a brief pulse on their persistent cart-total element after adding an item.
+  // Respects the "Add-to-cart flash/pulse feedback" toggle in the Effects tab.
+  window.teCartFlash = function (elId) {
+    if (!settings || settings.effects.cartPulse === false) return;
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.classList.remove('te-cart-flash');
+    // Force reflow so the animation restarts even if items are added in quick succession.
+    void el.offsetWidth;
+    el.classList.add('te-cart-flash');
+    setTimeout(() => el.classList.remove('te-cart-flash'), 500);
+  };
+
   function init() {
     defaults = captureDefaults();
     settings = loadSettings();
     buildColorGrid();
     buildPalettePresets();
     buildWallpaperPresets();
+    buildLauncherPresets();
     bindPanel();
+    bindQuickLauncher();
     applyAll();
     refreshUI();
   }
@@ -19492,7 +19950,7 @@
     init();
   }
 
-  window.ThemeEngine = { getSettings: () => settings, applyAll, refreshUI, resetAll: () => { localStorage.removeItem(STORAGE_KEY); location.reload(); } };
+  window.ThemeEngine = { getSettings: () => settings, applyAll, refreshUI, applyLauncherPreset, resetAll: () => { localStorage.removeItem(STORAGE_KEY); location.reload(); } };
 })();
 </script>
 
