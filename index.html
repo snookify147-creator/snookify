@@ -5616,6 +5616,7 @@
     let settingsSecurityDoc = null;     // Master PIN / Cancel-Session PIN / Feature Lock, Blur & Hide — see initSecuritySync() below
     let featureVisibilityDoc = null;    // per-role Visible/Blurred/Hidden feature modes — see initFeatureVisibilitySync() below
     let navHierarchyDoc = null;         // sidebar dropdown grouping — see initNavHierarchySync() below
+    let userSettingsDoc = null;         // theme/locale/layout UI preferences — see initUserSettingsSync() below
     let auditLogCollection = null;      // Audit Log — see logAudit() below
     let firebaseReady = false;
     let functionsReady = false; // true only if Cloud Functions SDK loaded AND initializeApp succeeded — gates the reverseGeocodeLocation callable
@@ -5626,7 +5627,7 @@
     // tenant's changes into another tenant's UI for the rest of the page's lifetime.
     let unsubBranches = null, unsubStaff = null, unsubResourceVault = null,
         unsubAppState = null, unsubSecurity = null, unsubFeatureVisibility = null,
-        unsubNavHierarchy = null;
+        unsubNavHierarchy = null, unsubUserSettings = null;
 
     try {
       if (firebaseConfig.apiKey && firebaseConfig.apiKey !== 'YOUR_API_KEY' && typeof firebase !== 'undefined') {
@@ -5723,6 +5724,7 @@
       settingsSecurityDoc = tenantRootRef.collection('settings').doc('security');
       featureVisibilityDoc = tenantRootRef.collection('settings').doc('featureVisibility');
       navHierarchyDoc = tenantRootRef.collection('settings').doc('navHierarchy');
+      userSettingsDoc = tenantRootRef.collection('settings').doc('uiPreferences');
       auditLogCollection = tenantRootRef.collection('auditLog');
       bindPresenceCollection(); // presence lives under the same tenant root — see Live Presence module
 
@@ -5765,6 +5767,11 @@
         initSecuritySync();
         initFeatureVisibilitySync();
         initNavHierarchySync();
+        // One-time pull so a fresh login on a DIFFERENT device (empty localStorage) picks up
+        // this account's saved theme/locale/layout immediately, then the live listener below
+        // keeps it in sync for the rest of the session. See fetchUserSettings()/
+        // initUserSettingsSync() near the "Global User Settings Sync" module.
+        fetchUserSettings(tenantId).finally(initUserSettingsSync);
 
         // Brand-new tenant: resetToCleanTenantDefaults() (called at the top of this function,
         // before the tenantDoc read above) already set the Owner Staff PIN and Main Branch PIN to
@@ -5842,16 +5849,16 @@
 
     function unbindTenantFirestoreRefs() {
       [unsubBranches, unsubStaff, unsubResourceVault, unsubAppState, unsubSecurity,
-       unsubFeatureVisibility, unsubNavHierarchy, (typeof presenceUnsub !== 'undefined' ? presenceUnsub : null)].forEach(u => {
+       unsubFeatureVisibility, unsubNavHierarchy, unsubUserSettings, (typeof presenceUnsub !== 'undefined' ? presenceUnsub : null)].forEach(u => {
         if (typeof u === 'function') { try { u(); } catch (e) { /* already detached */ } }
       });
       unsubBranches = unsubStaff = unsubResourceVault = unsubAppState = unsubSecurity =
-        unsubFeatureVisibility = unsubNavHierarchy = null;
+        unsubFeatureVisibility = unsubNavHierarchy = unsubUserSettings = null;
       if (typeof presenceUnsub !== 'undefined') presenceUnsub = null;
       currentTenantId = null;
       tenantRootRef = null;
       branchesCollection = staffCollection = staffSessionsCollection = resourceLinksCollection = null;
-      appStateDoc = settingsSecurityDoc = featureVisibilityDoc = navHierarchyDoc = auditLogCollection = null;
+      appStateDoc = settingsSecurityDoc = featureVisibilityDoc = navHierarchyDoc = userSettingsDoc = auditLogCollection = null;
       if (typeof presenceCollection !== 'undefined') presenceCollection = null;
       resetToCleanTenantDefaults(); // don't leave the previous tenant's data sitting in memory behind the login overlay
     }
@@ -17380,6 +17387,7 @@
     function setLocale(locale) {
       if (!TRANSLATIONS[locale]) locale = 'en';
       localStorage.setItem(I18N_KEY, locale);
+      if (typeof pushUserSetting === 'function') pushUserSetting(I18N_KEY, locale);
       document.documentElement.lang = locale;
       // Layout direction is pinned to LTR for every language — see the RTL_LOCALES comment
       // above. Only `lang` changes (useful for screen readers / font-shaping hints); `dir` is
@@ -18642,6 +18650,145 @@
     function initNavHierarchy() {
       captureNavHome();
       applyNavHierarchy();
+    }
+
+    /* =====================================================================================
+       GLOBAL USER SETTINGS SYNC (theme, layout, locale, appearance)
+       ---------------------------------------------------------------------------------------
+       Everything below is genuinely user-configurable UI state that, before this module, only
+       ever lived in localStorage — so it never followed an owner to a second till/device/browser:
+         • Dark/Light Mode              (snookify_themeMode      — Dark/Light toggle)
+         • Sidebar collapsed/expanded   (snookify_sidebarCollapsed)
+         • Language / locale            (snookify_locale_v1      — I18N_KEY)
+         • Theme & Appearance engine    (snookify_theme_engine_v1 — wallpaper/colors/effects/
+                                          logo/typography/active launcher preset)
+         • Theme launcher preset key    (user_app_theme)
+       (Everything else that looked like a "setting" — Master PIN, Cancel-Session PIN, Feature
+       Lock/Blur/Hide, Protected Mode, per-role Feature Visibility, sidebar Nav Hierarchy, and
+       all business data like hourly/frame rates, stock, and filters saved on the live floor
+       state — already syncs to Firestore via settingsSecurityDoc / featureVisibilityDoc /
+       navHierarchyDoc / appStateDoc above. This module intentionally does NOT duplicate those.)
+
+       Firestore shape: tenants/{uid}/settings/uiPreferences — one flat doc, one field per
+       setting below, written with merge:true so any of the specific setter helpers can update
+       just its own field without clobbering the others. Same _lastWriter/serverTimestamp
+       pattern as settingsSecurityDoc, so a session never re-applies the echo of its own write.
+
+       localStorage stays the fast-load path (it's already read synchronously at the very top
+       of <head>, before Firebase has even loaded) — Firestore is the cross-device source of
+       truth layered on top. Nothing here ever calls localStorage.clear(), so logging out and
+       back in on the SAME device keeps every preference exactly as it was without touching
+       the network at all; fetchUserSettings() only matters the first time an account signs in
+       on a browser/device that doesn't already have these keys cached.
+       ===================================================================================== */
+
+    // localStorage key -> Firestore field name. The keys on the left are the actual keys used
+    // elsewhere in this file (kept here as string literals since several live inside their own
+    // IIFEs further down and aren't reachable as identifiers from this scope).
+    const USER_SETTINGS_SYNC_FIELDS = {
+      'snookify_themeMode': 'themeMode',
+      'snookify_sidebarCollapsed': 'sidebarCollapsed',
+      'snookify_locale_v1': 'locale',
+      'snookify_theme_engine_v1': 'themeEngine',
+      'user_app_theme': 'themeLauncher'
+    };
+
+    // Reads every tracked key's CURRENT localStorage value into one plain object, e.g.
+    // { snookify_themeMode: 'dark', snookify_sidebarCollapsed: '1', ... }. Missing keys are
+    // simply omitted rather than written as null, so a merge write never stomps a field this
+    // browser has just never touched.
+    function getLocalUserSettingsSnapshot() {
+      const snapshot = {};
+      Object.keys(USER_SETTINGS_SYNC_FIELDS).forEach(localKey => {
+        const val = localStorage.getItem(localKey);
+        if (val !== null) snapshot[localKey] = val;
+      });
+      return snapshot;
+    }
+
+    // ---- saveUserSettings(settingsObj) ----------------------------------------------------
+    // Generic, reusable entry point: pass any subset of { <localStorageKey>: rawStringValue }.
+    // Writes localStorage IMMEDIATELY (so the UI never waits on a network round trip), then
+    // mirrors the same fields to Firestore in the background. Safe to call with Firebase
+    // unconfigured/offline — it just stays local-only until Firestore is reachable again
+    // (queued by the SDK's own offline persistence, enabled above).
+    function saveUserSettings(settingsObj) {
+      if (!settingsObj || typeof settingsObj !== 'object') return;
+      const toSync = {};
+      Object.entries(settingsObj).forEach(([localKey, rawValue]) => {
+        localStorage.setItem(localKey, rawValue);
+        const field = USER_SETTINGS_SYNC_FIELDS[localKey];
+        if (field) toSync[field] = rawValue;
+      });
+      if (!firebaseReady || !userSettingsDoc || Object.keys(toSync).length === 0) return;
+      userSettingsDoc.set({
+        ...toSync,
+        _lastWriter: getDeviceId(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).catch(err => console.error('Snookify: user settings sync failed — change is still saved locally', err));
+    }
+
+    // Thin single-field convenience wrapper used by the individual toggle/save call sites
+    // scattered across the Theme Mode, Sidebar Collapse, Theme Engine, and Locale modules —
+    // each just adds one line ( pushUserSetting(THE_KEY, value) ) next to its existing
+    // localStorage.setItem call. Functionally identical to saveUserSettings({[key]: value}).
+    function pushUserSetting(localKey, rawValue) {
+      saveUserSettings({ [localKey]: rawValue });
+    }
+
+    // ---- fetchUserSettings(userId) ---------------------------------------------------------
+    // One-shot pull, used right after login (see bindTenantFirestoreRefs() above). Resolves
+    // with the settings object that ended up in localStorage (cloud copy if one existed and
+    // differed, otherwise whatever was already cached locally) — never rejects, so it's always
+    // safe to chain off of. If the cloud copy actually changed anything this browser didn't
+    // already have, it reloads once so every module (Theme Engine, i18n, sidebar) re-reads its
+    // localStorage value from a clean boot — the same reload-to-reapply approach ThemeEngine's
+    // own resetAll() already uses elsewhere in this file, rather than reaching into five
+    // separate closures to force a live re-render.
+    function fetchUserSettings(userId) {
+      if (!firebaseReady || !db || !userId) return Promise.resolve(getLocalUserSettingsSnapshot());
+      return db.collection('tenants').doc(userId).collection('settings').doc('uiPreferences').get()
+        .then(snap => {
+          if (!snap.exists) return getLocalUserSettingsSnapshot();
+          const data = snap.data() || {};
+          let changed = false;
+          Object.entries(USER_SETTINGS_SYNC_FIELDS).forEach(([localKey, field]) => {
+            if (data[field] === undefined) return;
+            if (localStorage.getItem(localKey) === data[field]) return;
+            localStorage.setItem(localKey, data[field]);
+            changed = true;
+          });
+          if (changed) {
+            console.info('Snookify: pulled newer UI settings from the cloud for this account — reloading to apply.');
+            location.reload();
+          }
+          return getLocalUserSettingsSnapshot();
+        })
+        .catch(err => {
+          console.error('Snookify: fetchUserSettings failed — using whatever is cached locally', err);
+          return getLocalUserSettingsSnapshot();
+        });
+    }
+
+    // Live listener: while a session is active, if a DIFFERENT device signed into the SAME
+    // account changes a setting, pull it in here too. Mirrors initSecuritySync()'s shape.
+    function initUserSettingsSync() {
+      if (!firebaseReady || !userSettingsDoc) return;
+      unsubUserSettings = userSettingsDoc.onSnapshot(snap => {
+        if (!snap.exists) return;
+        const data = snap.data() || {};
+        if (data._lastWriter === getDeviceId()) return; // our own write echoing back
+        let changed = false;
+        Object.entries(USER_SETTINGS_SYNC_FIELDS).forEach(([localKey, field]) => {
+          if (data[field] === undefined) return;
+          if (localStorage.getItem(localKey) === data[field]) return;
+          localStorage.setItem(localKey, data[field]);
+          changed = true;
+        });
+        // Another device changed the theme/locale/layout — reload so it takes effect here too
+        // (same reasoning as fetchUserSettings() above).
+        if (changed) location.reload();
+      }, err => console.error('Snookify: user settings sync listener error', err));
     }
 
     /* =====================================================================================
@@ -19916,7 +20063,9 @@
 
   function saveSettings() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+      const json = JSON.stringify(settings);
+      localStorage.setItem(STORAGE_KEY, json);
+      if (typeof pushUserSetting === 'function') pushUserSetting(STORAGE_KEY, json);
     } catch (e) {
       console.error('[ThemeEngine] Save failed (storage full?).', e);
       notify('Could not save theme — storage may be full.', true);
@@ -20658,6 +20807,7 @@
     root.setAttribute('data-theme-preset', themeKey);
 
     try { localStorage.setItem(THEME_STORAGE_KEY, themeKey); } catch (e) { /* private mode etc. */ }
+    try { if (typeof pushUserSetting === 'function') pushUserSetting(THEME_STORAGE_KEY, themeKey); } catch (e) { /* Firebase not ready yet */ }
 
     document.dispatchEvent(new CustomEvent('themechange', { detail: { theme: themeKey } }));
     syncDataPresetActiveState(themeKey);
@@ -20796,7 +20946,9 @@
       btn.addEventListener('click', () => {
         const collapsed = !sidebar.classList.contains('collapsed');
         applyState(collapsed);
-        localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
+        const val = collapsed ? '1' : '0';
+        localStorage.setItem(SIDEBAR_COLLAPSE_KEY, val);
+        if (typeof pushUserSetting === 'function') pushUserSetting(SIDEBAR_COLLAPSE_KEY, val);
       });
     }
 
@@ -20822,6 +20974,7 @@
         const mode = toggle.checked ? 'dark' : 'light';
         applyMode(mode);
         localStorage.setItem(THEME_MODE_KEY, mode);
+        if (typeof pushUserSetting === 'function') pushUserSetting(THEME_MODE_KEY, mode);
       });
     }
 
