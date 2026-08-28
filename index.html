@@ -5599,6 +5599,10 @@
         db = firebase.firestore();
 
         // ---- Offline-first persistence (IndexedDB) ----
+        // Compat-SDK equivalent of the modular enableMultiTabIndexedDbPersistence(db)
+        // (synchronizeTabs: true is the compat flag for the same multi-tab behavior; use
+        // db.enablePersistence() with no options if you only ever expect a single tab open,
+        // which is the compat equivalent of enableIndexedDbPersistence(db)).
         // Without this, Firestore's offline queue only lives in memory: writes made while
         // offline survive a dropped connection, but NOT a page refresh/app restart/tab close
         // before reconnecting — which is exactly the scenario a POS counter hits during a
@@ -5835,6 +5839,19 @@
     try {
       if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
         auth = firebase.auth();
+
+        // ---- Session persistence across page refresh ----
+        // Compat-SDK equivalent of the modular setPersistence(auth, browserLocalPersistence).
+        // LOCAL keeps the signed-in session in IndexedDB/localStorage so it survives a full
+        // page reload or browser restart (not just an SPA route change). This is already
+        // Firebase's default for compat auth in a browser, but it's set explicitly here so
+        // the intent is documented and the app doesn't silently regress to SESSION/NONE if
+        // that default ever changes. Must be called before any sign-in call and before the
+        // onAuthStateChanged listener below is attached, so the very first auth check on
+        // page load already reflects the persisted session.
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err => {
+          console.error('Snookify: setPersistence(LOCAL) failed — falling back to default persistence.', err);
+        });
       }
     } catch (e) {
       console.error('Snookify: Firebase Auth init failed.', e);
