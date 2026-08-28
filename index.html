@@ -16055,15 +16055,28 @@
 
     // Populates any of the three "Link Player Profile" <select> elements (Start Session,
     // POS Checkout, Table Link modal) with the same option list, current selection preserved.
+    //
+    // IMPORTANT: <option> text is a plain text node, not HTML — it can never render markup
+    // (icons, badges, etc). LOYALTY_TIERS.label stores an inline SVG string for on-screen
+    // badges elsewhere in the UI; it must NEVER be concatenated into an <option> label, or the
+    // raw "<svg class=...>" markup shows up as broken text in the dropdown. Keep this function
+    // to plain "Name (Phone)" / "Name" labels only, and escape the values in case a player's
+    // name or phone number ever contains HTML-special characters.
+    function escapeOptionText(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
     function populatePlayerSelect(selectId, currentId) {
       const sel = document.getElementById(selectId);
       if (!sel) return;
       const sorted = state.players.slice().sort((a, b) => a.name.localeCompare(b.name));
       const options = ['<option value="">— No player / Walk-in —</option>'].concat(
         sorted.map(p => {
-          const tier = getLoyaltyTier(p);
-          const tierLabel = tier.label.replace(/^\S+\s/, ''); // strip emoji for a cleaner option row
-          return `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${p.name}${p.phone ? ' (' + p.phone + ')' : ''} — ${tierLabel}</option>`;
+          const label = p.phone ? `${p.name} (${p.phone})` : p.name;
+          return `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${escapeOptionText(label)}</option>`;
         })
       );
       sel.innerHTML = options.join('');
