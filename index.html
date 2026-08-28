@@ -685,6 +685,15 @@
     .login-submit-btn { width: 100%; padding: 13px; font-size: 0.9rem; font-weight: 800; margin-top: 4px; background: var(--accent-green); color: #06110b; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s, opacity 0.2s; }
     .login-submit-btn:hover { background: var(--accent-green-dark); }
     .login-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    /* Session-check loading state — shown instead of the login form while onAuthStateChanged()
+       has not yet reported whether a persisted session exists. Prevents the empty email/password
+       form from flashing on screen for a returning, already-signed-in user before the dashboard
+       takes over. See initAuthModule() near the end of <body>. */
+    #loginCheckingState { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 8px 0 4px; }
+    #loginCheckingState .login-spinner { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--border-color); border-top-color: var(--accent-green); animation: loginSpin 0.8s linear infinite; }
+    #loginCheckingState .login-checking-text { color: var(--text-muted); font-size: 0.8rem; }
+    @keyframes loginSpin { to { transform: rotate(360deg); } }
+    #loginFormFields.hidden, #loginCheckingState.hidden { display: none; }
     .logout-btn { background: rgba(255,82,82,0.14); color: var(--danger); border: 1px solid var(--danger); border-radius: 8px; padding: 7px 12px; font-weight: 800; font-size: 0.7rem; cursor: pointer; white-space: nowrap; margin-top: 10px; width: 100%; transition: background 0.2s; }
     .logout-btn:hover { background: var(--danger); color: #fff; }
 
@@ -2205,24 +2214,40 @@
 
   <!-- ===== APP AUTHENTICATION OVERLAY (Email/Password) =====
        Shown/hidden purely by onAuthStateChanged in initAuthModule() near the end of <body>.
-       Blocks view/interaction with the entire app until a user is signed in. -->
+       Blocks view/interaction with the entire app until a user is signed in.
+
+       Two mutually-exclusive inner states, both defined in markup (not injected later) so the
+       correct one is already present at first paint, before any script runs:
+         #loginCheckingState — the default. Shown until onAuthStateChanged() fires for the first
+           time. Covers the "is there a persisted session?" gap so a returning, already-signed-in
+           user never sees the blank email/password form flash before the dashboard takes over.
+         #loginFormFields — hidden by default. Only revealed once onAuthStateChanged() explicitly
+           resolves with user === null, i.e. once we know for certain nobody is signed in.
+       initAuthModule() toggles the "hidden" class on these two, and on #loginOverlay itself —
+       nothing here ever calls signOut() or forces the form open on load. -->
   <div id="loginOverlay">
     <div class="login-box">
       <div class="login-brand">
         <span style="font-size:1.4rem; line-height:1;">🎱</span>
         <span class="login-brand-title">Snookify</span>
       </div>
-      <div class="login-sub">Sign in to access the club management console</div>
-      <div class="form-group">
-        <label for="loginEmail">Email</label>
-        <input type="email" id="loginEmail" autocomplete="username" placeholder="you@yourclub.com">
+      <div id="loginCheckingState">
+        <div class="login-spinner" aria-hidden="true"></div>
+        <div class="login-checking-text">Checking Authentication...</div>
       </div>
-      <div class="form-group">
-        <label for="loginPassword">Password</label>
-        <input type="password" id="loginPassword" autocomplete="current-password" placeholder="••••••••">
+      <div id="loginFormFields" class="hidden">
+        <div class="login-sub">Sign in to access the club management console</div>
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" autocomplete="username" placeholder="you@yourclub.com">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" autocomplete="current-password" placeholder="••••••••">
+        </div>
+        <div id="loginError"></div>
+        <button type="button" class="login-submit-btn" id="loginSubmitBtn" onclick="handleLogin()">Login</button>
       </div>
-      <div id="loginError"></div>
-      <button type="button" class="login-submit-btn" id="loginSubmitBtn" onclick="handleLogin()">Login</button>
     </div>
   </div>
 
@@ -5859,6 +5884,8 @@
 
     function initAuthModule() {
       const overlay = document.getElementById('loginOverlay');
+      const checkingState = document.getElementById('loginCheckingState');
+      const formFields = document.getElementById('loginFormFields');
       const emailInput = document.getElementById('loginEmail');
       const passwordInput = document.getElementById('loginPassword');
       const errorBox = document.getElementById('loginError');
@@ -5866,16 +5893,31 @@
       const emailLabel = document.getElementById('authUserEmailLabel');
 
       if (!auth) {
+        // No Firebase config at all — nothing to wait on, so go straight to the login form
+        // (still signed out either way) rather than spinning on "Checking Authentication..."
+        // forever.
+        if (checkingState) checkingState.classList.add('hidden');
+        if (formFields) formFields.classList.remove('hidden');
         errorBox.textContent = "Firebase isn't configured — set firebaseConfig above to enable login.";
         return;
       }
 
+      // #loginOverlay stays exactly as markup left it (visible, showing "Checking
+      // Authentication...") until this fires for the very first time — nothing above this point
+      // touches the DOM, calls signOut(), or assumes signed-out. Firebase's LOCAL persistence
+      // (set above) means a real, still-valid session resolves here with the user already
+      // populated, so the dashboard opens directly with no login form ever shown.
       auth.onAuthStateChanged((user) => {
         if (user) {
           overlay.classList.add('hidden');
           if (emailLabel) emailLabel.textContent = user.email || '';
           bindTenantFirestoreRefs(user.uid); // isolates every Firestore ref + cached state to this account
         } else {
+          // Only now — once Firebase has explicitly told us there is no signed-in user — do we
+          // reveal the actual login form. The checking spinner is swapped out, never the other
+          // way around.
+          if (checkingState) checkingState.classList.add('hidden');
+          if (formFields) formFields.classList.remove('hidden');
           overlay.classList.remove('hidden');
           if (emailLabel) emailLabel.textContent = '';
           if (passwordInput) passwordInput.value = '';
@@ -5923,6 +5965,8 @@
         const shiftOverlay = document.getElementById('shiftLoginOverlay');
         if (shiftOverlay) shiftOverlay.classList.remove('open');
         document.querySelectorAll('.modal-overlay.open').forEach((m) => m.classList.remove('open'));
+        if (checkingState) checkingState.classList.add('hidden');
+        if (formFields) formFields.classList.remove('hidden');
         overlay.classList.remove('hidden');
         if (emailLabel) emailLabel.textContent = '';
         if (typeof unbindTenantFirestoreRefs === 'function') unbindTenantFirestoreRefs();
