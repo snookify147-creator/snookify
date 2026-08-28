@@ -978,7 +978,7 @@
     .info-icon-btn:hover, .info-icon-btn.active { color: var(--info); border-color: var(--info); }
     .rate-popover-wrap { position: relative; display: inline-flex; }
     .rate-popover { position: absolute; top: 22px; left: 0; z-index: 20; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 10px; font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; white-space: nowrap; box-shadow: 0 6px 18px rgba(0,0,0,0.4); }
-    .rate-popover b { color: var(--text-color, #fff); }
+    .rate-popover b { color: var(--text-main); }
 
     /* Frame details accordion — collapsed by default on live frame-billed tables; click the
        header row to expand/collapse the breakdown or summary list beneath it. */
@@ -1483,7 +1483,7 @@
     .frame-breakdown-list { margin-top: 6px; max-height: 110px; overflow-y: auto; border-top: 1px dashed var(--border-color); padding-top: 4px; }
     .frame-breakdown-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 0.68rem; padding: 2px 0; }
     .frame-breakdown-row .fbr-label { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .frame-breakdown-row .fbr-label b { color: var(--text-color, #fff); }
+    .frame-breakdown-row .fbr-label b { color: var(--text-main); }
     .frame-breakdown-row .fbr-unassigned { color: var(--warn, #ffb300); font-weight: 700; }
     .frame-breakdown-row .fbr-mode-tag { color: var(--accent-gold); font-weight: 700; font-size: 0.68rem; }
     .frame-assign-btn { background: none; border: 1px solid var(--info); color: var(--info); border-radius: 4px; font-size: 0.62rem; padding: 1px 5px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
@@ -1493,19 +1493,19 @@
        breakdown list for a grouped per-player totals view on a LIVE frame-billed table card. */
     .frame-count-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
     .frame-summary-toggle { background: none; border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 4px; font-size: 0.62rem; font-weight: 700; padding: 1px 6px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-    .frame-summary-toggle:hover { background: rgba(255,255,255,0.06); color: var(--text-color, #fff); }
+    .frame-summary-toggle:hover { background: rgba(255,255,255,0.06); color: var(--text-main); }
     .frame-summary-toggle.active { background: rgba(0,230,118,0.14); border-color: var(--accent-green); color: var(--accent-green); }
     .frame-summary-list { margin-top: 6px; max-height: 110px; overflow-y: auto; border-top: 1px dashed var(--border-color); padding-top: 4px; }
     .frame-summary-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 0.68rem; padding: 2px 0; }
     .frame-summary-row .fsr-label { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .frame-summary-row .fsr-label b { color: var(--text-color, #fff); }
+    .frame-summary-row .fsr-label b { color: var(--text-main); }
     .frame-summary-row .fsr-amount { color: var(--accent-gold); font-weight: 700; flex-shrink: 0; }
     .frame-summary-empty { color: var(--text-muted); font-size: 0.68rem; padding: 4px 0; font-style: italic; }
 
     /* ---- Best of X Match Mode (table card) ---- */
     .match-target-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 6px; }
     .match-target-row label { color: var(--text-muted); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .match-target-select { background: var(--card-bg, #1a1a1a); color: var(--text-color, #fff); border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; cursor: pointer; }
+    .match-target-select { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; cursor: pointer; }
 
     /* ================= TOURNAMENT MANAGER ================= */
     .tourney-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
