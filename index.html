@@ -135,6 +135,293 @@
     }
     html, body { transition: background-color .2s var(--ease), color .2s var(--ease); }
 
+    /* ================================================================
+       DATA-DRIVEN THEME ENGINE — tokens + legacy variable mapping
+       ------------------------------------------------------------------
+       --t-* are the "real" theme tokens: theme-engine (below, near the
+       end of <body>) swaps these on <html> via applyTheme(). Everything
+       else in this app reads the ORIGINAL variable names (--bg-dark,
+       --card-bg, --accent-green, etc.), so instead of touching every
+       component we just repoint those original names at the new --t-*
+       tokens once, here. Defaults below match the "Glassmorphism"
+       preset so the very first paint (before JS runs) is already correct.
+
+       Specificity note: html[data-theme-preset] has the same specificity
+       as the html[data-theme="light"] rule above (0,1,1) — since this
+       block comes AFTER it in source order, it wins the tie, so a chosen
+       data preset always overrides the plain Dark/Light Mode toggle. The
+       attribute is set the moment theme-engine.js runs, which is on
+       every page load. */
+    :root {
+      --t-bg: #0b1210;
+      --t-bg-image: none;
+      --t-card-bg: rgba(255,255,255,0.06);
+      --t-card-bg-solid: #121a18;
+      --t-sidebar-bg: rgba(10,16,14,0.55);
+      --t-sidebar-bg-rgb: 10, 16, 14;
+      --t-border: rgba(255,255,255,0.10);
+      --t-border-strong: rgba(255,255,255,0.18);
+      --t-text: #eaf5f0;
+      --t-text-muted: #9fb3ac;
+      --t-text-faint: #66786f;
+      --t-accent: #10b981;
+      --t-accent-dark: #0a8a63;
+      --t-accent-dim: rgba(16,185,129,0.16);
+      --t-accent-glow: rgba(16,185,129,0.35);
+      --t-accent-contrast: #06120d;
+      --t-blur: 16px;
+      --t-radius-sm: 8px;
+      --t-radius-md: 16px;
+      --t-radius-lg: 24px;
+      --t-shadow-sm: 0 1px 2px rgba(0,0,0,0.24);
+      --t-shadow-md: 0 8px 24px rgba(0,0,0,0.28);
+      --t-shadow-lg: 0 16px 48px rgba(0,0,0,0.34);
+      --t-shadow-inset: inset 0 1px 0 rgba(255,255,255,0.06);
+      --t-border-glow: 0 0 20px rgba(16,185,129,0.35);
+    }
+    html[data-theme-preset] {
+      --bg-dark: var(--t-bg);
+      --sidebar-bg: var(--t-sidebar-bg);
+      --sidebar-bg-rgb: var(--t-sidebar-bg-rgb);
+      --card-bg: var(--t-card-bg);
+      --border-color: var(--t-border);
+      --border-subtle: var(--t-border);
+      --accent-gold: var(--t-accent);
+      --accent-gold-dim: var(--t-accent-dim);
+      --accent-green: var(--t-accent);
+      --accent-green-dim: var(--t-accent-dim);
+      --accent-green-glow: var(--t-accent-glow);
+      --accent-green-dark: var(--t-accent-dark);
+      --text-main: var(--t-text);
+      --text-muted: var(--t-text-muted);
+      --text-faint: var(--t-text-faint);
+      --shadow-sm: var(--t-shadow-sm);
+      --shadow-md: var(--t-shadow-md);
+      --shadow-lg: var(--t-shadow-lg);
+      --shadow-glow: var(--t-border-glow);
+      --r-sm: var(--t-radius-sm);
+      --r-md: var(--t-radius-md);
+      --r-lg: var(--t-radius-lg);
+      --brand-text-accent: var(--t-accent);
+      --brand-badge-bg: var(--t-card-bg);
+      --brand-badge-border: var(--t-border);
+    }
+    /* Frosted/extruded panel look, applied through the same selectors the legacy Theme Engine's
+       "Glass" effect already targets — so Glassmorphism/Cyber Gold/Neumorphic/Nature Minimal all
+       apply their blur, radius, shadow and (for Cyber Gold) glow to every card/sidebar/modal
+       automatically, no per-component markup changes needed. */
+    html[data-theme-preset] .sidebar,
+    html[data-theme-preset] .metric-card,
+    html[data-theme-preset] [class*="-box"],
+    html[data-theme-preset] [class*="-panel"],
+    html[data-theme-preset] [class$="-modal"],
+    html[data-theme-preset] [class*="modal-content"] {
+      backdrop-filter: blur(var(--t-blur));
+      -webkit-backdrop-filter: blur(var(--t-blur));
+      border-radius: var(--t-radius-md);
+      box-shadow: var(--t-shadow-md), var(--t-shadow-inset);
+      transition: var(--t-transition, background-color .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease), color .25s var(--ease));
+    }
+
+    /* ================================================================
+       DATA-DRIVEN THEME ENGINE — Component Library
+       ------------------------------------------------------------------
+       Every rule below reads only --t-* tokens, so it re-skins instantly
+       and correctly under any of the 4 Data Presets (or any future one)
+       with zero per-component changes. `transition: all 0.3s ease` on
+       each base selector means applyTheme() never causes a visual pop —
+       backgrounds, borders, blur and shadows all cross-fade together.
+       These are NEW utility classes (app-card, btn-primary, btn-secondary,
+       input-field, toggle-switch, nav-drawer, bottom-nav, toast-notification,
+       badge) — opt in by adding the class name to existing or new markup;
+       nothing here touches the app's existing component classes/selectors.
+       ================================================================ */
+
+    /* ---------- 1. Cards / panels ---------- */
+    .app-card {
+      background: var(--t-card-bg);
+      border: 1px solid var(--t-border);
+      border-radius: var(--t-radius-md);
+      box-shadow: var(--t-shadow-md), var(--t-shadow-inset);
+      backdrop-filter: blur(var(--t-blur));
+      -webkit-backdrop-filter: blur(var(--t-blur));
+      padding: 20px;
+      color: var(--t-text);
+      transition: all 0.3s ease;
+    }
+    .app-card:hover {
+      box-shadow: var(--t-shadow-lg), var(--t-shadow-inset);
+      transform: translateY(-2px);
+    }
+    .app-card--flat { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--t-card-bg-solid); }
+
+    /* ---------- 2. Buttons ---------- */
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--t-accent);
+      color: var(--t-accent-contrast);
+      border: 1px solid transparent;
+      border-radius: var(--t-radius-sm);
+      padding: 10px 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--t-shadow-sm);
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      filter: brightness(1.08);
+      box-shadow: var(--t-border-glow), var(--t-shadow-sm);
+      transform: translateY(-1px);
+    }
+    .btn-primary:active { transform: translateY(0) scale(0.97); filter: brightness(0.94); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: transparent;
+      color: var(--t-text);
+      border: 1px solid var(--t-border-strong);
+      border-radius: var(--t-radius-sm);
+      padding: 10px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-secondary:hover {
+      border-color: var(--t-accent);
+      color: var(--t-accent);
+      box-shadow: inset 0 0 0 1px var(--t-accent);
+    }
+    .btn-secondary:active { transform: scale(0.97); }
+    .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ---------- 3. Inputs ---------- */
+    .input-field {
+      display: block;
+      width: 100%;
+      background: var(--t-card-bg-solid);
+      border: 1px solid var(--t-border);
+      border-radius: var(--t-radius-sm);
+      color: var(--t-text);
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      transition: all 0.3s ease;
+    }
+    .input-field::placeholder { color: var(--t-text-faint); }
+    .input-field:hover { border-color: var(--t-border-strong); }
+    .input-field:focus {
+      outline: none;
+      border-color: var(--t-accent);
+      box-shadow: 0 0 0 3px var(--t-accent-dim), var(--t-border-glow);
+    }
+    .input-field:disabled { opacity: 0.5; cursor: not-allowed; }
+    textarea.input-field { resize: vertical; min-height: 90px; }
+
+    /* ---------- 4. Toggle switch ---------- */
+    .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .toggle-switch .toggle-track {
+      position: absolute; inset: 0;
+      background: var(--t-border-strong);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .toggle-switch .toggle-track::before {
+      content: "";
+      position: absolute; left: 3px; top: 3px;
+      width: 18px; height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: var(--t-shadow-sm);
+      transition: all 0.3s ease;
+    }
+    .toggle-switch input:checked + .toggle-track { background: var(--t-accent); box-shadow: var(--t-border-glow); }
+    .toggle-switch input:checked + .toggle-track::before { transform: translateX(20px); }
+    .toggle-switch input:focus-visible + .toggle-track { box-shadow: 0 0 0 3px var(--t-accent-dim); }
+
+    /* ---------- 5. Navigation ---------- */
+    .nav-drawer {
+      background: var(--t-sidebar-bg);
+      border-right: 1px solid var(--t-border);
+      backdrop-filter: blur(var(--t-blur));
+      -webkit-backdrop-filter: blur(var(--t-blur));
+      box-shadow: var(--t-shadow-lg);
+      transition: all 0.3s ease;
+    }
+    .nav-drawer .nav-drawer-item {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--t-text-muted);
+      border-radius: var(--t-radius-sm);
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .nav-drawer .nav-drawer-item:hover { background: var(--t-accent-dim); color: var(--t-text); }
+    .nav-drawer .nav-drawer-item.active {
+      background: var(--t-accent-dim);
+      color: var(--t-accent);
+      box-shadow: var(--t-border-glow);
+    }
+
+    .bottom-nav {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 900;
+      display: flex; justify-content: space-around; align-items: center;
+      background: var(--t-sidebar-bg);
+      border-top: 1px solid var(--t-border);
+      backdrop-filter: blur(var(--t-blur));
+      -webkit-backdrop-filter: blur(var(--t-blur));
+      box-shadow: var(--t-shadow-lg);
+      padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+      transition: all 0.3s ease;
+    }
+    .bottom-nav .bottom-nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      color: var(--t-text-faint);
+      font-size: 0.62rem; font-weight: 600;
+      background: none; border: none; cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .bottom-nav .bottom-nav-item.active { color: var(--t-accent); transform: translateY(-2px); }
+
+    /* ---------- 6. Toasts & badges ---------- */
+    .toast-notification {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--t-card-bg-solid);
+      border: 1px solid var(--t-border);
+      border-left: 3px solid var(--t-accent);
+      border-radius: var(--t-radius-md);
+      box-shadow: var(--t-shadow-lg), var(--t-border-glow);
+      backdrop-filter: blur(var(--t-blur));
+      -webkit-backdrop-filter: blur(var(--t-blur));
+      padding: 12px 16px;
+      color: var(--t-text);
+      font-size: 0.82rem;
+      transition: all 0.3s ease;
+    }
+    .toast-notification.success { border-left-color: var(--t-accent); }
+    .toast-notification.error   { border-left-color: var(--danger, #f5455c); box-shadow: var(--t-shadow-lg); }
+    .toast-notification.info    { border-left-color: var(--info, #3ea6ff); box-shadow: var(--t-shadow-lg); }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      background: var(--t-accent-dim);
+      color: var(--t-accent);
+      border: 1px solid transparent;
+      transition: all 0.3s ease;
+    }
+    .badge.neutral { background: var(--t-border); color: var(--t-text-muted); }
+    .badge.danger  { background: var(--danger-dim, rgba(245,69,92,0.14)); color: var(--danger, #f5455c); }
+    .badge.info    { background: var(--info-dim, rgba(62,166,255,0.14)); color: var(--info, #3ea6ff); }
+
     /* Icon System v2 — sizing/alignment for every ICONS.* SVG (see script block). Icons
        inherit color from whatever text they sit in, so no separate color variables to sync. */
     .icon-inline { width: 1em; height: 1em; display: inline-block; vertical-align: -0.15em; flex-shrink: 0; }
@@ -3541,6 +3828,7 @@
       <div id="teCard">
         <div class="te-tabs">
           <button class="te-tab-btn active" data-tab="launchers">UI Launchers</button>
+          <button class="te-tab-btn" data-tab="dataPresets">Data Presets</button>
           <button class="te-tab-btn" data-tab="wallpaper">Wallpaper</button>
           <button class="te-tab-btn" data-tab="colors">Colors</button>
           <button class="te-tab-btn" data-tab="typography">Typography</button>
@@ -3557,6 +3845,21 @@
             <div class="te-hint">Instantly restyle the whole app — colors, effects, typography and density — with one tap. Your current customizations in the other tabs are overwritten.</div>
           </div>
           <div class="te-launcher-grid" id="teLauncherGrid"></div>
+        </div>
+
+        <!-- Data-Driven Theme Engine — 4 standalone design-system presets (Glassmorphism, Cyber
+             Gold, Soft Neumorphic, Nature Minimal). Separate from UI Launchers above: these apply
+             through the --t-* token layer (see the :root/html[data-theme-preset] CSS near the top
+             of <head>) rather than the legacy colors/effects/wallpaper settings object, and are
+             driven by themePresets + applyTheme() in the Theme Engine module near the end of
+             <body>. Picking a card here always wins visually over UI Launchers or the Dark/Light
+             toggle (see the CSS specificity note where html[data-theme-preset] is defined). -->
+        <div class="te-section" data-section="dataPresets">
+          <div class="te-row">
+            <label>Data Presets</label>
+            <div class="te-hint">Four complete design systems — click a card to apply instantly. Takes over the base look (colors, blur, shadows, radius) app-wide.</div>
+          </div>
+          <div class="te-launcher-grid" id="teDataPresetGrid"></div>
         </div>
 
         <!-- Wallpaper -->
@@ -20037,6 +20340,226 @@
   }
 
   window.ThemeEngine = { getSettings: () => settings, applyAll, refreshUI, applyLauncherPreset, resetAll: () => { localStorage.removeItem(STORAGE_KEY); location.reload(); } };
+})();
+</script>
+
+<!-- ============================================================
+     DATA-DRIVEN THEME ENGINE — 4 design-system presets
+     Separate, lightweight sibling to the UI Launcher module above: writes only the --t-* tokens
+     (mapped to the app's existing variable names via the html[data-theme-preset] CSS rule near
+     the top of <head>) instead of the full colors/effects/wallpaper/typography settings object.
+     Runs its own render (#teDataPresetGrid, inside the "Data Presets" tab) and its own
+     localStorage key, so it never reads or writes UI Launcher / Colors / Effects settings.
+     Deliberately initialized AFTER the UI Launcher module above (both write to <html>'s inline
+     style; last-write-wins), and applyTheme() clears any inline --bg-dark/--card-bg/etc. the
+     Launcher engine may have set, so a Data Preset always fully takes over when chosen.
+     ============================================================ -->
+<script>
+(function () {
+  const THEME_STORAGE_KEY = 'user_app_theme';
+
+  // Legacy variable names that html[data-theme-preset] maps to --t-* tokens via CSS. If the UI
+  // Launcher module (or a saved custom color) has set any of these directly as an inline style,
+  // that inline value beats our CSS mapping — so applyTheme() clears them first, every time.
+  const LEGACY_VARS_TO_CLEAR = [
+    '--bg-dark', '--sidebar-bg', '--sidebar-bg-rgb', '--card-bg', '--border-color', '--border-subtle',
+    '--accent-gold', '--accent-gold-dim', '--accent-green', '--accent-green-dim', '--accent-green-glow',
+    '--accent-green-dark', '--text-main', '--text-muted', '--text-faint', '--shadow-sm', '--shadow-md',
+    '--shadow-lg', '--shadow-glow', '--r-sm', '--r-md', '--r-lg', '--brand-text-accent',
+    '--brand-badge-bg', '--brand-badge-border'
+  ];
+
+  const themePresets = {
+
+    /* 1. GLASSMORPHISM — dark teal/emerald, frosted glass cards */
+    glassmorphism: {
+      '--t-bg': '#0b1210',
+      '--t-bg-image': 'radial-gradient(circle at 20% 20%, rgba(16,185,129,0.10), transparent 45%), radial-gradient(circle at 80% 70%, rgba(13,148,136,0.10), transparent 50%)',
+      '--t-card-bg': 'rgba(255,255,255,0.06)',
+      '--t-card-bg-solid': '#121a18',
+      '--t-sidebar-bg': 'rgba(10,16,14,0.55)',
+      '--t-sidebar-bg-rgb': '10, 16, 14',
+      '--t-border': 'rgba(255,255,255,0.10)',
+      '--t-border-strong': 'rgba(255,255,255,0.18)',
+      '--t-text': '#eaf5f0',
+      '--t-text-muted': '#9fb3ac',
+      '--t-text-faint': '#66786f',
+      '--t-accent': '#10b981',
+      '--t-accent-dark': '#0a8a63',
+      '--t-accent-dim': 'rgba(16,185,129,0.16)',
+      '--t-accent-glow': 'rgba(16,185,129,0.35)',
+      '--t-accent-contrast': '#06120d',
+      '--t-blur': '16px',
+      '--t-radius-sm': '8px',
+      '--t-radius-md': '16px',
+      '--t-radius-lg': '24px',
+      '--t-shadow-sm': '0 1px 2px rgba(0,0,0,0.24)',
+      '--t-shadow-md': '0 8px 24px rgba(0,0,0,0.28)',
+      '--t-shadow-lg': '0 16px 48px rgba(0,0,0,0.34)',
+      '--t-shadow-inset': 'inset 0 1px 0 rgba(255,255,255,0.06)',
+      '--t-border-glow': '0 0 20px rgba(16,185,129,0.35)',
+    },
+
+    /* 2. CYBER GOLD — pitch black, amber-gold glow, sharp edges */
+    cyberGold: {
+      '--t-bg': '#000000',
+      '--t-bg-image': 'linear-gradient(180deg, rgba(234,179,8,0.05), transparent 30%)',
+      '--t-card-bg': 'rgba(20,18,10,0.85)',
+      '--t-card-bg-solid': '#0d0c08',
+      '--t-sidebar-bg': 'rgba(0,0,0,0.9)',
+      '--t-sidebar-bg-rgb': '0, 0, 0',
+      '--t-border': 'rgba(234,179,8,0.25)',
+      '--t-border-strong': 'rgba(234,179,8,0.5)',
+      '--t-text': '#fdf6e3',
+      '--t-text-muted': '#b8ac8a',
+      '--t-text-faint': '#6b6350',
+      '--t-accent': '#EAB308',
+      '--t-accent-dark': '#a67c00',
+      '--t-accent-dim': 'rgba(234,179,8,0.14)',
+      '--t-accent-glow': 'rgba(234,179,8,0.55)',
+      '--t-accent-contrast': '#1a1400',
+      '--t-blur': '0px',
+      '--t-radius-sm': '2px',
+      '--t-radius-md': '4px',
+      '--t-radius-lg': '6px',
+      '--t-shadow-sm': '0 0 0 1px rgba(234,179,8,0.15)',
+      '--t-shadow-md': '0 0 20px rgba(234,179,8,0.12), 0 4px 12px rgba(0,0,0,0.6)',
+      '--t-shadow-lg': '0 0 40px rgba(234,179,8,0.18), 0 12px 32px rgba(0,0,0,0.7)',
+      '--t-shadow-inset': 'none',
+      '--t-border-glow': '0 0 24px rgba(234,179,8,0.45)',
+    },
+
+    /* 3. SOFT NEUMORPHIC — extruded grey-blue UI, bold blue accent */
+    neumorphic: {
+      '--t-bg': '#e4e9f0',
+      '--t-bg-image': 'none',
+      '--t-card-bg': '#e4e9f0',
+      '--t-card-bg-solid': '#e4e9f0',
+      '--t-sidebar-bg': '#e4e9f0',
+      '--t-sidebar-bg-rgb': '228, 233, 240',
+      '--t-border': 'rgba(255,255,255,0.6)',
+      '--t-border-strong': 'rgba(163,177,198,0.5)',
+      '--t-text': '#2b3446',
+      '--t-text-muted': '#5c6b82',
+      '--t-text-faint': '#8b97ab',
+      '--t-accent': '#2563eb',
+      '--t-accent-dark': '#1d4fd1',
+      '--t-accent-dim': 'rgba(37,99,235,0.12)',
+      '--t-accent-glow': 'rgba(37,99,235,0.3)',
+      '--t-accent-contrast': '#ffffff',
+      '--t-blur': '0px',
+      '--t-radius-sm': '10px',
+      '--t-radius-md': '20px',
+      '--t-radius-lg': '28px',
+      '--t-shadow-sm': '3px 3px 6px #b8c0cc, -3px -3px 6px #ffffff',
+      '--t-shadow-md': '8px 8px 16px #b8c0cc, -8px -8px 16px #ffffff',
+      '--t-shadow-lg': '14px 14px 28px #b8c0cc, -14px -14px 28px #ffffff',
+      '--t-shadow-inset': 'inset 2px 2px 5px #b8c0cc, inset -2px -2px 5px #ffffff',
+      '--t-border-glow': 'none',
+    },
+
+    /* 4. NATURE MINIMAL — sage green, dark forest bg, soft rounded cards */
+    natureMinimal: {
+      '--t-bg': '#141d18',
+      '--t-bg-image': 'none',
+      '--t-card-bg': '#1c2721',
+      '--t-card-bg-solid': '#1c2721',
+      '--t-sidebar-bg': '#111a15',
+      '--t-sidebar-bg-rgb': '17, 26, 21',
+      '--t-border': 'rgba(168,192,175,0.14)',
+      '--t-border-strong': 'rgba(168,192,175,0.28)',
+      '--t-text': '#e7efe9',
+      '--t-text-muted': '#a3b6ab',
+      '--t-text-faint': '#67796f',
+      '--t-accent': '#8faf8a',
+      '--t-accent-dark': '#6d8a68',
+      '--t-accent-dim': 'rgba(143,175,138,0.16)',
+      '--t-accent-glow': 'rgba(143,175,138,0.28)',
+      '--t-accent-contrast': '#10190f',
+      '--t-blur': '0px',
+      '--t-radius-sm': '10px',
+      '--t-radius-md': '18px',
+      '--t-radius-lg': '26px',
+      '--t-shadow-sm': '0 1px 3px rgba(0,0,0,0.3)',
+      '--t-shadow-md': '0 6px 20px rgba(0,0,0,0.32)',
+      '--t-shadow-lg': '0 14px 36px rgba(0,0,0,0.38)',
+      '--t-shadow-inset': 'none',
+      '--t-border-glow': '0 0 16px rgba(143,175,138,0.3)',
+    },
+  };
+
+  // Metadata for the picker cards only — never read by applyTheme(), just rendering.
+  const themePresetMeta = {
+    glassmorphism: { name: 'Glassmorphism',   tagline: 'Dark teal/emerald frosted glass, rounded corners.', swatch: 'linear-gradient(135deg,#0b1210 0%,#12352a 55%,#10b981 100%)' },
+    cyberGold:     { name: 'Cyber Gold',      tagline: 'Pitch black with glowing amber-gold borders.',      swatch: 'linear-gradient(135deg,#000000 0%,#1a1400 55%,#EAB308 100%)' },
+    neumorphic:    { name: 'Soft Neumorphic', tagline: 'Extruded grey-blue UI, tactile, bold blue accent.', swatch: 'linear-gradient(135deg,#e4e9f0 0%,#c8d0dc 55%,#2563eb 100%)' },
+    natureMinimal: { name: 'Nature Minimal',  tagline: 'Sage green on dark forest, soft rounded cards.',    swatch: 'linear-gradient(135deg,#141d18 0%,#243830 55%,#8faf8a 100%)' },
+  };
+
+  /**
+   * Applies a theme preset: writes its --t-* tokens onto <html>, clears any inline legacy-var
+   * overrides the UI Launcher module may have set (so the CSS mapping takes over cleanly),
+   * flags <html> with data-theme-preset (wins the specificity tie vs. Dark/Light Mode — see the
+   * CSS comment near the token definitions), persists the choice, and re-syncs the picker UI.
+   */
+  function applyTheme(themeKey) {
+    const preset = themePresets[themeKey];
+    if (!preset) { console.warn(`applyTheme: unknown theme key "${themeKey}"`); return false; }
+
+    const root = document.documentElement;
+    LEGACY_VARS_TO_CLEAR.forEach(v => root.style.removeProperty(v));
+    for (const [varName, value] of Object.entries(preset)) {
+      root.style.setProperty(varName, value);
+    }
+    root.setAttribute('data-theme-preset', themeKey);
+
+    try { localStorage.setItem(THEME_STORAGE_KEY, themeKey); } catch (e) { /* private mode etc. */ }
+
+    document.dispatchEvent(new CustomEvent('themechange', { detail: { theme: themeKey } }));
+    syncDataPresetActiveState(themeKey);
+    return true;
+  }
+
+  function renderDataPresetGrid() {
+    const grid = document.getElementById('teDataPresetGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    Object.keys(themePresets).forEach(key => {
+      const meta = themePresetMeta[key];
+      const card = document.createElement('div');
+      card.className = 'te-launcher-card';
+      card.dataset.dataPreset = key;
+      card.innerHTML = `
+        <div class="te-launcher-check">✓</div>
+        <div class="te-launcher-swatch" style="background:${meta.swatch}"></div>
+        <span class="te-launcher-name">${meta.name}</span>
+        <span class="te-launcher-tag">${meta.tagline}</span>
+      `;
+      card.addEventListener('click', () => applyTheme(key));
+      grid.appendChild(card);
+    });
+  }
+
+  function syncDataPresetActiveState(activeKey) {
+    document.querySelectorAll('#teDataPresetGrid .te-launcher-card').forEach(card => {
+      card.classList.toggle('active', card.dataset.dataPreset === activeKey);
+    });
+  }
+
+  function initTheme() {
+    let saved = 'glassmorphism';
+    try { saved = localStorage.getItem(THEME_STORAGE_KEY) || 'glassmorphism'; } catch (e) { /* ignore */ }
+    renderDataPresetGrid();
+    applyTheme(themePresets[saved] ? saved : 'glassmorphism');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTheme);
+  } else {
+    initTheme();
+  }
+
+  window.DataThemeEngine = { themePresets, applyTheme };
 })();
 </script>
 
