@@ -1438,14 +1438,24 @@
     .co-actions .btn:disabled { opacity: 0.35; cursor: not-allowed; }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.3); }
 
-    .receipt-thermal { background: #fff; color: #000; font-family: 'Courier New', monospace; padding: 15px; border-radius: 6px; font-size: 0.8rem; line-height: 1.6; }
+    .receipt-thermal { box-sizing: border-box; background: #fff; color: #000; font-family: 'Courier New', monospace; padding: 15px; border-radius: 6px; font-size: 0.8rem; line-height: 1.6; max-width: 100%; overflow-x: hidden; }
     .receipt-thermal hr { border: none; border-top: 1px dashed #000; margin: 8px 0; }
     .receipt-thermal .r-row { display: flex; justify-content: space-between; gap: 10px; }
     .receipt-thermal .r-title { text-align: center; font-weight: 800; font-size: 1rem; margin-bottom: 4px; }
     .receipt-thermal .r-center { text-align: center; }
-    .receipt-thermal table { width: 100%; border-collapse: collapse; margin: 4px 0 6px; font-size: 0.68rem; }
-    .receipt-thermal th, .receipt-thermal td { border: 1px solid #ccc; padding: 2px 4px; text-align: left; background: transparent; color: #000; }
-    .receipt-thermal th { font-size: 0.65rem; text-transform: uppercase; }
+    /* table-layout: fixed + explicit % widths below stop columns from sizing off their content
+       (long names/phone numbers, "10:30 AM" times) — that was what pushed the table past the
+       container and clipped PRICE. Widths sum to exactly 100%. */
+    .receipt-thermal table { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; margin: 4px 0 6px; font-size: 0.65rem; }
+    .receipt-thermal th, .receipt-thermal td { box-sizing: border-box; border: 1px solid #ccc; padding: 2px 3px; text-align: left; background: transparent; color: #000; overflow-wrap: break-word; word-break: break-word; }
+    .receipt-thermal th { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0; }
+    .receipt-thermal th:nth-child(1), .receipt-thermal td:nth-child(1) { width: 6%; }   /* # */
+    .receipt-thermal th:nth-child(2), .receipt-thermal td:nth-child(2) { width: 24%; }  /* Player */
+    .receipt-thermal th:nth-child(3), .receipt-thermal td:nth-child(3) { width: 15%; }  /* Start */
+    .receipt-thermal th:nth-child(4), .receipt-thermal td:nth-child(4) { width: 15%; }  /* End */
+    .receipt-thermal th:nth-child(5), .receipt-thermal td:nth-child(5) { width: 12%; }  /* Dur. */
+    .receipt-thermal th:nth-child(6), .receipt-thermal td:nth-child(6) { width: 10%; text-align: center; } /* Type */
+    .receipt-thermal th:nth-child(7), .receipt-thermal td:nth-child(7) { width: 18%; text-align: right; padding-right: 5px; } /* Price */
 
     /* ---- Payment QR Code block (printed in the receipt footer / payment section) ----
        Static HBL QR, kept small and centered so it sits neatly at the bottom of the
