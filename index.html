@@ -3828,18 +3828,20 @@
           <div class="te-launcher-grid" id="teLauncherGrid"></div>
         </div>
 
-        <!-- Data-Driven Theme Engine — a 49-theme library of standalone design-system presets
-             (Cyber & Neon, Glass & Frost, Dark & OLED, Earthy & Nature, Luxury & Metallic, Pastel
-             & Light, Vibrant & Gradients). Separate from UI Launchers above: these apply through
-             the --t-* token layer (see the :root/html[data-theme-preset] CSS near the top of
-             <head>) rather than the legacy colors/effects/wallpaper settings object, and are
-             driven by themePresets + applyTheme() in the Theme Engine module near the end of
+        <!-- Data-Driven Theme Engine — a small, curated set of 8 premium design-system presets:
+             the original core 4 (Glassmorphism, Cyber Gold, Soft Neumorphic, Nature Minimal) plus
+             4 high-end executive additions (OLED Midnight Emerald, Royal Obsidian, Titanium
+             Frost, Velvet Syndicate). Deliberately kept small rather than a large generic
+             library — quality over quantity. Separate from UI Launchers above: these apply
+             through the --t-* token layer (see the :root/html[data-theme-preset] CSS near the
+             top of <head>) rather than the legacy colors/effects/wallpaper settings object, and
+             are driven by themePresets + applyTheme() in the Theme Engine module near the end of
              <body>. Picking a card here always wins visually over UI Launchers or the Dark/Light
              toggle (see the CSS specificity note where html[data-theme-preset] is defined). -->
         <div class="te-section" data-section="dataPresets">
           <div class="te-row">
             <label>Data Presets</label>
-            <div class="te-hint">A library of 49 complete design systems — click a card to apply instantly. Takes over the base look (colors, blur, shadows, radius) app-wide and remembers your pick.</div>
+            <div class="te-hint">8 curated premium design systems — click a card to apply instantly. Takes over the base look (colors, blur, shadows, radius) app-wide and remembers your pick.</div>
           </div>
           <div class="te-preset-grid" id="teDataPresetGrid"></div>
         </div>
@@ -19426,23 +19428,16 @@
   .te-launcher-check { position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--accent-green, #00e676); color: #06210f; font-size: .6rem; font-weight: 900; display: none; align-items: center; justify-content: center; }
   .te-launcher-card.active .te-launcher-check { display: flex; }
 
-  /* ---------- Data Presets grid (40-50 one-click theme-token presets) ---------- */
-  /* Own container + card classes (distinct from .te-launcher-grid/.te-launcher-card above) so
-     this library can grow independently without affecting the UI Launchers tab. Fixed 480px
-     scroll region keeps the rest of the Theme & Appearance panel (tabs, footer) from being
-     pushed off-screen by a long library, with a slim custom scrollbar to match the app chrome. */
+  /* ---------- Data Presets grid (8 curated premium theme-token presets) ---------- */
+  /* Own container + card classes (distinct from .te-launcher-grid/.te-launcher-card above).
+     Deliberately a small, fixed set — no scroll region / scrollbar needed since all 8 cards
+     lay out cleanly in a couple of rows on desktop and stack simply on mobile. */
   .te-preset-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 8px;
-    max-height: 480px; overflow-y: auto; padding-right: 6px; margin-right: -6px;
-    scrollbar-width: thin; scrollbar-color: var(--accent-green, #00e676) transparent;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 8px;
   }
-  .te-preset-grid::-webkit-scrollbar { width: 8px; }
-  .te-preset-grid::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 8px; }
-  .te-preset-grid::-webkit-scrollbar-thumb { background: var(--accent-green, #00e676); border-radius: 8px; opacity: .6; }
-  .te-preset-grid::-webkit-scrollbar-thumb:hover { background: var(--accent-gold, #EAB308); }
   .te-preset-card {
     position: relative; border: 2px solid var(--border-color, #2a2f3d); border-radius: 12px;
-    padding: 12px 10px 10px; cursor: pointer; text-align: left; overflow: hidden;
+    padding: 14px 12px 12px; cursor: pointer; text-align: left; overflow: hidden;
     background: var(--card-bg, #1e222b); transition: border-color .2s ease, transform .15s ease, box-shadow .2s ease;
   }
   .te-preset-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.28); }
@@ -19451,10 +19446,10 @@
   /* Mini live palette preview: 3 swatches (bg / card / accent) built from the preset's own
      tokens at render time — see renderDataPresetGrid() — so previews can never drift out of
      sync with what applyTheme() actually sets. */
-  .te-preset-palette { display: flex; height: 40px; border-radius: 8px; overflow: hidden; margin-bottom: 8px; box-shadow: inset 0 0 10px rgba(0,0,0,.25); }
+  .te-preset-palette { display: flex; height: 44px; border-radius: 8px; overflow: hidden; margin-bottom: 10px; box-shadow: inset 0 0 10px rgba(0,0,0,.25); }
   .te-preset-palette span { flex: 1 1 33.33%; display: block; }
-  .te-preset-name { font-size: .74rem; font-weight: 800; color: var(--text-main, #f0f4f8); display: block; }
-  .te-preset-tag { font-size: .6rem; color: var(--text-muted, #8b95a5); display: block; margin-top: 3px; line-height: 1.3; }
+  .te-preset-name { font-size: .78rem; font-weight: 800; color: var(--text-main, #f0f4f8); display: block; }
+  .te-preset-tag { font-size: .62rem; color: var(--text-muted, #8b95a5); display: block; margin-top: 3px; line-height: 1.35; }
   .te-preset-check { position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--accent-green, #00e676); color: #06210f; font-size: .6rem; font-weight: 900; display: none; align-items: center; justify-content: center; }
   .te-preset-card.active .te-preset-check { display: flex; }
 
@@ -20278,7 +20273,7 @@
 </script>
 
 <!-- ============================================================
-     DATA-DRIVEN THEME ENGINE — 49-theme design-system preset library
+     DATA-DRIVEN THEME ENGINE — 8-preset curated premium design-system library
      Separate, lightweight sibling to the UI Launcher module above: writes only the --t-* tokens
      (mapped to the app's existing variable names via the html[data-theme-preset] CSS rule near
      the top of <head>) instead of the full colors/effects/wallpaper/typography settings object.
@@ -20307,7 +20302,9 @@
   // Theme token factory — every preset below defines the same complete set
   // of --t-* tokens (bg, card, borders, text, accent, blur, radius, shadow,
   // glow) via this one helper so nothing is ever accidentally left out.
-  // Category comments group the 50 presets to match the picker's variety.
+  // Deliberately a small, curated set (the original core 4 + 4 premium
+  // executive additions) rather than a large generic library — see the
+  // "Data Presets" tab comment below.
   // ----------------------------------------------------------------------
   function mkTheme(o) {
     const r = o.radius || [10, 18, 26];
@@ -20342,98 +20339,9 @@
 
   const themePresets = {
 
-    /* ================= CYBER & NEON ================= */
+    /* ================= ORIGINAL CORE 4 ================= */
 
-    cyberpunk: mkTheme({
-      bg: '#0a0014', bgImage: 'radial-gradient(circle at 15% 15%, rgba(255,0,170,0.14), transparent 45%), radial-gradient(circle at 85% 75%, rgba(0,229,255,0.12), transparent 50%)',
-      cardBg: 'rgba(20,4,36,0.72)', cardSolid: '#150726', sidebarBg: 'rgba(8,0,16,0.85)', sidebarRgb: '8, 0, 16',
-      border: 'rgba(255,0,170,0.28)', borderStrong: 'rgba(0,229,255,0.4)',
-      text: '#f5e8ff', textMuted: '#b79ad1', textFaint: '#6f5985',
-      accent: '#ff00aa', accentDark: '#c40080', accentDim: 'rgba(255,0,170,0.16)', accentGlow: 'rgba(0,229,255,0.5)', accentContrast: '#1a0010',
-      blur: '6px', radius: [4, 8, 14],
-      shadowSm: '0 0 0 1px rgba(255,0,170,0.2)', shadowMd: '0 0 26px rgba(255,0,170,0.22), 0 6px 18px rgba(0,0,0,0.55)', shadowLg: '0 0 48px rgba(0,229,255,0.28), 0 16px 40px rgba(0,0,0,0.6)',
-      borderGlow: '0 0 26px rgba(255,0,170,0.5)',
-    }),
-
-    synthwave84: mkTheme({
-      bg: '#1a0b2e', bgImage: 'linear-gradient(180deg, rgba(255,60,172,0.12), transparent 40%), linear-gradient(0deg, rgba(0,180,255,0.10), transparent 45%)',
-      cardBg: 'rgba(45,16,74,0.68)', cardSolid: '#2a0f4a', sidebarBg: 'rgba(20,8,38,0.85)', sidebarRgb: '20, 8, 38',
-      border: 'rgba(255,113,206,0.3)', borderStrong: 'rgba(255,113,206,0.5)',
-      text: '#fbe9ff', textMuted: '#c4a3dd', textFaint: '#7c6592',
-      accent: '#ff71ce', accentDark: '#e0349e', accentDim: 'rgba(255,113,206,0.18)', accentGlow: 'rgba(1,205,254,0.45)', accentContrast: '#210033',
-      blur: '4px', radius: [2, 6, 10],
-      shadowSm: '0 0 0 1px rgba(255,113,206,0.25)', shadowMd: '0 0 24px rgba(255,113,206,0.25), 0 6px 16px rgba(0,0,0,0.5)', shadowLg: '0 0 46px rgba(1,205,254,0.3), 0 14px 36px rgba(0,0,0,0.55)',
-      borderGlow: '0 0 24px rgba(255,113,206,0.55)',
-    }),
-
-    tokyoNight: mkTheme({
-      bg: '#1a1b26', bgImage: 'radial-gradient(circle at 75% 20%, rgba(122,162,247,0.10), transparent 50%)',
-      cardBg: 'rgba(36,40,59,0.75)', cardSolid: '#24283b', sidebarBg: 'rgba(22,23,33,0.9)', sidebarRgb: '22, 23, 33',
-      border: 'rgba(122,162,247,0.18)', borderStrong: 'rgba(122,162,247,0.32)',
-      text: '#c0caf5', textMuted: '#8b93b8', textFaint: '#565f8c',
-      accent: '#7aa2f7', accentDark: '#5a7fd4', accentDim: 'rgba(122,162,247,0.15)', accentGlow: 'rgba(122,162,247,0.35)', accentContrast: '#0d1120',
-      blur: '8px', radius: [6, 12, 18],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.35)', shadowMd: '0 8px 22px rgba(0,0,0,0.4)', shadowLg: '0 18px 44px rgba(0,0,0,0.5)',
-      borderGlow: '0 0 18px rgba(122,162,247,0.35)',
-    }),
-
-    electricViolet: mkTheme({
-      bg: '#0f0620', bgImage: 'radial-gradient(circle at 30% 30%, rgba(139,92,246,0.16), transparent 50%)',
-      cardBg: 'rgba(30,14,54,0.7)', cardSolid: '#1c0f36', sidebarBg: 'rgba(14,6,28,0.88)', sidebarRgb: '14, 6, 28',
-      border: 'rgba(139,92,246,0.28)', borderStrong: 'rgba(139,92,246,0.48)',
-      text: '#ede9fe', textMuted: '#ad9edd', textFaint: '#6b5f8f',
-      accent: '#8b5cf6', accentDark: '#6d3ff0', accentDim: 'rgba(139,92,246,0.18)', accentGlow: 'rgba(139,92,246,0.5)', accentContrast: '#0f0620',
-      blur: '10px', radius: [8, 14, 22],
-      shadowSm: '0 0 0 1px rgba(139,92,246,0.2)', shadowMd: '0 0 24px rgba(139,92,246,0.22), 0 8px 20px rgba(0,0,0,0.4)', shadowLg: '0 0 48px rgba(139,92,246,0.3), 0 18px 42px rgba(0,0,0,0.5)',
-      borderGlow: '0 0 26px rgba(139,92,246,0.5)',
-    }),
-
-    matrixGreen: mkTheme({
-      bg: '#000602', bgImage: 'radial-gradient(circle at 50% 0%, rgba(0,255,102,0.08), transparent 55%)',
-      cardBg: 'rgba(0,20,8,0.78)', cardSolid: '#001a0a', sidebarBg: 'rgba(0,6,2,0.92)', sidebarRgb: '0, 6, 2',
-      border: 'rgba(0,255,102,0.25)', borderStrong: 'rgba(0,255,102,0.45)',
-      text: '#c8ffd9', textMuted: '#6fbf8c', textFaint: '#3a6b4d',
-      accent: '#00ff66', accentDark: '#00c250', accentDim: 'rgba(0,255,102,0.14)', accentGlow: 'rgba(0,255,102,0.5)', accentContrast: '#00170a',
-      blur: '0px', radius: [2, 4, 6],
-      shadowSm: '0 0 0 1px rgba(0,255,102,0.2)', shadowMd: '0 0 22px rgba(0,255,102,0.18), 0 4px 14px rgba(0,0,0,0.6)', shadowLg: '0 0 44px rgba(0,255,102,0.25), 0 14px 34px rgba(0,0,0,0.7)',
-      borderGlow: '0 0 24px rgba(0,255,102,0.5)',
-    }),
-
-    solarizedDark: mkTheme({
-      bg: '#002b36', bgImage: 'none',
-      cardBg: 'rgba(7,54,66,0.85)', cardSolid: '#073642', sidebarBg: 'rgba(0,32,42,0.92)', sidebarRgb: '0, 32, 42',
-      border: 'rgba(147,161,161,0.2)', borderStrong: 'rgba(147,161,161,0.35)',
-      text: '#fdf6e3', textMuted: '#93a1a1', textFaint: '#5a7373',
-      accent: '#2aa198', accentDark: '#1f7a73', accentDim: 'rgba(42,161,152,0.16)', accentGlow: 'rgba(42,161,152,0.35)', accentContrast: '#001519',
-      blur: '0px', radius: [4, 8, 12],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.3)', shadowMd: '0 6px 18px rgba(0,0,0,0.35)', shadowLg: '0 14px 36px rgba(0,0,0,0.42)',
-      borderGlow: '0 0 16px rgba(42,161,152,0.3)',
-    }),
-
-    neonMiami: mkTheme({
-      bg: '#0d0221', bgImage: 'linear-gradient(135deg, rgba(255,42,109,0.14), transparent 50%), linear-gradient(315deg, rgba(21,244,238,0.12), transparent 50%)',
-      cardBg: 'rgba(24,8,48,0.7)', cardSolid: '#180830', sidebarBg: 'rgba(10,2,24,0.88)', sidebarRgb: '10, 2, 24',
-      border: 'rgba(21,244,238,0.28)', borderStrong: 'rgba(255,42,109,0.4)',
-      text: '#eafffe', textMuted: '#9fd8d4', textFaint: '#5c7f7d',
-      accent: '#15f4ee', accentDark: '#0dbdb8', accentDim: 'rgba(21,244,238,0.16)', accentGlow: 'rgba(255,42,109,0.45)', accentContrast: '#001211',
-      blur: '6px', radius: [4, 10, 16],
-      shadowSm: '0 0 0 1px rgba(21,244,238,0.2)', shadowMd: '0 0 26px rgba(21,244,238,0.2), 0 8px 20px rgba(0,0,0,0.5)', shadowLg: '0 0 48px rgba(255,42,109,0.28), 0 16px 40px rgba(0,0,0,0.55)',
-      borderGlow: '0 0 26px rgba(21,244,238,0.5)',
-    }),
-
-    ghostHacker: mkTheme({
-      bg: '#050708', bgImage: 'none',
-      cardBg: 'rgba(14,18,20,0.82)', cardSolid: '#0e1214', sidebarBg: 'rgba(3,4,5,0.94)', sidebarRgb: '3, 4, 5',
-      border: 'rgba(220,255,240,0.12)', borderStrong: 'rgba(220,255,240,0.24)',
-      text: '#e8fff5', textMuted: '#8fada2', textFaint: '#4c625b',
-      accent: '#39ff14', accentDark: '#2bc70f', accentDim: 'rgba(57,255,20,0.13)', accentGlow: 'rgba(57,255,20,0.4)', accentContrast: '#021400',
-      blur: '2px', radius: [2, 4, 8],
-      shadowSm: '0 0 0 1px rgba(57,255,20,0.15)', shadowMd: '0 0 20px rgba(57,255,20,0.14), 0 6px 16px rgba(0,0,0,0.6)', shadowLg: '0 0 40px rgba(57,255,20,0.2), 0 16px 36px rgba(0,0,0,0.7)',
-      borderGlow: '0 0 20px rgba(57,255,20,0.4)',
-    }),
-
-    /* ================= GLASS & FROST ================= */
-
+    /* 1. GLASSMORPHISM — dark teal/emerald, frosted glass cards */
     glassmorphism: mkTheme({
       bg: '#0b1210', bgImage: 'radial-gradient(circle at 20% 20%, rgba(16,185,129,0.10), transparent 45%), radial-gradient(circle at 80% 70%, rgba(13,148,136,0.10), transparent 50%)',
       cardBg: 'rgba(255,255,255,0.06)', cardSolid: '#121a18', sidebarBg: 'rgba(10,16,14,0.55)', sidebarRgb: '10, 16, 14',
@@ -20445,221 +20353,7 @@
       borderGlow: '0 0 20px rgba(16,185,129,0.35)',
     }),
 
-    midnightCobaltFrost: mkTheme({
-      bg: '#050c1a', bgImage: 'radial-gradient(circle at 25% 15%, rgba(59,130,246,0.14), transparent 50%)',
-      cardBg: 'rgba(255,255,255,0.05)', cardSolid: '#0d1830', sidebarBg: 'rgba(4,9,20,0.6)', sidebarRgb: '4, 9, 20',
-      border: 'rgba(255,255,255,0.09)', borderStrong: 'rgba(96,165,250,0.3)',
-      text: '#e7f0ff', textMuted: '#9bb3d6', textFaint: '#5c7096',
-      accent: '#3b82f6', accentDark: '#2563cf', accentDim: 'rgba(59,130,246,0.16)', accentGlow: 'rgba(59,130,246,0.4)', accentContrast: '#041022',
-      blur: '18px', radius: [10, 18, 26],
-      shadowSm: '0 1px 2px rgba(0,0,0,0.3)', shadowMd: '0 8px 26px rgba(0,0,0,0.35)', shadowLg: '0 18px 50px rgba(0,0,0,0.4)', shadowInset: 'inset 0 1px 0 rgba(255,255,255,0.07)',
-      borderGlow: '0 0 22px rgba(59,130,246,0.4)',
-    }),
-
-    violetIce: mkTheme({
-      bg: '#0d0a1c', bgImage: 'radial-gradient(circle at 75% 25%, rgba(167,139,250,0.14), transparent 50%)',
-      cardBg: 'rgba(255,255,255,0.055)', cardSolid: '#16122c', sidebarBg: 'rgba(10,8,22,0.58)', sidebarRgb: '10, 8, 22',
-      border: 'rgba(255,255,255,0.1)', borderStrong: 'rgba(167,139,250,0.32)',
-      text: '#f1ecff', textMuted: '#ab9fd4', textFaint: '#655c85',
-      accent: '#a78bfa', accentDark: '#8461e8', accentDim: 'rgba(167,139,250,0.16)', accentGlow: 'rgba(167,139,250,0.4)', accentContrast: '#0d0a1c',
-      blur: '18px', radius: [10, 18, 26],
-      shadowSm: '0 1px 2px rgba(0,0,0,0.28)', shadowMd: '0 8px 24px rgba(0,0,0,0.32)', shadowLg: '0 16px 46px rgba(0,0,0,0.38)', shadowInset: 'inset 0 1px 0 rgba(255,255,255,0.07)',
-      borderGlow: '0 0 20px rgba(167,139,250,0.4)',
-    }),
-
-    roseSmokeGlass: mkTheme({
-      bg: '#1a0e12', bgImage: 'radial-gradient(circle at 30% 25%, rgba(244,114,182,0.12), transparent 50%)',
-      cardBg: 'rgba(255,255,255,0.055)', cardSolid: '#241419', sidebarBg: 'rgba(18,10,13,0.58)', sidebarRgb: '18, 10, 13',
-      border: 'rgba(255,255,255,0.1)', borderStrong: 'rgba(244,114,182,0.3)',
-      text: '#fbe8ef', textMuted: '#c79fb0', textFaint: '#7c6069',
-      accent: '#f472b6', accentDark: '#d94e93', accentDim: 'rgba(244,114,182,0.16)', accentGlow: 'rgba(244,114,182,0.38)', accentContrast: '#1a0a10',
-      blur: '16px', radius: [10, 18, 26],
-      shadowSm: '0 1px 2px rgba(0,0,0,0.26)', shadowMd: '0 8px 24px rgba(0,0,0,0.3)', shadowLg: '0 16px 46px rgba(0,0,0,0.36)', shadowInset: 'inset 0 1px 0 rgba(255,255,255,0.06)',
-      borderGlow: '0 0 20px rgba(244,114,182,0.38)',
-    }),
-
-    alpineSnowGlass: mkTheme({
-      bg: '#eef3f8', bgImage: 'radial-gradient(circle at 25% 20%, rgba(255,255,255,0.6), transparent 55%)',
-      cardBg: 'rgba(255,255,255,0.55)', cardSolid: '#ffffff', sidebarBg: 'rgba(255,255,255,0.5)', sidebarRgb: '255, 255, 255',
-      border: 'rgba(255,255,255,0.7)', borderStrong: 'rgba(148,180,214,0.5)',
-      text: '#1e293b', textMuted: '#54677d', textFaint: '#8a9bad',
-      accent: '#0ea5e9', accentDark: '#0b84bd', accentDim: 'rgba(14,165,233,0.14)', accentGlow: 'rgba(14,165,233,0.3)', accentContrast: '#ffffff',
-      blur: '20px', radius: [10, 18, 26],
-      shadowSm: '0 1px 3px rgba(100,130,160,0.18)', shadowMd: '0 8px 24px rgba(100,130,160,0.2)', shadowLg: '0 16px 44px rgba(100,130,160,0.24)', shadowInset: 'inset 0 1px 0 rgba(255,255,255,0.8)',
-      borderGlow: 'none',
-    }),
-
-    sapphireGlass: mkTheme({
-      bg: '#040e1a', bgImage: 'radial-gradient(circle at 70% 20%, rgba(2,132,199,0.16), transparent 50%)',
-      cardBg: 'rgba(255,255,255,0.05)', cardSolid: '#0b1f33', sidebarBg: 'rgba(3,11,20,0.6)', sidebarRgb: '3, 11, 20',
-      border: 'rgba(255,255,255,0.09)', borderStrong: 'rgba(2,132,199,0.35)',
-      text: '#e3f2fd', textMuted: '#93b4cf', textFaint: '#556f82',
-      accent: '#0284c7', accentDark: '#026696', accentDim: 'rgba(2,132,199,0.16)', accentGlow: 'rgba(2,132,199,0.4)', accentContrast: '#020c14',
-      blur: '18px', radius: [8, 16, 24],
-      shadowSm: '0 1px 2px rgba(0,0,0,0.3)', shadowMd: '0 8px 24px rgba(0,0,0,0.34)', shadowLg: '0 16px 46px rgba(0,0,0,0.4)', shadowInset: 'inset 0 1px 0 rgba(255,255,255,0.07)',
-      borderGlow: '0 0 20px rgba(2,132,199,0.4)',
-    }),
-
-    /* ================= DARK & OLED ================= */
-
-    oledPureBlack: mkTheme({
-      bg: '#000000', bgImage: 'none',
-      cardBg: 'rgba(255,255,255,0.035)', cardSolid: '#0a0a0a', sidebarBg: '#000000', sidebarRgb: '0, 0, 0',
-      border: 'rgba(255,255,255,0.08)', borderStrong: 'rgba(255,255,255,0.16)',
-      text: '#f5f5f5', textMuted: '#9a9a9a', textFaint: '#5c5c5c',
-      accent: '#ffffff', accentDark: '#c7c7c7', accentDim: 'rgba(255,255,255,0.1)', accentGlow: 'rgba(255,255,255,0.25)', accentContrast: '#000000',
-      blur: '0px', radius: [4, 8, 12],
-      shadowSm: '0 1px 2px rgba(0,0,0,0.6)', shadowMd: '0 8px 20px rgba(0,0,0,0.7)', shadowLg: '0 16px 40px rgba(0,0,0,0.8)',
-      borderGlow: 'none',
-    }),
-
-    carbonGraphite: mkTheme({
-      bg: '#121212', bgImage: 'none',
-      cardBg: 'rgba(255,255,255,0.04)', cardSolid: '#1c1c1c', sidebarBg: 'rgba(10,10,10,0.9)', sidebarRgb: '10, 10, 10',
-      border: 'rgba(255,255,255,0.08)', borderStrong: 'rgba(255,255,255,0.16)',
-      text: '#eaeaea', textMuted: '#9c9c9c', textFaint: '#5f5f5f',
-      accent: '#9ca3af', accentDark: '#7b828e', accentDim: 'rgba(156,163,175,0.15)', accentGlow: 'rgba(156,163,175,0.3)', accentContrast: '#111111',
-      blur: '0px', radius: [6, 10, 16],
-      shadowSm: '0 1px 2px rgba(0,0,0,0.5)', shadowMd: '0 8px 22px rgba(0,0,0,0.55)', shadowLg: '0 16px 42px rgba(0,0,0,0.6)',
-      borderGlow: 'none',
-    }),
-
-    titaniumSlate: mkTheme({
-      bg: '#1b1f24', bgImage: 'none',
-      cardBg: 'rgba(255,255,255,0.045)', cardSolid: '#242a31', sidebarBg: 'rgba(15,18,21,0.9)', sidebarRgb: '15, 18, 21',
-      border: 'rgba(148,163,184,0.16)', borderStrong: 'rgba(148,163,184,0.28)',
-      text: '#e5e9ee', textMuted: '#94a1b0', textFaint: '#586372',
-      accent: '#64748b', accentDark: '#4c5a6e', accentDim: 'rgba(100,116,139,0.18)', accentGlow: 'rgba(100,116,139,0.3)', accentContrast: '#12151a',
-      blur: '2px', radius: [8, 14, 20],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.4)', shadowMd: '0 8px 22px rgba(0,0,0,0.44)', shadowLg: '0 16px 42px rgba(0,0,0,0.5)',
-      borderGlow: 'none',
-    }),
-
-    darkVelvet: mkTheme({
-      bg: '#140a12', bgImage: 'radial-gradient(circle at 60% 20%, rgba(157,23,77,0.14), transparent 55%)',
-      cardBg: 'rgba(255,255,255,0.04)', cardSolid: '#1f0f1c', sidebarBg: 'rgba(11,6,10,0.9)', sidebarRgb: '11, 6, 10',
-      border: 'rgba(219,39,119,0.18)', borderStrong: 'rgba(219,39,119,0.32)',
-      text: '#f3e4ee', textMuted: '#b18ea6', textFaint: '#6d5563',
-      accent: '#9d174d', accentDark: '#7a1039', accentDim: 'rgba(157,23,77,0.18)', accentGlow: 'rgba(219,39,119,0.35)', accentContrast: '#fdf2f8',
-      blur: '2px', radius: [8, 16, 24],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.45)', shadowMd: '0 8px 24px rgba(0,0,0,0.5)', shadowLg: '0 18px 44px rgba(0,0,0,0.55)',
-      borderGlow: '0 0 18px rgba(219,39,119,0.35)',
-    }),
-
-    obsidianGold: mkTheme({
-      bg: '#0a0a0a', bgImage: 'linear-gradient(180deg, rgba(212,175,55,0.06), transparent 35%)',
-      cardBg: 'rgba(212,175,55,0.05)', cardSolid: '#151310', sidebarBg: 'rgba(6,6,6,0.92)', sidebarRgb: '6, 6, 6',
-      border: 'rgba(212,175,55,0.22)', borderStrong: 'rgba(212,175,55,0.4)',
-      text: '#f5efdc', textMuted: '#b3a781', textFaint: '#6b6450',
-      accent: '#d4af37', accentDark: '#a5871f', accentDim: 'rgba(212,175,55,0.14)', accentGlow: 'rgba(212,175,55,0.4)', accentContrast: '#151002',
-      blur: '0px', radius: [4, 8, 14],
-      shadowSm: '0 0 0 1px rgba(212,175,55,0.16)', shadowMd: '0 0 22px rgba(212,175,55,0.14), 0 8px 20px rgba(0,0,0,0.6)', shadowLg: '0 0 44px rgba(212,175,55,0.2), 0 16px 40px rgba(0,0,0,0.7)',
-      borderGlow: '0 0 22px rgba(212,175,55,0.4)',
-    }),
-
-    jetBlackMinimal: mkTheme({
-      bg: '#000000', bgImage: 'none',
-      cardBg: 'rgba(255,255,255,0.03)', cardSolid: '#0c0c0c', sidebarBg: '#000000', sidebarRgb: '0, 0, 0',
-      border: 'rgba(255,255,255,0.06)', borderStrong: 'rgba(255,255,255,0.12)',
-      text: '#eeeeee', textMuted: '#8f8f8f', textFaint: '#525252',
-      accent: '#22c55e', accentDark: '#189146', accentDim: 'rgba(34,197,94,0.13)', accentGlow: 'rgba(34,197,94,0.28)', accentContrast: '#031a0d',
-      blur: '0px', radius: [2, 4, 6],
-      shadowSm: '0 1px 2px rgba(0,0,0,0.6)', shadowMd: '0 8px 20px rgba(0,0,0,0.7)', shadowLg: '0 16px 38px rgba(0,0,0,0.8)',
-      borderGlow: 'none',
-    }),
-
-    /* ================= EARTHY & NATURE ================= */
-
-    forestMoss: mkTheme({
-      bg: '#141d18', bgImage: 'none',
-      cardBg: '#1c2721', cardSolid: '#1c2721', sidebarBg: '#111a15', sidebarRgb: '17, 26, 21',
-      border: 'rgba(168,192,175,0.14)', borderStrong: 'rgba(168,192,175,0.28)',
-      text: '#e7efe9', textMuted: '#a3b6ab', textFaint: '#67796f',
-      accent: '#8faf8a', accentDark: '#6d8a68', accentDim: 'rgba(143,175,138,0.16)', accentGlow: 'rgba(143,175,138,0.28)', accentContrast: '#10190f',
-      blur: '0px', radius: [10, 18, 26],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.3)', shadowMd: '0 6px 20px rgba(0,0,0,0.32)', shadowLg: '0 14px 36px rgba(0,0,0,0.38)',
-      borderGlow: '0 0 16px rgba(143,175,138,0.3)',
-    }),
-
-    coffeeMocha: mkTheme({
-      bg: '#1c140f', bgImage: 'none',
-      cardBg: '#241a13', cardSolid: '#241a13', sidebarBg: '#180f0a', sidebarRgb: '24, 15, 10',
-      border: 'rgba(196,154,108,0.16)', borderStrong: 'rgba(196,154,108,0.3)',
-      text: '#f0e4d6', textMuted: '#b39a83', textFaint: '#705f4f',
-      accent: '#c4986c', accentDark: '#a1774f', accentDim: 'rgba(196,152,108,0.16)', accentGlow: 'rgba(196,152,108,0.3)', accentContrast: '#160f09',
-      blur: '0px', radius: [8, 16, 22],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.32)', shadowMd: '0 6px 20px rgba(0,0,0,0.36)', shadowLg: '0 14px 38px rgba(0,0,0,0.42)',
-      borderGlow: 'none',
-    }),
-
-    sageMinimal: mkTheme({
-      bg: '#f2f4ef', bgImage: 'none',
-      cardBg: '#ffffff', cardSolid: '#ffffff', sidebarBg: '#eaede4', sidebarRgb: '234, 237, 228',
-      border: 'rgba(120,140,110,0.18)', borderStrong: 'rgba(120,140,110,0.3)',
-      text: '#374035', textMuted: '#6b7a65', textFaint: '#9aa693',
-      accent: '#7a9471', accentDark: '#5f7758', accentDim: 'rgba(122,148,113,0.14)', accentGlow: 'rgba(122,148,113,0.26)', accentContrast: '#ffffff',
-      blur: '0px', radius: [10, 16, 22],
-      shadowSm: '0 1px 3px rgba(100,110,90,0.12)', shadowMd: '0 6px 18px rgba(100,110,90,0.14)', shadowLg: '0 14px 34px rgba(100,110,90,0.16)',
-      borderGlow: 'none',
-    }),
-
-    oceanDepth: mkTheme({
-      bg: '#04141c', bgImage: 'radial-gradient(circle at 30% 80%, rgba(6,182,212,0.1), transparent 55%)',
-      cardBg: 'rgba(255,255,255,0.045)', cardSolid: '#0a2531', sidebarBg: 'rgba(3,11,16,0.85)', sidebarRgb: '3, 11, 16',
-      border: 'rgba(6,182,212,0.18)', borderStrong: 'rgba(6,182,212,0.32)',
-      text: '#e0f7fa', textMuted: '#8fb9c2', textFaint: '#527078',
-      accent: '#06b6d4', accentDark: '#048ba3', accentDim: 'rgba(6,182,212,0.15)', accentGlow: 'rgba(6,182,212,0.35)', accentContrast: '#021a1f',
-      blur: '4px', radius: [8, 16, 24],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.35)', shadowMd: '0 8px 22px rgba(0,0,0,0.38)', shadowLg: '0 16px 42px rgba(0,0,0,0.44)',
-      borderGlow: '0 0 18px rgba(6,182,212,0.35)',
-    }),
-
-    sunsetTerracotta: mkTheme({
-      bg: '#1e120c', bgImage: 'radial-gradient(circle at 70% 20%, rgba(234,88,12,0.14), transparent 55%)',
-      cardBg: 'rgba(255,255,255,0.04)', cardSolid: '#291810', sidebarBg: 'rgba(16,9,6,0.88)', sidebarRgb: '16, 9, 6',
-      border: 'rgba(234,88,12,0.2)', borderStrong: 'rgba(234,88,12,0.34)',
-      text: '#fbe9df', textMuted: '#cba18d', textFaint: '#7d6055',
-      accent: '#ea580c', accentDark: '#c2450a', accentDim: 'rgba(234,88,12,0.16)', accentGlow: 'rgba(234,88,12,0.35)', accentContrast: '#1c0d04',
-      blur: '0px', radius: [8, 16, 22],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.32)', shadowMd: '0 8px 22px rgba(0,0,0,0.36)', shadowLg: '0 16px 40px rgba(0,0,0,0.42)',
-      borderGlow: '0 0 18px rgba(234,88,12,0.35)',
-    }),
-
-    autumnRust: mkTheme({
-      bg: '#1a0f0a', bgImage: 'none',
-      cardBg: '#26160e', cardSolid: '#26160e', sidebarBg: '#170d08', sidebarRgb: '23, 13, 8',
-      border: 'rgba(180,83,9,0.22)', borderStrong: 'rgba(180,83,9,0.36)',
-      text: '#f2e1d3', textMuted: '#c19878', textFaint: '#78604e',
-      accent: '#b45309', accentDark: '#8f4207', accentDim: 'rgba(180,83,9,0.16)', accentGlow: 'rgba(180,83,9,0.3)', accentContrast: '#fdf3e8',
-      blur: '0px', radius: [6, 12, 18],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.32)', shadowMd: '0 8px 22px rgba(0,0,0,0.36)', shadowLg: '0 16px 38px rgba(0,0,0,0.42)',
-      borderGlow: 'none',
-    }),
-
-    desertSand: mkTheme({
-      bg: '#f5efe2', bgImage: 'none',
-      cardBg: '#fffaf0', cardSolid: '#fffaf0', sidebarBg: '#ece2cd', sidebarRgb: '236, 226, 205',
-      border: 'rgba(180,140,90,0.22)', borderStrong: 'rgba(180,140,90,0.36)',
-      text: '#4a3b28', textMuted: '#83705a', textFaint: '#ab9b85',
-      accent: '#c08a45', accentDark: '#9c6d32', accentDim: 'rgba(192,138,69,0.16)', accentGlow: 'rgba(192,138,69,0.3)', accentContrast: '#fffaf0',
-      blur: '0px', radius: [8, 14, 20],
-      shadowSm: '0 1px 3px rgba(120,90,50,0.14)', shadowMd: '0 6px 18px rgba(120,90,50,0.16)', shadowLg: '0 14px 34px rgba(120,90,50,0.18)',
-      borderGlow: 'none',
-    }),
-
-    oliveGarden: mkTheme({
-      bg: '#161a0d', bgImage: 'none',
-      cardBg: '#1f2413', cardSolid: '#1f2413', sidebarBg: '#10130a', sidebarRgb: '16, 19, 10',
-      border: 'rgba(163,177,82,0.18)', borderStrong: 'rgba(163,177,82,0.32)',
-      text: '#eaf0d8', textMuted: '#a8b284', textFaint: '#666f4c',
-      accent: '#84892f', accentDark: '#666b22', accentDim: 'rgba(132,137,47,0.18)', accentGlow: 'rgba(132,137,47,0.3)', accentContrast: '#0d0f06',
-      blur: '0px', radius: [8, 14, 20],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.3)', shadowMd: '0 6px 20px rgba(0,0,0,0.34)', shadowLg: '0 14px 36px rgba(0,0,0,0.4)',
-      borderGlow: 'none',
-    }),
-
-    /* ================= LUXURY & METALLIC ================= */
-
+    /* 2. CYBER GOLD — pitch black, amber-gold glow, sharp edges */
     cyberGold: mkTheme({
       bg: '#000000', bgImage: 'linear-gradient(180deg, rgba(234,179,8,0.05), transparent 30%)',
       cardBg: 'rgba(20,18,10,0.85)', cardSolid: '#0d0c08', sidebarBg: 'rgba(0,0,0,0.9)', sidebarRgb: '0, 0, 0',
@@ -20671,63 +20365,7 @@
       borderGlow: '0 0 24px rgba(234,179,8,0.45)',
     }),
 
-    royalCrimson: mkTheme({
-      bg: '#150507', bgImage: 'radial-gradient(circle at 70% 20%, rgba(190,18,60,0.14), transparent 55%)',
-      cardBg: 'rgba(255,255,255,0.035)', cardSolid: '#20090c', sidebarBg: 'rgba(10,3,4,0.9)', sidebarRgb: '10, 3, 4',
-      border: 'rgba(190,18,60,0.24)', borderStrong: 'rgba(190,18,60,0.4)',
-      text: '#f9e5e8', textMuted: '#c99aa3', textFaint: '#7d5c62',
-      accent: '#be123c', accentDark: '#960e30', accentDim: 'rgba(190,18,60,0.16)', accentGlow: 'rgba(190,18,60,0.4)', accentContrast: '#fdf2f4',
-      blur: '0px', radius: [4, 8, 14],
-      shadowSm: '0 0 0 1px rgba(190,18,60,0.18)', shadowMd: '0 0 22px rgba(190,18,60,0.16), 0 8px 20px rgba(0,0,0,0.55)', shadowLg: '0 0 44px rgba(190,18,60,0.22), 0 16px 40px rgba(0,0,0,0.65)',
-      borderGlow: '0 0 22px rgba(190,18,60,0.4)',
-    }),
-
-    platinumSteel: mkTheme({
-      bg: '#e8eaed', bgImage: 'linear-gradient(135deg, rgba(255,255,255,0.6), transparent 50%)',
-      cardBg: '#f5f6f8', cardSolid: '#f5f6f8', sidebarBg: '#dcdfe4', sidebarRgb: '220, 223, 228',
-      border: 'rgba(100,110,125,0.2)', borderStrong: 'rgba(100,110,125,0.35)',
-      text: '#2b2f36', textMuted: '#5c6470', textFaint: '#8c93a0',
-      accent: '#5b6472', accentDark: '#454d59', accentDim: 'rgba(91,100,114,0.14)', accentGlow: 'rgba(91,100,114,0.24)', accentContrast: '#ffffff',
-      blur: '0px', radius: [6, 12, 18],
-      shadowSm: '0 1px 3px rgba(60,66,76,0.16)', shadowMd: '0 8px 22px rgba(60,66,76,0.18)', shadowLg: '0 16px 40px rgba(60,66,76,0.2)',
-      borderGlow: 'none',
-    }),
-
-    champagneSpark: mkTheme({
-      bg: '#221c14', bgImage: 'linear-gradient(160deg, rgba(247,231,206,0.08), transparent 40%)',
-      cardBg: 'rgba(247,231,206,0.06)', cardSolid: '#2b2419', sidebarBg: 'rgba(16,13,9,0.9)', sidebarRgb: '16, 13, 9',
-      border: 'rgba(247,231,206,0.2)', borderStrong: 'rgba(247,231,206,0.36)',
-      text: '#f9f2e4', textMuted: '#c9bda1', textFaint: '#7c7462',
-      accent: '#e7c9a0', accentDark: '#c7a877', accentDim: 'rgba(231,201,160,0.16)', accentGlow: 'rgba(231,201,160,0.35)', accentContrast: '#221c14',
-      blur: '2px', radius: [8, 16, 22],
-      shadowSm: '0 0 0 1px rgba(231,201,160,0.16)', shadowMd: '0 0 20px rgba(231,201,160,0.14), 0 8px 20px rgba(0,0,0,0.4)', shadowLg: '0 0 40px rgba(231,201,160,0.2), 0 16px 36px rgba(0,0,0,0.46)',
-      borderGlow: '0 0 20px rgba(231,201,160,0.35)',
-    }),
-
-    metallicBronze: mkTheme({
-      bg: '#1c1410', bgImage: 'none',
-      cardBg: 'rgba(205,127,50,0.06)', cardSolid: '#271b13', sidebarBg: 'rgba(14,10,7,0.9)', sidebarRgb: '14, 10, 7',
-      border: 'rgba(205,127,50,0.22)', borderStrong: 'rgba(205,127,50,0.38)',
-      text: '#f2e3d3', textMuted: '#c2a082', textFaint: '#786151',
-      accent: '#cd7f32', accentDark: '#a3652a', accentDim: 'rgba(205,127,50,0.16)', accentGlow: 'rgba(205,127,50,0.35)', accentContrast: '#1c1410',
-      blur: '0px', radius: [6, 12, 18],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.35)', shadowMd: '0 8px 22px rgba(0,0,0,0.4)', shadowLg: '0 16px 40px rgba(0,0,0,0.46)',
-      borderGlow: '0 0 18px rgba(205,127,50,0.35)',
-    }),
-
-    imperialJade: mkTheme({
-      bg: '#0a1512', bgImage: 'radial-gradient(circle at 25% 20%, rgba(0,168,120,0.12), transparent 55%)',
-      cardBg: 'rgba(255,255,255,0.04)', cardSolid: '#101f1a', sidebarBg: 'rgba(6,12,10,0.9)', sidebarRgb: '6, 12, 10',
-      border: 'rgba(0,168,120,0.22)', borderStrong: 'rgba(0,168,120,0.38)',
-      text: '#e2f5ee', textMuted: '#93bbaa', textFaint: '#587266',
-      accent: '#00a878', accentDark: '#00825d', accentDim: 'rgba(0,168,120,0.16)', accentGlow: 'rgba(0,168,120,0.35)', accentContrast: '#031510',
-      blur: '0px', radius: [8, 14, 20],
-      shadowSm: '0 0 0 1px rgba(0,168,120,0.16)', shadowMd: '0 0 20px rgba(0,168,120,0.14), 0 8px 20px rgba(0,0,0,0.45)', shadowLg: '0 0 40px rgba(0,168,120,0.2), 0 16px 36px rgba(0,0,0,0.5)',
-      borderGlow: '0 0 20px rgba(0,168,120,0.35)',
-    }),
-
-    /* ================= PASTEL & LIGHT SYSTEMS ================= */
-
+    /* 3. SOFT NEUMORPHIC — extruded grey-blue UI, bold blue accent */
     neumorphic: mkTheme({
       bg: '#e4e9f0', bgImage: 'none',
       cardBg: '#e4e9f0', cardSolid: '#e4e9f0', sidebarBg: '#e4e9f0', sidebarRgb: '228, 233, 240',
@@ -20738,74 +20376,7 @@
       shadowSm: '3px 3px 6px #b8c0cc, -3px -3px 6px #ffffff', shadowMd: '8px 8px 16px #b8c0cc, -8px -8px 16px #ffffff', shadowLg: '14px 14px 28px #b8c0cc, -14px -14px 28px #ffffff', shadowInset: 'inset 2px 2px 5px #b8c0cc, inset -2px -2px 5px #ffffff',
     }),
 
-    nordicMinimalLight: mkTheme({
-      bg: '#eceff1', bgImage: 'none',
-      cardBg: '#ffffff', cardSolid: '#ffffff', sidebarBg: '#e3e7ea', sidebarRgb: '227, 231, 234',
-      border: 'rgba(76,86,106,0.14)', borderStrong: 'rgba(76,86,106,0.26)',
-      text: '#2e3440', textMuted: '#5e6774', textFaint: '#8d95a0',
-      accent: '#5e81ac', accentDark: '#476789', accentDim: 'rgba(94,129,172,0.12)', accentGlow: 'rgba(94,129,172,0.25)', accentContrast: '#ffffff',
-      blur: '0px', radius: [8, 14, 20],
-      shadowSm: '0 1px 2px rgba(46,52,64,0.08)', shadowMd: '0 6px 16px rgba(46,52,64,0.1)', shadowLg: '0 14px 32px rgba(46,52,64,0.12)',
-      borderGlow: 'none',
-    }),
-
-    sakuraPastel: mkTheme({
-      bg: '#fdf1f3', bgImage: 'radial-gradient(circle at 80% 10%, rgba(251,207,220,0.5), transparent 55%)',
-      cardBg: '#ffffff', cardSolid: '#ffffff', sidebarBg: '#fbe4e9', sidebarRgb: '251, 228, 233',
-      border: 'rgba(244,163,187,0.3)', borderStrong: 'rgba(244,163,187,0.5)',
-      text: '#5c3540', textMuted: '#916671', textFaint: '#bb98a1',
-      accent: '#f472a0', accentDark: '#e14c81', accentDim: 'rgba(244,114,160,0.14)', accentGlow: 'rgba(244,114,160,0.28)', accentContrast: '#ffffff',
-      blur: '0px', radius: [12, 20, 28],
-      shadowSm: '0 1px 3px rgba(200,120,150,0.14)', shadowMd: '0 8px 20px rgba(200,120,150,0.16)', shadowLg: '0 16px 38px rgba(200,120,150,0.18)',
-      borderGlow: 'none',
-    }),
-
-    crispCleanWhite: mkTheme({
-      bg: '#ffffff', bgImage: 'none',
-      cardBg: '#f8f9fb', cardSolid: '#f8f9fb', sidebarBg: '#f1f3f6', sidebarRgb: '241, 243, 246',
-      border: 'rgba(15,23,42,0.08)', borderStrong: 'rgba(15,23,42,0.16)',
-      text: '#0f172a', textMuted: '#475569', textFaint: '#94a3b8',
-      accent: '#111827', accentDark: '#000000', accentDim: 'rgba(17,24,39,0.08)', accentGlow: 'rgba(17,24,39,0.16)', accentContrast: '#ffffff',
-      blur: '0px', radius: [6, 12, 18],
-      shadowSm: '0 1px 2px rgba(15,23,42,0.06)', shadowMd: '0 6px 16px rgba(15,23,42,0.08)', shadowLg: '0 14px 32px rgba(15,23,42,0.1)',
-      borderGlow: 'none',
-    }),
-
-    lavenderMist: mkTheme({
-      bg: '#f4f1fb', bgImage: 'none',
-      cardBg: '#ffffff', cardSolid: '#ffffff', sidebarBg: '#e9e4f7', sidebarRgb: '233, 228, 247',
-      border: 'rgba(167,139,250,0.24)', borderStrong: 'rgba(167,139,250,0.4)',
-      text: '#3d3557', textMuted: '#726a8d', textFaint: '#a49dbd',
-      accent: '#8b7cf6', accentDark: '#6c5ce0', accentDim: 'rgba(139,124,246,0.13)', accentGlow: 'rgba(139,124,246,0.26)', accentContrast: '#ffffff',
-      blur: '0px', radius: [10, 18, 26],
-      shadowSm: '0 1px 3px rgba(140,120,200,0.14)', shadowMd: '0 8px 20px rgba(140,120,200,0.16)', shadowLg: '0 16px 38px rgba(140,120,200,0.18)',
-      borderGlow: 'none',
-    }),
-
-    mintCream: mkTheme({
-      bg: '#f0fbf6', bgImage: 'none',
-      cardBg: '#ffffff', cardSolid: '#ffffff', sidebarBg: '#e2f6ec', sidebarRgb: '226, 246, 236',
-      border: 'rgba(52,211,153,0.24)', borderStrong: 'rgba(52,211,153,0.4)',
-      text: '#0f3d2e', textMuted: '#4c8871', textFaint: '#87b3a2',
-      accent: '#34d399', accentDark: '#22ab77', accentDim: 'rgba(52,211,153,0.13)', accentGlow: 'rgba(52,211,153,0.26)', accentContrast: '#04140e',
-      blur: '0px', radius: [10, 18, 26],
-      shadowSm: '0 1px 3px rgba(60,160,120,0.14)', shadowMd: '0 8px 20px rgba(60,160,120,0.16)', shadowLg: '0 16px 38px rgba(60,160,120,0.18)',
-      borderGlow: 'none',
-    }),
-
-    cottonCandy: mkTheme({
-      bg: '#fdf2fb', bgImage: 'linear-gradient(135deg, rgba(196,181,253,0.3), rgba(251,207,232,0.3))',
-      cardBg: '#ffffff', cardSolid: '#ffffff', sidebarBg: '#f6e4f5', sidebarRgb: '246, 228, 245',
-      border: 'rgba(217,153,238,0.28)', borderStrong: 'rgba(217,153,238,0.44)',
-      text: '#4a2f52', textMuted: '#8a6693', textFaint: '#b899c0',
-      accent: '#d946ef', accentDark: '#b52dcb', accentDim: 'rgba(217,70,239,0.13)', accentGlow: 'rgba(217,70,239,0.26)', accentContrast: '#ffffff',
-      blur: '0px', radius: [12, 20, 28],
-      shadowSm: '0 1px 3px rgba(200,140,220,0.16)', shadowMd: '0 8px 20px rgba(200,140,220,0.18)', shadowLg: '0 16px 38px rgba(200,140,220,0.2)',
-      borderGlow: 'none',
-    }),
-
-    /* ================= VIBRANT & GRADIENTS ================= */
-
+    /* 4. NATURE MINIMAL — sage green, dark forest bg, soft rounded cards */
     natureMinimal: mkTheme({
       bg: '#141d18', bgImage: 'none',
       cardBg: '#1c2721', cardSolid: '#1c2721', sidebarBg: '#111a15', sidebarRgb: '17, 26, 21',
@@ -20817,81 +20388,54 @@
       borderGlow: '0 0 16px rgba(143,175,138,0.3)',
     }),
 
-    auroraBorealis: mkTheme({
-      bg: '#050e17', bgImage: 'linear-gradient(135deg, rgba(16,185,129,0.14), transparent 40%), linear-gradient(315deg, rgba(59,130,246,0.14), transparent 45%)',
-      cardBg: 'rgba(255,255,255,0.05)', cardSolid: '#0d1e2c', sidebarBg: 'rgba(3,8,13,0.85)', sidebarRgb: '3, 8, 13',
-      border: 'rgba(94,234,212,0.22)', borderStrong: 'rgba(94,234,212,0.38)',
-      text: '#e5fbf6', textMuted: '#94c9c0', textFaint: '#557a74',
-      accent: '#5eead4', accentDark: '#2dd4bf', accentDim: 'rgba(94,234,212,0.15)', accentGlow: 'rgba(94,234,212,0.4)', accentContrast: '#04140f',
-      blur: '10px', radius: [10, 18, 26],
-      shadowSm: '0 0 0 1px rgba(94,234,212,0.16)', shadowMd: '0 0 24px rgba(94,234,212,0.16), 0 8px 20px rgba(0,0,0,0.4)', shadowLg: '0 0 46px rgba(59,130,246,0.22), 0 16px 40px rgba(0,0,0,0.46)',
-      borderGlow: '0 0 24px rgba(94,234,212,0.4)',
+    /* ================= PREMIUM EXECUTIVE 4 ================= */
+
+    /* 5. OLED MIDNIGHT EMERALD — ultra-deep black, neon mint accents, subtle blur */
+    oledMidnightEmerald: mkTheme({
+      bg: '#000000', bgImage: 'radial-gradient(circle at 25% 15%, rgba(0,255,180,0.06), transparent 50%)',
+      cardBg: 'rgba(0,255,180,0.035)', cardSolid: '#050a08', sidebarBg: 'rgba(0,0,0,0.94)', sidebarRgb: '0, 0, 0',
+      border: 'rgba(0,255,180,0.16)', borderStrong: 'rgba(0,255,180,0.3)',
+      text: '#e9fff6', textMuted: '#8fc4ac', textFaint: '#4f6f61',
+      accent: '#00ffb2', accentDark: '#00c98a', accentDim: 'rgba(0,255,178,0.13)', accentGlow: 'rgba(0,255,178,0.45)', accentContrast: '#001a10',
+      blur: '10px', radius: [8, 14, 20],
+      shadowSm: '0 0 0 1px rgba(0,255,178,0.14)', shadowMd: '0 0 22px rgba(0,255,178,0.14), 0 8px 20px rgba(0,0,0,0.65)', shadowLg: '0 0 44px rgba(0,255,178,0.2), 0 18px 42px rgba(0,0,0,0.75)',
+      borderGlow: '0 0 22px rgba(0,255,178,0.4)',
     }),
 
-    neonSunset: mkTheme({
-      bg: '#1a0a12', bgImage: 'linear-gradient(160deg, rgba(251,113,133,0.16), transparent 45%), linear-gradient(340deg, rgba(251,191,36,0.14), transparent 45%)',
-      cardBg: 'rgba(255,255,255,0.045)', cardSolid: '#26101a', sidebarBg: 'rgba(12,5,9,0.88)', sidebarRgb: '12, 5, 9',
-      border: 'rgba(251,113,133,0.26)', borderStrong: 'rgba(251,191,36,0.36)',
-      text: '#fdecef', textMuted: '#d1a1ab', textFaint: '#83636b',
-      accent: '#fb7185', accentDark: '#e14e66', accentDim: 'rgba(251,113,133,0.16)', accentGlow: 'rgba(251,191,36,0.4)', accentContrast: '#1a0a10',
-      blur: '4px', radius: [8, 16, 24],
-      shadowSm: '0 0 0 1px rgba(251,113,133,0.2)', shadowMd: '0 0 24px rgba(251,113,133,0.2), 0 8px 20px rgba(0,0,0,0.45)', shadowLg: '0 0 46px rgba(251,191,36,0.26), 0 16px 40px rgba(0,0,0,0.5)',
-      borderGlow: '0 0 24px rgba(251,113,133,0.45)',
+    /* 6. ROYAL OBSIDIAN — deep charcoal/slate, champagne-gold highlights, refined borders */
+    royalObsidian: mkTheme({
+      bg: '#14151a', bgImage: 'linear-gradient(160deg, rgba(212,184,128,0.05), transparent 45%)',
+      cardBg: 'rgba(212,184,128,0.045)', cardSolid: '#1c1d24', sidebarBg: 'rgba(10,11,14,0.92)', sidebarRgb: '10, 11, 14',
+      border: 'rgba(212,184,128,0.18)', borderStrong: 'rgba(212,184,128,0.32)',
+      text: '#f2efe6', textMuted: '#a9a49a', textFaint: '#66625c',
+      accent: '#d4b880', accentDark: '#b0925e', accentDim: 'rgba(212,184,128,0.14)', accentGlow: 'rgba(212,184,128,0.32)', accentContrast: '#14110a',
+      blur: '4px', radius: [6, 12, 18],
+      shadowSm: '0 1px 3px rgba(0,0,0,0.4)', shadowMd: '0 0 20px rgba(212,184,128,0.1), 0 8px 22px rgba(0,0,0,0.5)', shadowLg: '0 0 40px rgba(212,184,128,0.16), 0 18px 42px rgba(0,0,0,0.58)',
+      borderGlow: '0 0 20px rgba(212,184,128,0.32)',
     }),
 
-    cosmicNebula: mkTheme({
-      bg: '#0a0620', bgImage: 'radial-gradient(circle at 20% 30%, rgba(168,85,247,0.18), transparent 50%), radial-gradient(circle at 80% 70%, rgba(236,72,153,0.14), transparent 50%)',
-      cardBg: 'rgba(255,255,255,0.05)', cardSolid: '#160c30', sidebarBg: 'rgba(6,3,16,0.88)', sidebarRgb: '6, 3, 16',
-      border: 'rgba(168,85,247,0.26)', borderStrong: 'rgba(236,72,153,0.36)',
-      text: '#f3e8ff', textMuted: '#b79fd9', textFaint: '#705f8a',
-      accent: '#a855f7', accentDark: '#8b2fe0', accentDim: 'rgba(168,85,247,0.17)', accentGlow: 'rgba(236,72,153,0.42)', accentContrast: '#0a0620',
-      blur: '8px', radius: [10, 18, 26],
-      shadowSm: '0 0 0 1px rgba(168,85,247,0.2)', shadowMd: '0 0 26px rgba(168,85,247,0.2), 0 8px 20px rgba(0,0,0,0.45)', shadowLg: '0 0 50px rgba(236,72,153,0.28), 0 18px 42px rgba(0,0,0,0.5)',
-      borderGlow: '0 0 26px rgba(168,85,247,0.45)',
+    /* 7. TITANIUM FROST — dark metallic grey, icy-blue accents, crisp glass cards */
+    titaniumFrost: mkTheme({
+      bg: '#111418', bgImage: 'radial-gradient(circle at 75% 15%, rgba(148,197,255,0.08), transparent 50%)',
+      cardBg: 'rgba(255,255,255,0.05)', cardSolid: '#1a1e24', sidebarBg: 'rgba(9,11,14,0.9)', sidebarRgb: '9, 11, 14',
+      border: 'rgba(148,197,255,0.16)', borderStrong: 'rgba(148,197,255,0.3)',
+      text: '#eaf2fb', textMuted: '#98a9bc', textFaint: '#586372',
+      accent: '#7fc4ff', accentDark: '#4fa3e8', accentDim: 'rgba(127,196,255,0.14)', accentGlow: 'rgba(127,196,255,0.38)', accentContrast: '#08131e',
+      blur: '14px', radius: [6, 12, 18],
+      shadowSm: '0 1px 2px rgba(0,0,0,0.35)', shadowMd: '0 8px 22px rgba(0,0,0,0.4)', shadowLg: '0 18px 42px rgba(0,0,0,0.48)', shadowInset: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+      borderGlow: '0 0 18px rgba(127,196,255,0.38)',
     }),
 
-    electricCoral: mkTheme({
-      bg: '#180a08', bgImage: 'radial-gradient(circle at 25% 25%, rgba(255,99,72,0.16), transparent 50%)',
-      cardBg: 'rgba(255,255,255,0.045)', cardSolid: '#251310', sidebarBg: 'rgba(12,5,4,0.88)', sidebarRgb: '12, 5, 4',
-      border: 'rgba(255,99,72,0.26)', borderStrong: 'rgba(255,99,72,0.42)',
-      text: '#ffe9e3', textMuted: '#d3a294', textFaint: '#836257',
-      accent: '#ff6348', accentDark: '#e0492f', accentDim: 'rgba(255,99,72,0.16)', accentGlow: 'rgba(255,99,72,0.42)', accentContrast: '#1a0a06',
-      blur: '4px', radius: [8, 16, 22],
-      shadowSm: '0 0 0 1px rgba(255,99,72,0.2)', shadowMd: '0 0 24px rgba(255,99,72,0.2), 0 8px 20px rgba(0,0,0,0.45)', shadowLg: '0 0 46px rgba(255,99,72,0.28), 0 16px 40px rgba(0,0,0,0.5)',
-      borderGlow: '0 0 24px rgba(255,99,72,0.45)',
-    }),
-
-    hyperPop: mkTheme({
-      bg: '#0a0a12', bgImage: 'linear-gradient(120deg, rgba(255,0,128,0.16), transparent 40%), linear-gradient(300deg, rgba(0,255,255,0.14), transparent 40%), linear-gradient(200deg, rgba(255,255,0,0.1), transparent 45%)',
-      cardBg: 'rgba(255,255,255,0.05)', cardSolid: '#171722', sidebarBg: 'rgba(6,6,10,0.88)', sidebarRgb: '6, 6, 10',
-      border: 'rgba(255,0,128,0.28)', borderStrong: 'rgba(0,255,255,0.36)',
-      text: '#fef9ff', textMuted: '#c2b8d1', textFaint: '#767089',
-      accent: '#ff0080', accentDark: '#cc0066', accentDim: 'rgba(255,0,128,0.16)', accentGlow: 'rgba(0,255,255,0.42)', accentContrast: '#12000a',
-      blur: '4px', radius: [6, 14, 20],
-      shadowSm: '0 0 0 1px rgba(255,0,128,0.22)', shadowMd: '0 0 26px rgba(255,0,128,0.22), 0 8px 20px rgba(0,0,0,0.5)', shadowLg: '0 0 50px rgba(0,255,255,0.3), 0 18px 42px rgba(0,0,0,0.55)',
-      borderGlow: '0 0 26px rgba(255,0,128,0.5)',
-    }),
-
-    tropicalPunch: mkTheme({
-      bg: '#0d1a12', bgImage: 'radial-gradient(circle at 20% 20%, rgba(250,204,21,0.14), transparent 50%), radial-gradient(circle at 80% 80%, rgba(16,185,129,0.14), transparent 50%)',
-      cardBg: 'rgba(255,255,255,0.05)', cardSolid: '#152920', sidebarBg: 'rgba(6,14,10,0.85)', sidebarRgb: '6, 14, 10',
-      border: 'rgba(250,204,21,0.24)', borderStrong: 'rgba(16,185,129,0.36)',
-      text: '#eafff2', textMuted: '#9dcbb1', textFaint: '#5c8570',
-      accent: '#facc15', accentDark: '#d1a70c', accentDim: 'rgba(250,204,21,0.16)', accentGlow: 'rgba(16,185,129,0.4)', accentContrast: '#151400',
-      blur: '4px', radius: [10, 18, 26],
-      shadowSm: '0 0 0 1px rgba(250,204,21,0.18)', shadowMd: '0 0 22px rgba(250,204,21,0.18), 0 8px 20px rgba(0,0,0,0.4)', shadowLg: '0 0 44px rgba(16,185,129,0.26), 0 16px 38px rgba(0,0,0,0.46)',
-      borderGlow: '0 0 22px rgba(250,204,21,0.4)',
-    }),
-
-    galaxyPurple: mkTheme({
-      bg: '#0c0620', bgImage: 'radial-gradient(circle at 50% 0%, rgba(99,102,241,0.18), transparent 55%), radial-gradient(circle at 20% 90%, rgba(217,70,239,0.12), transparent 50%)',
-      cardBg: 'rgba(255,255,255,0.05)', cardSolid: '#160f34', sidebarBg: 'rgba(6,3,16,0.88)', sidebarRgb: '6, 3, 16',
-      border: 'rgba(99,102,241,0.28)', borderStrong: 'rgba(217,70,239,0.36)',
-      text: '#ece9ff', textMuted: '#a9a2d9', textFaint: '#665f8f',
-      accent: '#6366f1', accentDark: '#4649c7', accentDim: 'rgba(99,102,241,0.17)', accentGlow: 'rgba(217,70,239,0.4)', accentContrast: '#0c0620',
-      blur: '8px', radius: [10, 18, 26],
-      shadowSm: '0 0 0 1px rgba(99,102,241,0.2)', shadowMd: '0 0 26px rgba(99,102,241,0.2), 0 8px 20px rgba(0,0,0,0.45)', shadowLg: '0 0 50px rgba(217,70,239,0.28), 0 18px 42px rgba(0,0,0,0.5)',
-      borderGlow: '0 0 26px rgba(99,102,241,0.45)',
+    /* 8. VELVET SYNDICATE — dark plum/violet undertones, crimson-gold glowing accents */
+    velvetSyndicate: mkTheme({
+      bg: '#160c14', bgImage: 'radial-gradient(circle at 30% 20%, rgba(190,30,60,0.1), transparent 50%)',
+      cardBg: 'rgba(255,255,255,0.04)', cardSolid: '#20121d', sidebarBg: 'rgba(12,7,11,0.92)', sidebarRgb: '12, 7, 11',
+      border: 'rgba(212,166,90,0.16)', borderStrong: 'rgba(190,30,60,0.3)',
+      text: '#f6e9f0', textMuted: '#b393a3', textFaint: '#6d5763',
+      accent: '#c9366a', accentDark: '#a12454', accentDim: 'rgba(201,54,106,0.16)', accentGlow: 'rgba(212,166,90,0.35)', accentContrast: '#1a0d14',
+      blur: '4px', radius: [8, 14, 20],
+      shadowSm: '0 1px 3px rgba(0,0,0,0.4)', shadowMd: '0 0 20px rgba(201,54,106,0.14), 0 8px 22px rgba(0,0,0,0.5)', shadowLg: '0 0 42px rgba(212,166,90,0.2), 0 18px 42px rgba(0,0,0,0.58)',
+      borderGlow: '0 0 22px rgba(201,54,106,0.4)',
     }),
   };
 
@@ -20900,62 +20444,17 @@
   // preset's own tokens in renderDataPresetGrid() below, so it can never drift out of sync;
   // only the display name + one-line tagline live here.
   const themePresetMeta = {
-    cyberpunk:            { name: 'Cyberpunk',            tagline: 'Neon magenta & cyan glow on near-black.' },
-    synthwave84:          { name: "Synthwave '84",        tagline: 'Retro-futuristic pink & blue grid glow.' },
-    tokyoNight:           { name: 'Tokyo Night',          tagline: 'Cool indigo night-code aesthetic.' },
-    electricViolet:       { name: 'Electric Violet',      tagline: 'Deep purple base, vivid violet glow.' },
-    matrixGreen:          { name: 'Matrix Green',         tagline: 'Terminal-black with phosphor green.' },
-    solarizedDark:        { name: 'Solarized Dark',       tagline: 'Classic muted teal-on-slate palette.' },
-    neonMiami:            { name: 'Neon Miami',           tagline: 'Vice-city pink & turquoise nightlife.' },
-    ghostHacker:          { name: 'Ghost Hacker',         tagline: 'Stealthy black terminal, acid-green text.' },
+    glassmorphism:        { name: 'Glassmorphism',          tagline: 'Dark teal/emerald frosted glass, rounded corners.' },
+    cyberGold:            { name: 'Cyber Gold',             tagline: 'Pitch black with glowing amber-gold borders.' },
+    neumorphic:           { name: 'Soft Neumorphic',        tagline: 'Extruded grey-blue UI, tactile, bold blue accent.' },
+    natureMinimal:        { name: 'Nature Minimal',         tagline: 'Sage green on dark forest, soft rounded cards.' },
 
-    glassmorphism:        { name: 'Deep Emerald Glass',   tagline: 'Dark teal/emerald frosted glass, rounded corners.' },
-    midnightCobaltFrost:  { name: 'Midnight Cobalt Frost',tagline: 'Frosted navy glass with cobalt-blue glow.' },
-    violetIce:            { name: 'Violet Ice',           tagline: 'Icy violet glass over deep indigo.' },
-    roseSmokeGlass:       { name: 'Rose Smoke Glass',     tagline: 'Smoky rose glass on charcoal plum.' },
-    alpineSnowGlass:      { name: 'Alpine Snow Glass',    tagline: 'Bright frosted-white glass, sky-blue accent.' },
-    sapphireGlass:        { name: 'Sapphire Glass',       tagline: 'Deep-blue frosted glass, sapphire glow.' },
-
-    oledPureBlack:        { name: 'OLED Pure Black',      tagline: 'True #000 background for OLED screens.' },
-    carbonGraphite:       { name: 'Carbon Graphite',      tagline: 'Matte charcoal grey, understated accent.' },
-    titaniumSlate:        { name: 'Titanium Slate',       tagline: 'Cool blue-grey metal, muted accent.' },
-    darkVelvet:           { name: 'Dark Velvet',          tagline: 'Plush near-black with deep magenta hint.' },
-    obsidianGold:         { name: 'Obsidian Gold',        tagline: 'Black stone with warm gold veining.' },
-    jetBlackMinimal:      { name: 'Jet Black Minimal',    tagline: 'Ultra-flat black, crisp green accent.' },
-
-    forestMoss:           { name: 'Forest Moss',          tagline: 'Sage green on dark forest, soft rounded cards.' },
-    coffeeMocha:          { name: 'Coffee Mocha',         tagline: 'Warm roasted-bean browns and cream text.' },
-    sageMinimal:          { name: 'Sage Minimal',         tagline: 'Airy off-white with muted sage accent.' },
-    oceanDepth:           { name: 'Ocean Depth',          tagline: 'Deep-sea navy with bright cyan accent.' },
-    sunsetTerracotta:     { name: 'Sunset Terracotta',    tagline: 'Warm clay-orange glow at dusk.' },
-    autumnRust:           { name: 'Autumn Rust',          tagline: 'Fallen-leaf browns with burnt-orange accent.' },
-    desertSand:           { name: 'Desert Sand',          tagline: 'Warm sandy neutrals, sun-baked amber accent.' },
-    oliveGarden:          { name: 'Olive Garden',         tagline: 'Deep olive-green with muted chartreuse accent.' },
-
-    cyberGold:            { name: 'Cyber Gold',           tagline: 'Pitch black with glowing amber-gold borders.' },
-    royalCrimson:         { name: 'Royal Crimson',        tagline: 'Regal deep-red on near-black velvet.' },
-    platinumSteel:        { name: 'Platinum Steel',       tagline: 'Bright brushed-steel neutrals, light mode.' },
-    champagneSpark:       { name: 'Champagne Spark',      tagline: 'Warm bronze-black with champagne shimmer.' },
-    metallicBronze:       { name: 'Metallic Bronze',      tagline: 'Rich bronze tones on dark umber.' },
-    imperialJade:         { name: 'Imperial Jade',        tagline: 'Deep jade-green with imperial polish.' },
-
-    neumorphic:           { name: 'Soft Neumorphic',      tagline: 'Extruded grey-blue UI, tactile, bold blue accent.' },
-    nordicMinimalLight:   { name: 'Nordic Minimal Light', tagline: 'Clean Scandinavian light grey, cool-blue accent.' },
-    sakuraPastel:         { name: 'Sakura Pastel',        tagline: 'Cherry-blossom pink on soft white.' },
-    crispCleanWhite:      { name: 'Crisp Clean White',    tagline: 'Pure white canvas, sharp near-black accent.' },
-    lavenderMist:         { name: 'Lavender Mist',        tagline: 'Soft lilac-white with gentle violet accent.' },
-    mintCream:            { name: 'Mint Cream',           tagline: 'Fresh pale mint with spearmint accent.' },
-    cottonCandy:          { name: 'Cotton Candy',         tagline: 'Playful pink-lilac pastel, magenta accent.' },
-
-    natureMinimal:        { name: 'Nature Minimal',       tagline: 'Sage green on dark forest, soft rounded cards.' },
-    auroraBorealis:       { name: 'Aurora Borealis',      tagline: 'Teal-blue northern-lights gradient glow.' },
-    neonSunset:           { name: 'Neon Sunset',          tagline: 'Hot-pink-to-amber dusk gradient glow.' },
-    cosmicNebula:         { name: 'Cosmic Nebula',        tagline: 'Deep-space purple & pink nebula glow.' },
-    electricCoral:        { name: 'Electric Coral',       tagline: 'Vivid coral-orange glow on near-black.' },
-    hyperPop:             { name: 'Hyper Pop',            tagline: 'Maximalist pink/cyan/yellow color clash.' },
-    tropicalPunch:        { name: 'Tropical Punch',       tagline: 'Sunny yellow & emerald jungle gradient.' },
-    galaxyPurple:         { name: 'Galaxy Purple',        tagline: 'Indigo-to-magenta deep-space gradient.' },
+    oledMidnightEmerald:  { name: 'OLED Midnight Emerald',  tagline: 'Ultra-deep black UI with neon mint accents & subtle blur.' },
+    royalObsidian:        { name: 'Royal Obsidian',         tagline: 'Charcoal/slate with luxury champagne-gold highlights.' },
+    titaniumFrost:        { name: 'Titanium Frost',         tagline: 'Dark metallic grey body, sharp icy-blue glass accents.' },
+    velvetSyndicate:      { name: 'Velvet Syndicate',       tagline: 'Dark plum/violet with rich crimson-gold glow.' },
   };
+
 
   /**
    * Applies a theme preset: writes its --t-* tokens onto <html>, clears any inline legacy-var
