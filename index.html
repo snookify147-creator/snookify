@@ -8480,11 +8480,31 @@
         // was last saved (e.g. a refresh mid-shift), resume it silently — otherwise gate the
         // whole app behind the Start Shift screen. Also make sure the locked staff/branch
         // selectors and the archived-shift table reflect whatever is on record.
-        if (state.currentShift) {
-          applyShiftLockUI();
-          renderShiftStatusBar();
-        } else {
-          openShiftLoginScreen();
+        //
+        // Guard: this whole block is skipped when Firebase Auth IS configured but hasn't
+        // resolved a tenant yet (currentTenantId still null). Without this guard, the very
+        // first loadState() call — the "offline-first paint" fired straight from
+        // DOMContentLoaded, before Firebase even knows who's logged in — always reads an
+        // un-scoped/empty cache (since real shift data is saved under a tenant-suffixed key),
+        // sees no currentShift, and pops the Start Shift screen open + fires the mandatory GPS
+        // check EVERY time, even mid-shift. The real tenant-scoped loadState() call inside
+        // bindTenantFirestoreRefs() (which runs moments later, once auth resolves, and has
+        // currentTenantId set) is what should make this decision — this guard just stops the
+        // premature call from jumping the gun. If Firebase Auth isn't configured at all
+        // (`!auth`), there is no later tenant-scoped call coming, so this IS the one and only
+        // load — the gate runs immediately, same as before.
+        if (!auth || currentTenantId) {
+          if (state.currentShift) {
+            // Resume silently — also make sure the Start Shift screen isn't left open from an
+            // earlier premature call (defense-in-depth; should already be closed by the guard
+            // above, but never leave a stale login modal covering an active session).
+            const overlay = document.getElementById('shiftLoginOverlay');
+            if (overlay) overlay.classList.remove('open');
+            applyShiftLockUI();
+            renderShiftStatusBar();
+          } else {
+            openShiftLoginScreen();
+          }
         }
       }
     }
