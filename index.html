@@ -719,6 +719,17 @@
     .gps-retry-btn { margin-top: 8px; background: rgba(255,82,82,0.18); color: #fff; border: 1px solid var(--danger); border-radius: 6px; padding: 7px 14px; font-weight: 800; font-size: 0.72rem; cursor: pointer; }
     .gps-retry-btn:hover { background: var(--danger); }
     .shift-status-bar { display: flex; align-items: center; gap: 8px; background: rgba(76,175,80,0.12); border: 1px solid var(--accent-green); color: var(--accent-green); border-radius: 8px; padding: 7px 14px; font-size: 0.76rem; font-weight: 700; margin: 10px 0 0; }
+    /* Cloud Sync Status Pill — reflects Firestore's real connection/write state (via
+       appStateDoc's onSnapshot metadata, not just navigator.onLine) so staff always know
+       whether a table/expense/sale entry is safely queued locally or confirmed in the cloud.
+       See setSyncStatus() near the Firebase init block for the state machine driving this. */
+    .sync-status-pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 20px; padding: 5px 12px; font-size: 0.68rem; font-weight: 800; margin-top: 6px; border: 1px solid transparent; white-space: nowrap; }
+    .sync-status-pill .sync-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: currentColor; }
+    .sync-status-pill.sync-online { background: rgba(76,175,80,0.12); border-color: var(--accent-green); color: var(--accent-green); }
+    .sync-status-pill.sync-syncing { background: rgba(255,193,7,0.14); border-color: #ffc107; color: #ffc107; }
+    .sync-status-pill.sync-syncing .sync-dot { animation: gps-spin 1s linear infinite; border: 1.5px solid currentColor; border-right-color: transparent; background: transparent; width: 9px; height: 9px; }
+    .sync-status-pill.sync-offline { background: rgba(255,82,82,0.12); border-color: var(--danger); color: var(--danger); }
+    .sync-status-pill.sync-local { background: rgba(148,163,184,0.14); border-color: #94a3b8; color: #94a3b8; }
     .shutdown-shift-btn { display: none; background: rgba(255,82,82,0.14); color: var(--danger); border: 1px solid var(--danger); border-radius: 8px; padding: 8px 14px; font-weight: 800; font-size: 0.75rem; cursor: pointer; white-space: nowrap; }
     .shutdown-shift-btn:hover { background: var(--danger); color: #fff; }
     .shift-archive-status { font-weight: 800; font-size: 0.68rem; padding: 3px 9px; border-radius: 10px; }
@@ -2338,6 +2349,10 @@
       <div>
         <div class="page-title" id="pageTitle">Live Floor Dashboard</div>
         <div class="page-sub" id="pageSub">Real-time table & revenue overview</div>
+        <!-- Cloud Sync Status Pill — see setSyncStatus() / CSS block above -->
+        <div class="sync-status-pill sync-local" id="syncStatusPill" title="Cloud sync status">
+          <span class="sync-dot"></span><span id="syncStatusText">Local only</span>
+        </div>
       </div>
       <div>
         <div class="branch-select-wrap">
@@ -5582,6 +5597,35 @@
       if (firebaseConfig.apiKey && firebaseConfig.apiKey !== 'YOUR_API_KEY' && typeof firebase !== 'undefined') {
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
+
+        // ---- Offline-first persistence (IndexedDB) ----
+        // Without this, Firestore's offline queue only lives in memory: writes made while
+        // offline survive a dropped connection, but NOT a page refresh/app restart/tab close
+        // before reconnecting — which is exactly the scenario a POS counter hits during a
+        // real Wi-Fi outage. enablePersistence() moves the local cache + write queue into
+        // IndexedDB so queued table/expense/sale entries survive a reload and still flush to
+        // Firestore automatically once connectivity returns. synchronizeTabs lets multiple
+        // browser tabs on the same device (or the same origin opened twice) share one
+        // IndexedDB cache instead of fighting over it. Must be called before any other
+        // Firestore call (get/onSnapshot) — which holds here since bindTenantFirestoreRefs()
+        // (the first place any query/listener is created) only ever runs later, from
+        // auth.onAuthStateChanged().
+        db.enablePersistence({ synchronizeTabs: true }).then(() => {
+          console.info('Snookify: offline persistence enabled — queued changes survive a reload while offline.');
+        }).catch(err => {
+          if (err.code === 'failed-precondition') {
+            // Multiple tabs open and this browser doesn't support synchronizeTabs (rare/older
+            // browsers) — persistence stays active in exactly one tab; every tab still works,
+            // in-memory-only fallback just applies to the extra tabs.
+            console.warn('Snookify: offline persistence only active in the first open tab (multi-tab limitation).', err);
+          } else if (err.code === 'unimplemented') {
+            // Private/incognito mode in some browsers, or a browser without IndexedDB support.
+            console.warn('Snookify: this browser does not support offline persistence — sync still works, but queued offline changes will NOT survive a reload before reconnecting.', err);
+          } else {
+            console.error('Snookify: enablePersistence failed', err);
+          }
+        });
+
         firebaseReady = true;
         functionsReady = typeof firebase.functions === 'function';
         // Collection/doc refs are intentionally NOT created here — there is no tenant to scope
@@ -5593,6 +5637,36 @@
     } catch (e) {
       console.error('Snookify: Firebase init failed — falling back to local-only branch/staff mode.', e);
     }
+
+    /* ---------- Cloud Sync Status Pill ----------
+       Single source of truth for the header badge (#syncStatusPill / #syncStatusText).
+       Driven by two independent signals:
+        1. navigator.onLine / 'online' & 'offline' events — the browser's own network guess.
+        2. appStateDoc's onSnapshot metadata (fromCache / hasPendingWrites) — Firestore's OWN
+           view of whether it currently has a live connection and whether this device has
+           writes it hasn't confirmed with the server yet. This is the more trustworthy signal
+           (a device can show "online" per the OS but still be unable to reach Firestore, e.g.
+           behind a captive portal), so it wins whenever both are available. See
+           initAppStateSync() below, which is where snapshot metadata feeds into this. */
+    let syncPendingWrites = false;
+    function setSyncStatus(mode, text) {
+      const pill = document.getElementById('syncStatusPill');
+      const label = document.getElementById('syncStatusText');
+      if (!pill || !label) return;
+      pill.className = 'sync-status-pill sync-' + mode;
+      label.textContent = text;
+    }
+    function refreshSyncStatusUI() {
+      if (!firebaseReady) { setSyncStatus('local', 'Local device only'); return; }
+      if (!navigator.onLine) { setSyncStatus('offline', 'Offline — changes saved on this device'); return; }
+      if (syncPendingWrites) { setSyncStatus('syncing', 'Syncing…'); return; }
+      setSyncStatus('online', 'All changes synced');
+    }
+    window.addEventListener('online', refreshSyncStatusUI);
+    window.addEventListener('offline', refreshSyncStatusUI);
+    // Some Android WebViews / flaky connections don't fire online/offline reliably — this is
+    // the same safety-net pattern already used by the Report Archive sync queue below.
+    setInterval(refreshSyncStatusUI, 30 * 1000);
 
     // (Re)points every tenant-scoped Firestore ref above at tenants/{tenantId}/... and (re)starts
     // every real-time listener that depends on them. Safe to call again for a different tenantId
@@ -8205,6 +8279,10 @@
     function saveState() {
       localStorage.setItem(tenantStorageKey('snookify_full_state'), JSON.stringify(state));
       if (firebaseReady && appStateDoc) {
+        // Mark "syncing" immediately (don't wait for the debounce) so the pill reflects reality
+        // the instant a staff member makes an entry, not 400ms later.
+        syncPendingWrites = true;
+        refreshSyncStatusUI();
         clearTimeout(appStatePushTimer);
         appStatePushTimer = setTimeout(pushStateToFirestore, 400); // debounced — saveState() fires very often
       }
@@ -8212,6 +8290,10 @@
 
     function pushStateToFirestore() {
       if (!firebaseReady || !appStateDoc) return;
+      // .set() resolves once Firestore's SDK has durably queued the write — while offline (with
+      // enablePersistence active) that means "safely in the IndexedDB outbox", not "confirmed by
+      // the server". The onSnapshot listener below (with includeMetadataChanges) is what actually
+      // clears syncPendingWrites once the server confirms — see initAppStateSync().
       appStateDoc.set({
         payload: JSON.stringify(state),
         _lastWriter: getDeviceId(),
@@ -8334,8 +8416,26 @@
     // file) — the app keeps working exactly as before, local-only, until then.
     function initAppStateSync() {
       if (!firebaseReady || !appStateDoc) return;
-      unsubAppState = appStateDoc.onSnapshot(snap => {
+      // includeMetadataChanges: true is what makes this fire again once a pending write is
+      // actually acknowledged by the server (snap.metadata.hasPendingWrites flips false) and
+      // whenever the SDK's view of connectivity changes (snap.metadata.fromCache) — both of
+      // which drive the header sync pill. Without it we'd only ever see the local optimistic
+      // snapshot and the final remote one, with no visibility into "still offline / still queued".
+      unsubAppState = appStateDoc.onSnapshot({ includeMetadataChanges: true }, snap => {
+        // --- Sync status pill: Firestore's own connectivity/write-queue signal ---
+        syncPendingWrites = snap.metadata.hasPendingWrites;
+        if (snap.metadata.fromCache && !navigator.onLine) {
+          setSyncStatus('offline', 'Offline — changes saved on this device');
+        } else if (syncPendingWrites) {
+          setSyncStatus('syncing', 'Syncing…');
+        } else {
+          setSyncStatus('online', 'All changes synced');
+        }
+
         if (!snap.exists) { pushStateToFirestore(); return; } // first session to connect seeds the doc
+        // A snapshot fired purely because our own pending write just got server-confirmed (no
+        // new remote data to apply) — the pill update above already happened, nothing else to do.
+        if (snap.metadata.hasPendingWrites) return;
         const data = snap.data();
         if (!data || data._lastWriter === getDeviceId()) return; // our own write echoing back — already applied locally
         if (typeof data.payload !== 'string') return;
