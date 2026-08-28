@@ -11093,12 +11093,12 @@
 
             <div class="live-assign-row">
               <span class="lar-player">
-                <span class="lar-player-name">${linkedPlayer ? ICONS.user + ' ' + linkedPlayer.name : (t.customerName ? ICONS.user + ' ' + t.customerName : 'No player linked')}</span>
+                <span class="lar-player-name">${linkedPlayer ? '👤 ' + linkedPlayer.name : (t.customerName ? '👤 ' + t.customerName : 'No player linked')}</span>
                 <!-- Summary icon — replaces the old standalone "📊 Summary" card-face button;
                      functions identically, opening the same Table Summary slide-over panel. -->
-                <button type="button" class="lar-summary-icon" onclick="openTableSummaryModal(${t.id})" title="Session Summary">${ICONS.chart}</button>
+                <button type="button" class="lar-summary-icon" onclick="openTableSummaryModal(${t.id})" title="Session Summary">📊</button>
               </span>
-              <button type="button" class="lar-assign-btn" onclick="openTableLinkPlayerModal(${t.id})">${ICONS.link} ${linkedPlayer ? 'Change' : 'Assign'}</button>
+              <button type="button" class="lar-assign-btn" onclick="openTableLinkPlayerModal(${t.id})">🔗 ${linkedPlayer ? 'Change' : 'Assign'}</button>
             </div>
 
             ${t.billType === 'frame' ? `
@@ -11107,7 +11107,7 @@
                  modal (openAddFrameModal()) so staff never have to open Summary first just to
                  assign a player. Match Sessions mode (Standard Series/Finals Decider) is still
                  available from the Table Summary panel via the Series Tag selector. -->
-            <button type="button" class="card-assign-btn" onclick="openAddFrameModal(${t.id})" title="Add Frame / Assign Player">${ICONS.target} Assign Player</button>` : ''}
+            <button type="button" class="card-assign-btn" onclick="openAddFrameModal(${t.id})" title="Add Frame / Assign Player">🎯 Assign Player</button>` : ''}
 
             <div class="live-quick-actions">
               <!-- "+ Frame" removed from the card face — frame tracking is already fully
