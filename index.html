@@ -136,22 +136,25 @@
     html, body { transition: background-color .2s var(--ease), color .2s var(--ease); }
 
     /* ================================================================
-       DATA-DRIVEN THEME ENGINE — tokens + legacy variable mapping
+       UNIFIED THEME SYSTEM — component-library tokens (static fallback)
        ------------------------------------------------------------------
-       --t-* are the "real" theme tokens: theme-engine (below, near the
-       end of <body>) swaps these on <html> via applyTheme(). Everything
-       else in this app reads the ORIGINAL variable names (--bg-dark,
-       --card-bg, --accent-green, etc.), so instead of touching every
-       component we just repoint those original names at the new --t-*
-       tokens once, here. Defaults below match the "Glassmorphism"
-       preset so the very first paint (before JS runs) is already correct.
+       --t-* are the "real" theme tokens the newer component library below
+       reads. The single ThemeSystem module (near the end of <body>) writes
+       both these AND the app's original variable names (--bg-dark,
+       --card-bg, --accent-green, etc.) directly, every time, from one
+       settings object — see applyColors() there. Defaults below match the
+       "Glassmorphism" preset and are only what's visible for the instant
+       before that script runs on first paint.
 
-       Specificity note: html[data-theme-preset] has the same specificity
-       as the html[data-theme="light"] rule above (0,1,1) — since this
-       block comes AFTER it in source order, it wins the tie, so a chosen
-       data preset always overrides the plain Dark/Light Mode toggle. The
-       attribute is set the moment theme-engine.js runs, which is on
-       every page load. */
+       UNIFIED THEME SYSTEM NOTE: these tokens used to be mirrored onto --bg-dark/--card-bg/etc.
+       via a separate `html[data-theme-preset] {...}` stylesheet rule, competing (via a
+       specificity tie-break on source order) with whatever the UI Launcher's Colors/Effects
+       panel had set inline — that's what let one system silently clobber the other and made a
+       saved theme "reset" on reload. The single ThemeSystem module (see the merged Theme &
+       Appearance script near the end of <body>) now writes --bg-dark/--card-bg/etc. AND these
+       --t-* tokens directly, from the one settings object, every time — so this indirection is
+       gone. The values below are just the static pre-JS fallback shown for an instant before
+       that script runs on first paint. */
     :root {
       --t-bg: #0b1210;
       --t-bg-image: none;
@@ -179,58 +182,17 @@
       --t-shadow-inset: inset 0 1px 0 rgba(255,255,255,0.06);
       --t-border-glow: 0 0 20px rgba(16,185,129,0.35);
     }
-    html[data-theme-preset] {
-      --bg-dark: var(--t-bg);
-      --sidebar-bg: var(--t-sidebar-bg);
-      --sidebar-bg-rgb: var(--t-sidebar-bg-rgb);
-      --card-bg: var(--t-card-bg);
-      --border-color: var(--t-border);
-      --border-subtle: var(--t-border);
-      --accent-gold: var(--t-accent);
-      --accent-gold-dim: var(--t-accent-dim);
-      --accent-green: var(--t-accent);
-      --accent-green-dim: var(--t-accent-dim);
-      --accent-green-glow: var(--t-accent-glow);
-      --accent-green-dark: var(--t-accent-dark);
-      --text-main: var(--t-text);
-      --text-muted: var(--t-text-muted);
-      --text-faint: var(--t-text-faint);
-      --shadow-sm: var(--t-shadow-sm);
-      --shadow-md: var(--t-shadow-md);
-      --shadow-lg: var(--t-shadow-lg);
-      --shadow-glow: var(--t-border-glow);
-      --r-sm: var(--t-radius-sm);
-      --r-md: var(--t-radius-md);
-      --r-lg: var(--t-radius-lg);
-      --brand-text-accent: var(--t-accent);
-      --brand-badge-bg: var(--t-card-bg);
-      --brand-badge-border: var(--t-border);
-    }
-    /* Frosted/extruded panel look, applied through the same selectors the legacy Theme Engine's
-       "Glass" effect already targets — so Glassmorphism/Cyber Gold/Neumorphic/Nature Minimal all
-       apply their blur, radius, shadow and (for Cyber Gold) glow to every card/sidebar/modal
-       automatically, no per-component markup changes needed. */
-    html[data-theme-preset] .sidebar,
-    html[data-theme-preset] .metric-card,
-    html[data-theme-preset] [class*="-box"],
-    html[data-theme-preset] [class*="-panel"],
-    html[data-theme-preset] [class$="-modal"],
-    html[data-theme-preset] [class*="modal-content"] {
-      backdrop-filter: blur(var(--t-blur));
-      -webkit-backdrop-filter: blur(var(--t-blur));
-      border-radius: var(--t-radius-md);
-      box-shadow: var(--t-shadow-md), var(--t-shadow-inset);
-      transition: var(--t-transition, background-color .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease), color .25s var(--ease));
-    }
 
     /* ================================================================
-       DATA-DRIVEN THEME ENGINE — Component Library
+       UNIFIED THEME SYSTEM — Component Library
        ------------------------------------------------------------------
        Every rule below reads only --t-* tokens, so it re-skins instantly
-       and correctly under any of the 4 Data Presets (or any future one)
-       with zero per-component changes. `transition: all 0.3s ease` on
-       each base selector means applyTheme() never causes a visual pop —
-       backgrounds, borders, blur and shadows all cross-fade together.
+       and correctly under any of the 8 curated Data Presets, any UI
+       Launcher preset, or fully custom colors (see deriveTokens() in the
+       ThemeSystem module) with zero per-component changes.
+       `transition: all 0.3s ease` on each base selector means applying a
+       new theme never causes a visual pop — backgrounds, borders, blur
+       and shadows all cross-fade together.
        These are NEW utility classes (app-card, btn-primary, btn-secondary,
        input-field, toggle-switch, nav-drawer, bottom-nav, toast-notification,
        badge) — opt in by adding the class name to existing or new markup;
@@ -3878,16 +3840,15 @@
           <div class="te-launcher-grid" id="teLauncherGrid"></div>
         </div>
 
-        <!-- Data-Driven Theme Engine — a small, curated set of 8 premium design-system presets:
-             the original core 4 (Glassmorphism, Cyber Gold, Soft Neumorphic, Nature Minimal) plus
+        <!-- Data Presets — a small, curated set of 8 premium design-system presets: the
+             original core 4 (Glassmorphism, Cyber Gold, Soft Neumorphic, Nature Minimal) plus
              4 high-end executive additions (OLED Midnight Emerald, Royal Obsidian, Titanium
              Frost, Velvet Syndicate). Deliberately kept small rather than a large generic
-             library — quality over quantity. Separate from UI Launchers above: these apply
-             through the --t-* token layer (see the :root/html[data-theme-preset] CSS near the
-             top of <head>) rather than the legacy colors/effects/wallpaper settings object, and
-             are driven by themePresets + applyTheme() in the Theme Engine module near the end of
-             <body>. Picking a card here always wins visually over UI Launchers or the Dark/Light
-             toggle (see the CSS specificity note where html[data-theme-preset] is defined). -->
+             library — quality over quantity. Lives in the SAME unified ThemeSystem module and
+             settings object as UI Launchers above (see themePresets + applyDataPreset() near
+             the end of <body>) — picking a card here sets settings.activeDataPreset, which
+             deterministically takes over from any UI Launcher / custom colors choice (and vice
+             versa); there's no separate storage key or CSS-specificity trick involved anymore. -->
         <div class="te-section" data-section="dataPresets">
           <div class="te-row">
             <label>Data Presets</label>
@@ -18680,9 +18641,10 @@
          • Dark/Light Mode              (snookify_themeMode      — Dark/Light toggle)
          • Sidebar collapsed/expanded   (snookify_sidebarCollapsed)
          • Language / locale            (snookify_locale_v1      — I18N_KEY)
-         • Theme & Appearance engine    (snookify_theme_engine_v1 — wallpaper/colors/effects/
-                                          logo/typography/active launcher preset)
-         • Theme launcher preset key    (user_app_theme)
+         • Theme & Appearance           (snookify_theme_v2 — wallpaper/colors/effects/logo/
+                                          typography/active launcher preset/active curated
+                                          Data Preset — single unified object, see the Theme &
+                                          Appearance module near the end of <body>)
        (Everything else that looked like a "setting" — Master PIN, Cancel-Session PIN, Feature
        Lock/Blur/Hide, Protected Mode, per-role Feature Visibility, sidebar Nav Hierarchy, and
        all business data like hourly/frame rates, stock, and filters saved on the live floor
@@ -18709,8 +18671,7 @@
       'snookify_themeMode': 'themeMode',
       'snookify_sidebarCollapsed': 'sidebarCollapsed',
       'snookify_locale_v1': 'locale',
-      'snookify_theme_engine_v1': 'themeEngine',
-      'user_app_theme': 'themeLauncher'
+      'snookify_theme_v2': 'themeEngine'
     };
 
     // Reads every tracked key's CURRENT localStorage value into one plain object, e.g.
@@ -19826,10 +19787,43 @@
 </style>
 
 <script>
+/* ================================================================
+   UNIFIED THEME SYSTEM ("Theme & Appearance")
+   ------------------------------------------------------------------
+   This single module replaces what used to be two independent, competing
+   systems:
+     1. "UI Launcher & Theme Engine"  — localStorage key snookify_theme_engine_v1
+        (Colors tab, Effects, Wallpaper, Typography, the 14 UI Launcher presets)
+     2. "Data-Driven Theme Engine"    — localStorage key user_app_theme
+        (the 8 curated Data Presets: Glassmorphism, Cyber Gold, etc.)
+
+   Both wrote to <html> independently and raced each other on every load —
+   whichever one's init() ran last (or ran with a fallback default even when
+   the user had never touched it) won, silently overriding the other. That's
+   what made a saved custom theme appear to "reset" on refresh, and also made
+   the Effects tab's own blur/radius silently stop applying to the sidebar/
+   cards/panels/modals whenever a Data Preset was active (a second symptom of
+   the same root cause: two separate CSS variable namespaces, --bg-dark/etc.
+   and --t-*, each trying to own the same visual surface via a specificity
+   trick instead of a single deterministic write).
+
+   Everything now lives in ONE settings object, saved under ONE localStorage
+   key (THEME_STORAGE_KEY below), applied by ONE render pipeline
+   (applyAll()) that always writes both the legacy --bg-dark/--card-bg/etc.
+   variables AND the --t-* component-library tokens AND the --te-* effects
+   variables from that single object — so storage and rendering can never
+   drift out of sync again, and there is exactly one source of truth for
+   "which theme is active".
+   ================================================================ */
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'snookify_theme_engine_v1';
+  const THEME_STORAGE_KEY = 'snookify_theme_v2';
+  // Old, now-retired keys — read once for a one-time migration on the first
+  // load after this update, then never touched again.
+  const LEGACY_LAUNCHER_KEY = 'snookify_theme_engine_v1';
+  const LEGACY_DATA_PRESET_KEY = 'user_app_theme';
+
   const root = document.documentElement;
 
   // Base CSS variables this app already defines — the engine overrides
@@ -19846,7 +19840,6 @@
     { key: 'danger',      cssVar: '--danger',       label: 'Danger' },
     { key: 'info',        cssVar: '--info',         label: 'Info' }
   ];
-
   const PALETTES = {
     'Default (Gold/Green)': { bgDark:'#0f1115', sidebarBg:'#161920', cardBg:'#1e222b', borderColor:'#2a2f3d', accentGold:'#ffb300', accentGreen:'#00e676', textMain:'#f0f4f8', danger:'#ff5252', info:'#29b6f6' },
     'Ocean Blue':            { bgDark:'#0a1420', sidebarBg:'#0f2033', cardBg:'#152a42', borderColor:'#22415f', accentGold:'#4fc3f7', accentGreen:'#00bcd4', textMain:'#eaf6ff', danger:'#ff5252', info:'#29b6f6' },
@@ -19854,7 +19847,6 @@
     'Crimson Night':         { bgDark:'#160f10', sidebarBg:'#211516', cardBg:'#2c1c1e', borderColor:'#472a2d', accentGold:'#ff8a65', accentGreen:'#ff5252', textMain:'#fdf0ee', danger:'#ff1744', info:'#ff8a65' },
     'Daylight':              { bgDark:'#eef1f5', sidebarBg:'#ffffff', cardBg:'#f7f9fb', borderColor:'#dde3ea', accentGold:'#e08e00', accentGreen:'#00a854', textMain:'#1a1f29', danger:'#d32f2f', info:'#0277bd' }
   };
-
   const WALLPAPER_PRESETS = {
     'None': 'none',
     'Slate Gradient': 'linear-gradient(135deg,#0f1115,#1e222b)',
@@ -19876,11 +19868,13 @@
     'System UI':          { body: "system-ui,-apple-system,'Segoe UI',sans-serif", heading: "system-ui,-apple-system,'Segoe UI',sans-serif" }
   };
 
-  // ---------- UI Launcher & Theme Engine — Preset Launcher ----------
+  // ---------- Full-app 1-click presets (formerly "UI Launcher" presets) ----------
   // Each launcher is a complete, 1-click app style: colors, effects (glass/glow/radius/anim),
   // typography (font + density) and wallpaper, all applied together — similar to switching an
   // Android launcher's whole look. Colors reuse the same COLOR_VARS keys as the Colors tab, so
-  // every existing panel/button picks these up automatically via applyColors().
+  // every existing panel/button picks these up automatically via applyColors(). Tokens for the
+  // richer --t-* component library (app-card, btn-primary, etc.) are derived from these simple
+  // fields on demand by deriveTokens() below — see resolveActiveTokens().
   const LAUNCHER_PRESETS = {
     'Classic Snookify': {
       tagline: 'Original vibrant green on dark charcoal, clean sans font.',
@@ -20004,40 +19998,297 @@
     }
   };
 
-  let defaults = null;   // captured from live computed styles on first run
-  let settings = null;   // active settings object
+  // ---------- Curated full-fidelity presets (formerly "Data Presets") ----------
+  // These 8 are hand-tuned directly in the rich --t-* token schema (full 3-tier radius/shadow,
+  // glow, per-preset background gradients) rather than the simpler colors/effects schema above —
+  // kept as hand-authored token sets so their premium look is preserved exactly as designed.
+  // deriveTokens() below is only used for the simpler presets/custom colors; a curated preset's
+  // own `tokens` are used as-is.
+  function mkCuratedTokens(o) {
+    const r = o.radius || [10, 18, 26];
+    return {
+      '--t-bg': o.bg,
+      '--t-bg-image': o.bgImage || 'none',
+      '--t-card-bg': o.cardBg,
+      '--t-card-bg-solid': o.cardSolid,
+      '--t-sidebar-bg': o.sidebarBg,
+      '--t-sidebar-bg-rgb': o.sidebarRgb,
+      '--t-border': o.border,
+      '--t-border-strong': o.borderStrong,
+      '--t-text': o.text,
+      '--t-text-muted': o.textMuted,
+      '--t-text-faint': o.textFaint,
+      '--t-accent': o.accent,
+      '--t-accent-dark': o.accentDark,
+      '--t-accent-dim': o.accentDim,
+      '--t-accent-glow': o.accentGlow,
+      '--t-accent-contrast': o.accentContrast,
+      '--t-blur': o.blur != null ? o.blur : '0px',
+      '--t-radius-sm': r[0] + 'px',
+      '--t-radius-md': r[1] + 'px',
+      '--t-radius-lg': r[2] + 'px',
+      '--t-shadow-sm': o.shadowSm,
+      '--t-shadow-md': o.shadowMd,
+      '--t-shadow-lg': o.shadowLg,
+      '--t-shadow-inset': o.shadowInset || 'none',
+      '--t-border-glow': o.borderGlow || 'none',
+    };
+  }
+
+  const themePresets = {
+
+    /* ================= ORIGINAL CORE 4 ================= */
+
+    /* 1. GLASSMORPHISM — dark teal/emerald, frosted glass cards */
+    glassmorphism: mkCuratedTokens({
+      bg: '#0b1210', bgImage: 'radial-gradient(circle at 20% 20%, rgba(16,185,129,0.10), transparent 45%), radial-gradient(circle at 80% 70%, rgba(13,148,136,0.10), transparent 50%)',
+      cardBg: 'rgba(255,255,255,0.06)', cardSolid: '#121a18', sidebarBg: 'rgba(10,16,14,0.55)', sidebarRgb: '10, 16, 14',
+      border: 'rgba(255,255,255,0.10)', borderStrong: 'rgba(255,255,255,0.18)',
+      text: '#eaf5f0', textMuted: '#9fb3ac', textFaint: '#66786f',
+      accent: '#10b981', accentDark: '#0a8a63', accentDim: 'rgba(16,185,129,0.16)', accentGlow: 'rgba(16,185,129,0.35)', accentContrast: '#06120d',
+      blur: '16px', radius: [8, 16, 24],
+      shadowSm: '0 1px 2px rgba(0,0,0,0.24)', shadowMd: '0 8px 24px rgba(0,0,0,0.28)', shadowLg: '0 16px 48px rgba(0,0,0,0.34)', shadowInset: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+      borderGlow: '0 0 20px rgba(16,185,129,0.35)',
+    }),
+
+    /* 2. CYBER GOLD — pitch black, amber-gold glow, sharp edges */
+    cyberGold: mkCuratedTokens({
+      bg: '#000000', bgImage: 'linear-gradient(180deg, rgba(234,179,8,0.05), transparent 30%)',
+      cardBg: 'rgba(20,18,10,0.85)', cardSolid: '#0d0c08', sidebarBg: 'rgba(0,0,0,0.9)', sidebarRgb: '0, 0, 0',
+      border: 'rgba(234,179,8,0.25)', borderStrong: 'rgba(234,179,8,0.5)',
+      text: '#fdf6e3', textMuted: '#b8ac8a', textFaint: '#6b6350',
+      accent: '#EAB308', accentDark: '#a67c00', accentDim: 'rgba(234,179,8,0.14)', accentGlow: 'rgba(234,179,8,0.55)', accentContrast: '#1a1400',
+      blur: '0px', radius: [2, 4, 6],
+      shadowSm: '0 0 0 1px rgba(234,179,8,0.15)', shadowMd: '0 0 20px rgba(234,179,8,0.12), 0 4px 12px rgba(0,0,0,0.6)', shadowLg: '0 0 40px rgba(234,179,8,0.18), 0 12px 32px rgba(0,0,0,0.7)',
+      borderGlow: '0 0 24px rgba(234,179,8,0.45)',
+    }),
+
+    /* 3. SOFT NEUMORPHIC — extruded grey-blue UI, bold blue accent */
+    neumorphic: mkCuratedTokens({
+      bg: '#e4e9f0', bgImage: 'none',
+      cardBg: '#e4e9f0', cardSolid: '#e4e9f0', sidebarBg: '#e4e9f0', sidebarRgb: '228, 233, 240',
+      border: 'rgba(255,255,255,0.6)', borderStrong: 'rgba(163,177,198,0.5)',
+      text: '#2b3446', textMuted: '#5c6b82', textFaint: '#8b97ab',
+      accent: '#2563eb', accentDark: '#1d4fd1', accentDim: 'rgba(37,99,235,0.12)', accentGlow: 'rgba(37,99,235,0.3)', accentContrast: '#ffffff',
+      blur: '0px', radius: [10, 20, 28],
+      shadowSm: '3px 3px 6px #b8c0cc, -3px -3px 6px #ffffff', shadowMd: '8px 8px 16px #b8c0cc, -8px -8px 16px #ffffff', shadowLg: '14px 14px 28px #b8c0cc, -14px -14px 28px #ffffff', shadowInset: 'inset 2px 2px 5px #b8c0cc, inset -2px -2px 5px #ffffff',
+    }),
+
+    /* 4. NATURE MINIMAL — sage green, dark forest bg, soft rounded cards */
+    natureMinimal: mkCuratedTokens({
+      bg: '#141d18', bgImage: 'none',
+      cardBg: '#1c2721', cardSolid: '#1c2721', sidebarBg: '#111a15', sidebarRgb: '17, 26, 21',
+      border: 'rgba(168,192,175,0.14)', borderStrong: 'rgba(168,192,175,0.28)',
+      text: '#e7efe9', textMuted: '#a3b6ab', textFaint: '#67796f',
+      accent: '#8faf8a', accentDark: '#6d8a68', accentDim: 'rgba(143,175,138,0.16)', accentGlow: 'rgba(143,175,138,0.28)', accentContrast: '#10190f',
+      blur: '0px', radius: [10, 18, 26],
+      shadowSm: '0 1px 3px rgba(0,0,0,0.3)', shadowMd: '0 6px 20px rgba(0,0,0,0.32)', shadowLg: '0 14px 36px rgba(0,0,0,0.38)',
+      borderGlow: '0 0 16px rgba(143,175,138,0.3)',
+    }),
+
+    /* ================= PREMIUM EXECUTIVE 4 ================= */
+
+    /* 5. OLED MIDNIGHT EMERALD — ultra-deep black, neon mint accents, subtle blur */
+    oledMidnightEmerald: mkCuratedTokens({
+      bg: '#000000', bgImage: 'radial-gradient(circle at 25% 15%, rgba(0,255,180,0.06), transparent 50%)',
+      cardBg: 'rgba(0,255,180,0.035)', cardSolid: '#050a08', sidebarBg: 'rgba(0,0,0,0.94)', sidebarRgb: '0, 0, 0',
+      border: 'rgba(0,255,180,0.16)', borderStrong: 'rgba(0,255,180,0.3)',
+      text: '#e9fff6', textMuted: '#8fc4ac', textFaint: '#4f6f61',
+      accent: '#00ffb2', accentDark: '#00c98a', accentDim: 'rgba(0,255,178,0.13)', accentGlow: 'rgba(0,255,178,0.45)', accentContrast: '#001a10',
+      blur: '10px', radius: [8, 14, 20],
+      shadowSm: '0 0 0 1px rgba(0,255,178,0.14)', shadowMd: '0 0 22px rgba(0,255,178,0.14), 0 8px 20px rgba(0,0,0,0.65)', shadowLg: '0 0 44px rgba(0,255,178,0.2), 0 18px 42px rgba(0,0,0,0.75)',
+      borderGlow: '0 0 22px rgba(0,255,178,0.4)',
+    }),
+
+    /* 6. ROYAL OBSIDIAN — deep charcoal/slate, champagne-gold highlights, refined borders */
+    royalObsidian: mkCuratedTokens({
+      bg: '#14151a', bgImage: 'linear-gradient(160deg, rgba(212,184,128,0.05), transparent 45%)',
+      cardBg: 'rgba(212,184,128,0.045)', cardSolid: '#1c1d24', sidebarBg: 'rgba(10,11,14,0.92)', sidebarRgb: '10, 11, 14',
+      border: 'rgba(212,184,128,0.18)', borderStrong: 'rgba(212,184,128,0.32)',
+      text: '#f2efe6', textMuted: '#a9a49a', textFaint: '#66625c',
+      accent: '#d4b880', accentDark: '#b0925e', accentDim: 'rgba(212,184,128,0.14)', accentGlow: 'rgba(212,184,128,0.32)', accentContrast: '#14110a',
+      blur: '4px', radius: [6, 12, 18],
+      shadowSm: '0 1px 3px rgba(0,0,0,0.4)', shadowMd: '0 0 20px rgba(212,184,128,0.1), 0 8px 22px rgba(0,0,0,0.5)', shadowLg: '0 0 40px rgba(212,184,128,0.16), 0 18px 42px rgba(0,0,0,0.58)',
+      borderGlow: '0 0 20px rgba(212,184,128,0.32)',
+    }),
+
+    /* 7. TITANIUM FROST — dark metallic grey, icy-blue accents, crisp glass cards */
+    titaniumFrost: mkCuratedTokens({
+      bg: '#111418', bgImage: 'radial-gradient(circle at 75% 15%, rgba(148,197,255,0.08), transparent 50%)',
+      cardBg: 'rgba(255,255,255,0.05)', cardSolid: '#1a1e24', sidebarBg: 'rgba(9,11,14,0.9)', sidebarRgb: '9, 11, 14',
+      border: 'rgba(148,197,255,0.16)', borderStrong: 'rgba(148,197,255,0.3)',
+      text: '#eaf2fb', textMuted: '#98a9bc', textFaint: '#586372',
+      accent: '#7fc4ff', accentDark: '#4fa3e8', accentDim: 'rgba(127,196,255,0.14)', accentGlow: 'rgba(127,196,255,0.38)', accentContrast: '#08131e',
+      blur: '14px', radius: [6, 12, 18],
+      shadowSm: '0 1px 2px rgba(0,0,0,0.35)', shadowMd: '0 8px 22px rgba(0,0,0,0.4)', shadowLg: '0 18px 42px rgba(0,0,0,0.48)', shadowInset: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+      borderGlow: '0 0 18px rgba(127,196,255,0.38)',
+    }),
+
+    /* 8. VELVET SYNDICATE — dark plum/violet undertones, crimson-gold glowing accents */
+    velvetSyndicate: mkCuratedTokens({
+      bg: '#160c14', bgImage: 'radial-gradient(circle at 30% 20%, rgba(190,30,60,0.1), transparent 50%)',
+      cardBg: 'rgba(255,255,255,0.04)', cardSolid: '#20121d', sidebarBg: 'rgba(12,7,11,0.92)', sidebarRgb: '12, 7, 11',
+      border: 'rgba(212,166,90,0.16)', borderStrong: 'rgba(190,30,60,0.3)',
+      text: '#f6e9f0', textMuted: '#b393a3', textFaint: '#6d5763',
+      accent: '#c9366a', accentDark: '#a12454', accentDim: 'rgba(201,54,106,0.16)', accentGlow: 'rgba(212,166,90,0.35)', accentContrast: '#1a0d14',
+      blur: '4px', radius: [8, 14, 20],
+      shadowSm: '0 1px 3px rgba(0,0,0,0.4)', shadowMd: '0 0 20px rgba(201,54,106,0.14), 0 8px 22px rgba(0,0,0,0.5)', shadowLg: '0 0 42px rgba(212,166,90,0.2), 0 18px 42px rgba(0,0,0,0.58)',
+      borderGlow: '0 0 22px rgba(201,54,106,0.4)',
+    }),
+  };
+
+  // Metadata for the picker cards only — never read by applyTheme(), just rendering.
+  // The mini palette preview (bg / card / accent swatches) is generated directly from each
+  // preset's own tokens in renderDataPresetGrid() below, so it can never drift out of sync;
+  // only the display name + one-line tagline live here.
+  const themePresetMeta = {
+    glassmorphism:        { name: 'Glassmorphism',          tagline: 'Dark teal/emerald frosted glass, rounded corners.' },
+    cyberGold:            { name: 'Cyber Gold',             tagline: 'Pitch black with glowing amber-gold borders.' },
+    neumorphic:           { name: 'Soft Neumorphic',        tagline: 'Extruded grey-blue UI, tactile, bold blue accent.' },
+    natureMinimal:        { name: 'Nature Minimal',         tagline: 'Sage green on dark forest, soft rounded cards.' },
+
+    oledMidnightEmerald:  { name: 'OLED Midnight Emerald',  tagline: 'Ultra-deep black UI with neon mint accents & subtle blur.' },
+    royalObsidian:        { name: 'Royal Obsidian',         tagline: 'Charcoal/slate with luxury champagne-gold highlights.' },
+    titaniumFrost:        { name: 'Titanium Frost',         tagline: 'Dark metallic grey body, sharp icy-blue glass accents.' },
+    velvetSyndicate:      { name: 'Velvet Syndicate',       tagline: 'Dark plum/violet with rich crimson-gold glow.' },
+  };
+
+  // ================================================================
+  // Color math helpers — used by deriveTokens() below to synthesize a full --t-* token set
+  // (muted/faint text, dark/dim/glow accent variants, shadows) from just the simple 9-color
+  // palette + effects that UI Launcher presets, accent Palettes, and any custom Colors-tab
+  // selection already use. This is what lets EVERY theme — curated or custom — drive the same
+  // --t-* component library (.app-card, .btn-primary, etc.) consistently.
+  // ================================================================
+  function hexToRgbArr(hex) {
+    if (!hex) return [0, 0, 0];
+    if (hex.startsWith('rgb')) {
+      const m = hex.match(/[\d.]+/g) || [0, 0, 0];
+      return [Number(m[0]), Number(m[1]), Number(m[2])];
+    }
+    let h = hex.replace('#', '');
+    if (h.length === 3) h = h.split('').map(c => c + c).join('');
+    return [parseInt(h.substring(0, 2), 16) || 0, parseInt(h.substring(2, 4), 16) || 0, parseInt(h.substring(4, 6), 16) || 0];
+  }
+  function rgbArrToHex(a) {
+    return '#' + a.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+  }
+  function mixHex(hexA, hexB, t) {
+    const a = hexToRgbArr(hexA), b = hexToRgbArr(hexB);
+    return rgbArrToHex(a.map((v, i) => v + (b[i] - v) * t));
+  }
+  function hexToRgba(hex, alpha) {
+    if (!hex || hex.startsWith('rgb')) return hex;
+    const [r, g, b] = hexToRgbArr(hex);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+  function relativeLuminance(hex) {
+    const [r, g, b] = hexToRgbArr(hex).map(v => v / 255);
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+
+  // Turns the simple 9-color palette + effects + wallpaper into a complete --t-* token set, so
+  // ANY active theme — a UI Launcher preset, an accent Palette, or fully custom Colors-tab
+  // edits — drives the newer component library exactly like the 8 curated presets do. Curated
+  // presets skip this entirely and use their own hand-tuned `themePresets[key]` tokens instead
+  // (see resolveActiveTokens()), preserving their exact designed look.
+  function deriveTokens(colors, effects, wallpaper) {
+    const bg = colors.bgDark;
+    const accent = colors.accentGreen || colors.accentGold;
+    const glass = !!(effects && effects.glass);
+    const alpha = glass ? effects.glassAlpha : 1;
+    const radius = (effects && effects.radius) || 8;
+    const glow = !!(effects && effects.glow);
+    const glowStrength = (effects && effects.glowStrength) || 0;
+    const wallpaperImage = (wallpaper && wallpaper.dataUrl) ? `url(${wallpaper.dataUrl})` : (WALLPAPER_PRESETS[wallpaper && wallpaper.preset] || 'none');
+
+    return {
+      '--t-bg': bg,
+      '--t-bg-image': wallpaperImage,
+      '--t-card-bg': hexToRgba(colors.cardBg, alpha),
+      '--t-card-bg-solid': colors.cardBg,
+      '--t-sidebar-bg': hexToRgba(colors.sidebarBg, alpha),
+      '--t-sidebar-bg-rgb': hexToRgbArr(colors.sidebarBg).join(', '),
+      '--t-border': colors.borderColor,
+      '--t-border-strong': hexToRgba(accent, 0.3),
+      '--t-text': colors.textMain,
+      '--t-text-muted': mixHex(colors.textMain, bg, 0.45),
+      '--t-text-faint': mixHex(colors.textMain, bg, 0.68),
+      '--t-accent': accent,
+      '--t-accent-dark': mixHex(accent, '#000000', 0.22),
+      '--t-accent-dim': hexToRgba(accent, 0.14),
+      '--t-accent-glow': hexToRgba(accent, glow ? 0.35 : 0.2),
+      '--t-accent-contrast': relativeLuminance(accent) > 0.55 ? '#0a0a0a' : '#ffffff',
+      '--t-blur': (glass ? effects.glassBlur : 0) + 'px',
+      '--t-radius-sm': Math.max(2, radius - 4) + 'px',
+      '--t-radius-md': radius + 'px',
+      '--t-radius-lg': (radius + 8) + 'px',
+      '--t-shadow-sm': '0 1px 2px rgba(0,0,0,0.24)',
+      '--t-shadow-md': glow ? `0 0 ${glowStrength}px ${hexToRgba(accent, 0.3)}, 0 8px 24px rgba(0,0,0,0.28)` : '0 8px 24px rgba(0,0,0,0.28)',
+      '--t-shadow-lg': glow ? `0 0 ${glowStrength * 2}px ${hexToRgba(accent, 0.32)}, 0 16px 48px rgba(0,0,0,0.34)` : '0 16px 48px rgba(0,0,0,0.34)',
+      '--t-shadow-inset': glass ? 'inset 0 1px 0 rgba(255,255,255,0.06)' : 'none',
+      '--t-border-glow': glow ? `0 0 ${glowStrength * 2}px ${hexToRgba(accent, 0.35)}` : 'none',
+    };
+  }
+
+  // Every --t-* token name (all curated presets share this exact key set, guaranteed by
+  // mkCuratedTokens) — used to fully clear the component-library tokens back to their static
+  // :root defaults when neither a curated preset nor custom colors are active.
+  const TOKEN_VAR_NAMES = Object.keys(themePresets.glassmorphism);
+
+  // Legacy CSS variable names this app's existing markup already reads (sidebar, cards,
+  // buttons, brand wordmark, etc.) — mapped from whichever token set is active and written
+  // directly, every time, from the ONE resolved settings object. There is no second,
+  // competing mechanism (like the old html[data-theme-preset] CSS mapping) trying to own
+  // these same variables anymore.
+  const LEGACY_VAR_FROM_TOKEN = {
+    '--bg-dark': '--t-bg',
+    '--sidebar-bg': '--t-sidebar-bg',
+    '--sidebar-bg-rgb': '--t-sidebar-bg-rgb',
+    '--card-bg': '--t-card-bg',
+    '--border-color': '--t-border',
+    '--border-subtle': '--t-border',
+    '--accent-gold': '--t-accent',
+    '--accent-gold-dim': '--t-accent-dim',
+    '--accent-green': '--t-accent',
+    '--accent-green-dim': '--t-accent-dim',
+    '--accent-green-glow': '--t-accent-glow',
+    '--accent-green-dark': '--t-accent-dark',
+    '--text-main': '--t-text',
+    '--text-muted': '--t-text-muted',
+    '--text-faint': '--t-text-faint',
+    '--shadow-sm': '--t-shadow-sm',
+    '--shadow-md': '--t-shadow-md',
+    '--shadow-lg': '--t-shadow-lg',
+    '--shadow-glow': '--t-border-glow',
+    '--r-sm': '--t-radius-sm',
+    '--r-md': '--t-radius-md',
+    '--r-lg': '--t-radius-lg',
+    '--brand-text-accent': '--t-accent',
+    '--brand-badge-bg': '--t-card-bg',
+    '--brand-badge-border': '--t-border',
+  };
+
+  let defaults = null;   // captured once from live computed styles on first run
+  let settings = null;   // the ONE active settings object — single source of truth, saved as-is
 
   function captureDefaults() {
-    const cs = getComputedStyle(root);
-    const colors = {};
-    COLOR_VARS.forEach(c => { colors[c.key] = cs.getPropertyValue(c.cssVar).trim() || '#000000'; });
     return {
       wallpaper: { dataUrl: null, preset: 'None', opacity: 1, blur: 0 },
-      colors,
+      colors: currentBaseColors(),
       effects: { glass: false, glassBlur: 12, glassAlpha: 0.6, glow: false, glowStrength: 10, radius: 8, animSpeed: 0.2, glowLevel: 'off', glassLevel: 'flat', cartPulse: true },
       logo: { dataUrl: null },
-      // UI Launcher & Theme Engine — Typography / Density. Left at the app's own original
-      // font pairing + compact spacing until the user actually changes them (see
-      // applyTypography() below), same "untouched = don't override" pattern colorsCustomized
-      // uses for the accent palette.
       typography: { fontFamily: 'Inter', density: 'compact' },
-      // Name of the last 1-click launcher preset applied (if any) — purely so the UI
-      // Launchers grid can highlight which card is currently active; never required for any
-      // apply/save/load logic, since the individual colors/effects/typography/wallpaper
-      // fields above are always the actual source of truth.
       activeLauncher: null,
-      // Tracks whether the user has actually chosen a custom accent palette (a color swatch
-      // edit, a palette preset, or an imported theme file) — see applyColors() below for why
-      // this matters: it's what stops the engine from permanently overriding the Dark/Light
-      // Mode toggle's own colors for everyone who has never touched this panel.
+      // Which curated Data Preset (if any) is active — null means "use colors/effects/
+      // wallpaper/typography instead". Exactly one of these two is ever in control at a time,
+      // and this single flag is what decides which — replacing the old "whichever script
+      // happened to run last" race between two separate localStorage keys.
+      activeDataPreset: null,
       colorsCustomized: false
     };
   }
 
-  // Live snapshot of whichever base palette (dark or light) is ACTUALLY active right now,
-  // read straight from the cascade rather than a value captured once at boot. Used by
-  // applyColors() so effects like Glass keep working correctly no matter which mode the
-  // Dark/Light Mode toggle is currently in.
   function currentBaseColors() {
     const cs = getComputedStyle(root);
     const colors = {};
@@ -20045,10 +20296,6 @@
     return colors;
   }
 
-  // Backward-compatible migration for theme data saved before the colorsCustomized flag
-  // existed: if the saved colors differ from the untouched default palette, the user must
-  // have customized them at some point, even though the old save format never recorded that
-  // explicitly as intentional.
   function inferColorsCustomized(savedColors) {
     if (!savedColors) return false;
     const def = PALETTES['Default (Gold/Green)'];
@@ -20058,25 +20305,67 @@
     });
   }
 
+  // One-time migration from the two old, separate localStorage keys into the new unified
+  // shape. Only runs when the new unified key doesn't exist yet, so it can never re-run or
+  // clobber a choice made after upgrading. The old keys are left in localStorage untouched
+  // (harmless, never read again after this) rather than deleted, except when the person
+  // explicitly hits "Reset All" — see teResetAll below.
+  function migrateLegacySettings() {
+    let legacyLauncher = null, legacyDataPreset = null;
+    try { const raw = localStorage.getItem(LEGACY_LAUNCHER_KEY); if (raw) legacyLauncher = JSON.parse(raw); } catch (e) { /* ignore */ }
+    try { legacyDataPreset = localStorage.getItem(LEGACY_DATA_PRESET_KEY); } catch (e) { /* ignore */ }
+
+    if (!legacyLauncher && !legacyDataPreset) return null;
+
+    const merged = JSON.parse(JSON.stringify(defaults));
+    if (legacyLauncher) {
+      merged.wallpaper = Object.assign({}, merged.wallpaper, legacyLauncher.wallpaper);
+      merged.colors = Object.assign({}, merged.colors, legacyLauncher.colors);
+      merged.effects = Object.assign({}, merged.effects, legacyLauncher.effects);
+      merged.logo = Object.assign({}, merged.logo, legacyLauncher.logo);
+      merged.typography = Object.assign({}, merged.typography, legacyLauncher.typography);
+      merged.activeLauncher = typeof legacyLauncher.activeLauncher === 'string' ? legacyLauncher.activeLauncher : null;
+      merged.colorsCustomized = typeof legacyLauncher.colorsCustomized === 'boolean'
+        ? legacyLauncher.colorsCustomized
+        : inferColorsCustomized(legacyLauncher.colors);
+    }
+    // A previously-chosen Data Preset takes precedence, matching the old visual behavior
+    // (a Data Preset always won over the Colors/Launcher panel once either had been touched).
+    if (legacyDataPreset && themePresets[legacyDataPreset]) {
+      merged.activeDataPreset = legacyDataPreset;
+    }
+    return merged;
+  }
+
   function loadSettings() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return JSON.parse(JSON.stringify(defaults));
-      const saved = JSON.parse(raw);
-      // shallow-merge so new fields added in future updates still get defaults
-      return {
-        wallpaper: Object.assign({}, defaults.wallpaper, saved.wallpaper),
-        colors: Object.assign({}, defaults.colors, saved.colors),
-        effects: Object.assign({}, defaults.effects, saved.effects),
-        logo: Object.assign({}, defaults.logo, saved.logo),
-        typography: Object.assign({}, defaults.typography, saved.typography),
-        activeLauncher: typeof saved.activeLauncher === 'string' ? saved.activeLauncher : null,
-        colorsCustomized: typeof saved.colorsCustomized === 'boolean'
-          ? saved.colorsCustomized
-          : inferColorsCustomized(saved.colors)
-      };
+      const raw = localStorage.getItem(THEME_STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        return {
+          wallpaper: Object.assign({}, defaults.wallpaper, saved.wallpaper),
+          colors: Object.assign({}, defaults.colors, saved.colors),
+          effects: Object.assign({}, defaults.effects, saved.effects),
+          logo: Object.assign({}, defaults.logo, saved.logo),
+          typography: Object.assign({}, defaults.typography, saved.typography),
+          activeLauncher: typeof saved.activeLauncher === 'string' ? saved.activeLauncher : null,
+          activeDataPreset: (typeof saved.activeDataPreset === 'string' && themePresets[saved.activeDataPreset]) ? saved.activeDataPreset : null,
+          colorsCustomized: typeof saved.colorsCustomized === 'boolean'
+            ? saved.colorsCustomized
+            : inferColorsCustomized(saved.colors)
+        };
+      }
+      const migrated = migrateLegacySettings();
+      if (migrated) {
+        // Persist immediately under the new unified key — otherwise this migration would
+        // silently re-run (harmlessly, but wastefully) on every load until the old keys are
+        // gone, and would be lost entirely if something else ever clears them first.
+        try { localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(migrated)); } catch (e) { /* ignore */ }
+        return migrated;
+      }
+      return JSON.parse(JSON.stringify(defaults));
     } catch (e) {
-      console.warn('[ThemeEngine] Could not load saved theme, using defaults.', e);
+      console.warn('[ThemeSystem] Could not load saved theme, using defaults.', e);
       return JSON.parse(JSON.stringify(defaults));
     }
   }
@@ -20084,57 +20373,65 @@
   function saveSettings() {
     try {
       const json = JSON.stringify(settings);
-      localStorage.setItem(STORAGE_KEY, json);
-      if (typeof pushUserSetting === 'function') pushUserSetting(STORAGE_KEY, json);
+      localStorage.setItem(THEME_STORAGE_KEY, json);
+      if (typeof pushUserSetting === 'function') pushUserSetting(THEME_STORAGE_KEY, json);
     } catch (e) {
-      console.error('[ThemeEngine] Save failed (storage full?).', e);
+      console.error('[ThemeSystem] Save failed (storage full?).', e);
       notify('Could not save theme — storage may be full.', true);
     }
   }
 
   function notify(msg, isError) {
     if (typeof window.showToast === 'function') {
-      try { window.showToast(msg, isError ? 'error' : 'success'); return; } catch (e) {}
+      try { window.showToast(msg, isError ? 'error' : 'success'); return; } catch (e) { /* fall through */ }
     }
-    console.log('[ThemeEngine]', msg);
+    console.log('[ThemeSystem]', msg);
   }
 
-  function hexToRgba(hex, alpha) {
-    if (!hex || hex.startsWith('rgb')) return hex;
-    let h = hex.replace('#', '');
-    if (h.length === 3) h = h.split('').map(c => c + c).join('');
-    const r = parseInt(h.substring(0, 2), 16);
-    const g = parseInt(h.substring(2, 4), 16);
-    const b = parseInt(h.substring(4, 6), 16);
-    return `rgba(${r},${g},${b},${alpha})`;
+  // Resolves the ONE active token set for right now: a curated Data Preset's own hand-tuned
+  // tokens if one is active, otherwise tokens derived from the current colors/effects/
+  // wallpaper. This single decision point is what replaces the old "whichever script ran
+  // last wins" race between the two former engines.
+  function resolveActiveTokens() {
+    if (settings.activeDataPreset && themePresets[settings.activeDataPreset]) {
+      return themePresets[settings.activeDataPreset];
+    }
+    return deriveTokens(settings.colors, settings.effects, settings.wallpaper);
   }
 
-  // ---------- Apply functions ----------
   function applyColors() {
-    if (!settings.colorsCustomized) {
-      // No custom accent palette has been chosen — leave the base --bg-dark / --sidebar-bg /
-      // --card-bg / --border-color / --text-main / etc. variables alone so the Dark/Light Mode
-      // toggle's own html[data-theme="light"] stylesheet rule keeps controlling them. Setting
-      // these inline on :root — even to a "no-op" copy of the current colors — would always
-      // win over that rule regardless of which mode is selected, which is exactly what used
-      // to make Light Mode silently fail to apply for anyone who hadn't customized a palette.
-      COLOR_VARS.forEach(c => root.style.removeProperty(c.cssVar));
+    // Nothing has been explicitly chosen yet (no curated Data Preset, no custom accent
+    // palette) — leave every variable exactly as the base stylesheet already has it, so the
+    // Dark/Light Mode toggle's html[data-theme="light"] rule keeps live-controlling colors
+    // and the --t-* component library keeps its static :root defaults. The moment either
+    // system below IS used, it fully and deterministically takes over instead.
+    if (!settings.activeDataPreset && !settings.colorsCustomized) {
+      Object.keys(LEGACY_VAR_FROM_TOKEN).forEach(legacyVar => root.style.removeProperty(legacyVar));
+      TOKEN_VAR_NAMES.forEach(tokenVar => root.style.removeProperty(tokenVar));
+      root.removeAttribute('data-theme-preset');
       if (settings.effects.glass) {
-        // Glass panels still need an alpha-blended sidebar/card color. Derive it from
-        // whichever base palette is actually active right now (post dark/light toggle),
-        // not a stale captured value, so switching modes with Glass on stays correct.
+        // Glass panels still need an alpha-blended sidebar/card color. Read the live computed
+        // value (not a stale captured one) so this keeps working correctly if Dark/Light Mode
+        // is toggled afterwards.
         const live = currentBaseColors();
-        const alpha = settings.effects.glassAlpha;
-        root.style.setProperty('--sidebar-bg', hexToRgba(live.sidebarBg, alpha));
-        root.style.setProperty('--card-bg', hexToRgba(live.cardBg, alpha));
+        root.style.setProperty('--sidebar-bg', hexToRgba(live.sidebarBg, settings.effects.glassAlpha));
+        root.style.setProperty('--card-bg', hexToRgba(live.cardBg, settings.effects.glassAlpha));
+      } else {
+        root.style.removeProperty('--sidebar-bg');
+        root.style.removeProperty('--card-bg');
       }
       return;
     }
-    const alpha = settings.effects.glass ? settings.effects.glassAlpha : 1;
-    COLOR_VARS.forEach(c => {
-      const useAlpha = (c.key === 'sidebarBg' || c.key === 'cardBg') ? alpha : 1;
-      root.style.setProperty(c.cssVar, hexToRgba(settings.colors[c.key], useAlpha));
+
+    const tokens = resolveActiveTokens();
+    Object.entries(tokens).forEach(([varName, value]) => root.style.setProperty(varName, value));
+    Object.entries(LEGACY_VAR_FROM_TOKEN).forEach(([legacyVar, tokenVar]) => {
+      if (tokens[tokenVar] !== undefined) root.style.setProperty(legacyVar, tokens[tokenVar]);
     });
+    // --danger / --info were never part of either theme system's palette — left untouched at
+    // whatever the base stylesheet sets, exactly like before.
+    if (settings.activeDataPreset) root.setAttribute('data-theme-preset', settings.activeDataPreset);
+    else root.removeAttribute('data-theme-preset');
   }
 
   function applyWallpaper() {
@@ -20146,6 +20443,19 @@
   }
 
   function applyEffects() {
+    // A curated Data Preset's own blur/radius always wins for the sidebar/cards/panels/modals
+    // (matches the exact visual precedence the two old systems had — a Data Preset fully took
+    // over those elements — just expressed as one deterministic branch instead of a CSS
+    // specificity fight). Glow strength/color and animation speed stay independently driven by
+    // the Effects tab either way, exactly as before (curated presets never touched those).
+    if (settings.activeDataPreset && themePresets[settings.activeDataPreset]) {
+      const t = themePresets[settings.activeDataPreset];
+      root.style.setProperty('--te-glass-blur', t['--t-blur']);
+      root.style.setProperty('--te-radius', t['--t-radius-md']);
+      root.style.setProperty('--te-glow-strength', settings.effects.glow ? settings.effects.glowStrength + 'px' : '0px');
+      root.style.setProperty('--te-anim-speed', settings.effects.animSpeed + 's');
+      return;
+    }
     const e = settings.effects;
     root.style.setProperty('--te-glass-blur', e.glass ? e.glassBlur + 'px' : '0px');
     root.style.setProperty('--te-glow-strength', e.glow ? e.glowStrength + 'px' : '0px');
@@ -20154,21 +20464,18 @@
   }
 
   function applyLogo() {
-    const src = settings.logo.dataUrl;
-    document.querySelectorAll('.brand-logo-img').forEach(img => {
-      if (src) img.src = src;
-    });
+    if (!settings.logo.dataUrl) return;
+    document.querySelectorAll('.brand-logo-img').forEach(img => { img.src = settings.logo.dataUrl; });
   }
 
-  // UI Launcher & Theme Engine — Typography / Density. Sets the font-family + heading-font
-  // CSS variables (see :root in themeEngineStyles) and the root density scale that every
-  // rem-based font-size/spacing in the app is computed from.
+  // UI Launcher & Theme Engine — Typography / Density. Left at the app's own original font
+  // stack/sizing (see themeEngineStyles defaults) until the user actually touches this tab.
   function applyTypography() {
     const t = settings.typography;
     const stack = FONT_STACKS[t.fontFamily] || FONT_STACKS['Inter'];
     root.style.setProperty('--te-font-family', stack.body);
     root.style.setProperty('--te-heading-font-family', stack.heading);
-    root.style.setProperty('--te-density-scale', t.density === 'comfortable' ? '1.14' : '1');
+    root.style.setProperty('--te-density-scale', t.density === 'compact' ? 0.94 : t.density === 'spacious' ? 1.08 : 1);
   }
 
   function applyAll() {
@@ -20179,29 +20486,86 @@
     applyTypography();
   }
 
-  // UI Launcher & Theme Engine — Preset Launcher: applies a full LAUNCHER_PRESETS entry
-  // (colors + effects + typography + wallpaper) in one shot, the way switching an Android
-  // launcher profile restyles the whole home screen at once.
+  // UI Launcher & Theme Engine — Preset Launcher application. Sets colors/effects/typography/
+  // wallpaper together from one named LAUNCHER_PRESETS entry, and always deactivates any
+  // active curated Data Preset — an explicit Launcher pick is exactly as "explicit" as an
+  // explicit Data Preset pick, so it takes over from one just as a Data Preset pick takes
+  // over from Launcher colors (see applyDataPreset() below).
   function applyLauncherPreset(name) {
     const p = LAUNCHER_PRESETS[name];
     if (!p) return;
     settings.colors = Object.assign({}, p.colors);
-    settings.colorsCustomized = true; // an explicit launcher choice — see applyColors()
+    settings.colorsCustomized = true;
     settings.effects = Object.assign({}, defaults.effects, p.effects);
     settings.typography = Object.assign({}, defaults.typography, p.typography);
     settings.wallpaper = Object.assign({}, defaults.wallpaper, p.wallpaper);
     settings.activeLauncher = name;
+    settings.activeDataPreset = null;
     applyAll();
     saveSettings();
     refreshUI();
     notify(name + ' launcher applied.');
   }
 
+  // Applies one of the 8 curated Data Presets — the unified equivalent of the old, separate
+  // Data-Driven Theme Engine's applyTheme(). Setting activeDataPreset is now the ONLY thing
+  // that decides which theme is in control (see resolveActiveTokens()) — there is no second
+  // localStorage key and no second init() racing this one anymore.
+  function applyDataPreset(key) {
+    if (!themePresets[key]) { console.warn('applyDataPreset: unknown preset key "' + key + '"'); return false; }
+    settings.activeDataPreset = key;
+    settings.activeLauncher = null;
+    applyAll();
+    saveSettings();
+    refreshUI();
+    document.dispatchEvent(new CustomEvent('themechange', { detail: { theme: key } }));
+    return true;
+  }
+
+  // Renders one card per curated preset into #teDataPresetGrid (the "Data Presets" tab) — the
+  // unified equivalent of the old Data-Driven Theme Engine's renderDataPresetGrid(). The mini
+  // palette preview is generated directly from each preset's own tokens, so it can never drift
+  // out of sync with what clicking the card actually applies.
+  function buildDataPresetGrid() {
+    const grid = document.getElementById('teDataPresetGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    Object.keys(themePresets).forEach(key => {
+      const preset = themePresets[key];
+      const meta = themePresetMeta[key] || { name: key, tagline: '' };
+      const card = document.createElement('div');
+      card.className = 'te-preset-card';
+      card.dataset.dataPreset = key;
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-label', 'Apply ' + meta.name + ' theme');
+      card.innerHTML =
+        '<div class="te-preset-check">✓</div>' +
+        '<div class="te-preset-palette">' +
+          '<span style="background:' + preset['--t-bg'] + '"></span>' +
+          '<span style="background:' + (preset['--t-card-bg-solid'] || preset['--t-card-bg']) + '"></span>' +
+          '<span style="background:' + preset['--t-accent'] + '"></span>' +
+        '</div>' +
+        '<span class="te-preset-name">' + meta.name + '</span>' +
+        '<span class="te-preset-tag">' + meta.tagline + '</span>';
+      card.addEventListener('click', () => applyDataPreset(key));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); applyDataPreset(key); }
+      });
+      frag.appendChild(card);
+    });
+    grid.appendChild(frag);
+    syncDataPresetActiveState(settings.activeDataPreset);
+  }
+
+  function syncDataPresetActiveState(activeKey) {
+    document.querySelectorAll('#teDataPresetGrid .te-preset-card').forEach(card => {
+      card.classList.toggle('active', card.dataset.dataPreset === activeKey);
+    });
+  }
+
   // ---------- Image compression (keeps localStorage usage sane) ----------
-  // Reads `file`, decodes it as an <img>, downsizes it to `maxWidth` on a canvas, and resolves
-  // with a JPEG data URL. Every stage (FileReader, Image decode, canvas draw/export) has its own
-  // error handling so a failure anywhere always rejects with a real Error — never leaves the
-  // returned promise hanging, and never throws an uncaught exception from inside an event handler.
   function compressImage(file, maxWidth, quality) {
     return new Promise((resolve, reject) => {
       if (!file) { reject(new Error('No file was provided.')); return; }
@@ -20278,6 +20642,7 @@
       inp.addEventListener('input', () => {
         settings.colors[inp.dataset.key] = inp.value;
         settings.colorsCustomized = true; // user picked an explicit accent color — see applyColors()
+        settings.activeDataPreset = null; // manual color edit always takes over from a curated Data Preset
         applyColors(); saveSettings();
       });
     });
@@ -20303,6 +20668,7 @@
       sw.addEventListener('click', () => {
         settings.colors = Object.assign({}, p);
         settings.colorsCustomized = true; // user picked an explicit palette — see applyColors()
+        settings.activeDataPreset = null; // an explicit palette pick always takes over from a curated Data Preset
         applyColors(); saveSettings(); syncColorInputs();
         notify(name + ' palette applied.');
       });
@@ -20405,6 +20771,7 @@
     syncEffectInputs();
     syncTypographyInputs();
     syncLauncherActiveState();
+    syncDataPresetActiveState(settings.activeDataPreset);
   }
 
   function bindPanel() {
@@ -20571,6 +20938,9 @@
             logo: Object.assign({}, defaults.logo, imported.logo),
             typography: Object.assign({}, defaults.typography, imported.typography),
             activeLauncher: typeof imported.activeLauncher === 'string' ? imported.activeLauncher : null,
+            // An imported file always describes a full custom look, never a curated Data
+            // Preset pick — and always takes over from one if it was active.
+            activeDataPreset: null,
             colorsCustomized: true // an imported theme file is an explicit choice — see applyColors()
           };
           applyAll(); saveSettings(); refreshUI();
@@ -20583,7 +20953,12 @@
     });
     document.getElementById('teResetAll').addEventListener('click', () => {
       if (!confirm('Reset all theme, wallpaper, colors and logo to default?')) return;
-      localStorage.removeItem(STORAGE_KEY);
+      // Clear the unified key AND the two retired legacy keys — otherwise the very next load
+      // would find no unified key, fall back to migrateLegacySettings(), and silently resurrect
+      // whatever those old keys still held, undoing the reset.
+      localStorage.removeItem(THEME_STORAGE_KEY);
+      localStorage.removeItem(LEGACY_LAUNCHER_KEY);
+      localStorage.removeItem(LEGACY_DATA_PRESET_KEY);
       location.reload();
     });
   }
@@ -20610,6 +20985,7 @@
     buildPalettePresets();
     buildWallpaperPresets();
     buildLauncherPresets();
+    buildDataPresetGrid();
     bindPanel();
     applyAll();
     refreshUI();
@@ -20621,297 +20997,19 @@
     init();
   }
 
-  window.ThemeEngine = { getSettings: () => settings, applyAll, refreshUI, applyLauncherPreset, resetAll: () => { localStorage.removeItem(STORAGE_KEY); location.reload(); } };
-})();
-</script>
-
-<!-- ============================================================
-     DATA-DRIVEN THEME ENGINE — 8-preset curated premium design-system library
-     Separate, lightweight sibling to the UI Launcher module above: writes only the --t-* tokens
-     (mapped to the app's existing variable names via the html[data-theme-preset] CSS rule near
-     the top of <head>) instead of the full colors/effects/wallpaper/typography settings object.
-     Runs its own render (#teDataPresetGrid, inside the "Data Presets" tab) and its own
-     localStorage key, so it never reads or writes UI Launcher / Colors / Effects settings.
-     Deliberately initialized AFTER the UI Launcher module above (both write to <html>'s inline
-     style; last-write-wins), and applyTheme() clears any inline --bg-dark/--card-bg/etc. the
-     Launcher engine may have set, so a Data Preset always fully takes over when chosen.
-     ============================================================ -->
-<script>
-(function () {
-  const THEME_STORAGE_KEY = 'user_app_theme';
-
-  // Legacy variable names that html[data-theme-preset] maps to --t-* tokens via CSS. If the UI
-  // Launcher module (or a saved custom color) has set any of these directly as an inline style,
-  // that inline value beats our CSS mapping — so applyTheme() clears them first, every time.
-  const LEGACY_VARS_TO_CLEAR = [
-    '--bg-dark', '--sidebar-bg', '--sidebar-bg-rgb', '--card-bg', '--border-color', '--border-subtle',
-    '--accent-gold', '--accent-gold-dim', '--accent-green', '--accent-green-dim', '--accent-green-glow',
-    '--accent-green-dark', '--text-main', '--text-muted', '--text-faint', '--shadow-sm', '--shadow-md',
-    '--shadow-lg', '--shadow-glow', '--r-sm', '--r-md', '--r-lg', '--brand-text-accent',
-    '--brand-badge-bg', '--brand-badge-border'
-  ];
-
-  // ----------------------------------------------------------------------
-  // Theme token factory — every preset below defines the same complete set
-  // of --t-* tokens (bg, card, borders, text, accent, blur, radius, shadow,
-  // glow) via this one helper so nothing is ever accidentally left out.
-  // Deliberately a small, curated set (the original core 4 + 4 premium
-  // executive additions) rather than a large generic library — see the
-  // "Data Presets" tab comment below.
-  // ----------------------------------------------------------------------
-  function mkTheme(o) {
-    const r = o.radius || [10, 18, 26];
-    return {
-      '--t-bg': o.bg,
-      '--t-bg-image': o.bgImage || 'none',
-      '--t-card-bg': o.cardBg,
-      '--t-card-bg-solid': o.cardSolid,
-      '--t-sidebar-bg': o.sidebarBg,
-      '--t-sidebar-bg-rgb': o.sidebarRgb,
-      '--t-border': o.border,
-      '--t-border-strong': o.borderStrong,
-      '--t-text': o.text,
-      '--t-text-muted': o.textMuted,
-      '--t-text-faint': o.textFaint,
-      '--t-accent': o.accent,
-      '--t-accent-dark': o.accentDark,
-      '--t-accent-dim': o.accentDim,
-      '--t-accent-glow': o.accentGlow,
-      '--t-accent-contrast': o.accentContrast,
-      '--t-blur': o.blur != null ? o.blur : '0px',
-      '--t-radius-sm': r[0] + 'px',
-      '--t-radius-md': r[1] + 'px',
-      '--t-radius-lg': r[2] + 'px',
-      '--t-shadow-sm': o.shadowSm,
-      '--t-shadow-md': o.shadowMd,
-      '--t-shadow-lg': o.shadowLg,
-      '--t-shadow-inset': o.shadowInset || 'none',
-      '--t-border-glow': o.borderGlow || 'none',
-    };
-  }
-
-  const themePresets = {
-
-    /* ================= ORIGINAL CORE 4 ================= */
-
-    /* 1. GLASSMORPHISM — dark teal/emerald, frosted glass cards */
-    glassmorphism: mkTheme({
-      bg: '#0b1210', bgImage: 'radial-gradient(circle at 20% 20%, rgba(16,185,129,0.10), transparent 45%), radial-gradient(circle at 80% 70%, rgba(13,148,136,0.10), transparent 50%)',
-      cardBg: 'rgba(255,255,255,0.06)', cardSolid: '#121a18', sidebarBg: 'rgba(10,16,14,0.55)', sidebarRgb: '10, 16, 14',
-      border: 'rgba(255,255,255,0.10)', borderStrong: 'rgba(255,255,255,0.18)',
-      text: '#eaf5f0', textMuted: '#9fb3ac', textFaint: '#66786f',
-      accent: '#10b981', accentDark: '#0a8a63', accentDim: 'rgba(16,185,129,0.16)', accentGlow: 'rgba(16,185,129,0.35)', accentContrast: '#06120d',
-      blur: '16px', radius: [8, 16, 24],
-      shadowSm: '0 1px 2px rgba(0,0,0,0.24)', shadowMd: '0 8px 24px rgba(0,0,0,0.28)', shadowLg: '0 16px 48px rgba(0,0,0,0.34)', shadowInset: 'inset 0 1px 0 rgba(255,255,255,0.06)',
-      borderGlow: '0 0 20px rgba(16,185,129,0.35)',
-    }),
-
-    /* 2. CYBER GOLD — pitch black, amber-gold glow, sharp edges */
-    cyberGold: mkTheme({
-      bg: '#000000', bgImage: 'linear-gradient(180deg, rgba(234,179,8,0.05), transparent 30%)',
-      cardBg: 'rgba(20,18,10,0.85)', cardSolid: '#0d0c08', sidebarBg: 'rgba(0,0,0,0.9)', sidebarRgb: '0, 0, 0',
-      border: 'rgba(234,179,8,0.25)', borderStrong: 'rgba(234,179,8,0.5)',
-      text: '#fdf6e3', textMuted: '#b8ac8a', textFaint: '#6b6350',
-      accent: '#EAB308', accentDark: '#a67c00', accentDim: 'rgba(234,179,8,0.14)', accentGlow: 'rgba(234,179,8,0.55)', accentContrast: '#1a1400',
-      blur: '0px', radius: [2, 4, 6],
-      shadowSm: '0 0 0 1px rgba(234,179,8,0.15)', shadowMd: '0 0 20px rgba(234,179,8,0.12), 0 4px 12px rgba(0,0,0,0.6)', shadowLg: '0 0 40px rgba(234,179,8,0.18), 0 12px 32px rgba(0,0,0,0.7)',
-      borderGlow: '0 0 24px rgba(234,179,8,0.45)',
-    }),
-
-    /* 3. SOFT NEUMORPHIC — extruded grey-blue UI, bold blue accent */
-    neumorphic: mkTheme({
-      bg: '#e4e9f0', bgImage: 'none',
-      cardBg: '#e4e9f0', cardSolid: '#e4e9f0', sidebarBg: '#e4e9f0', sidebarRgb: '228, 233, 240',
-      border: 'rgba(255,255,255,0.6)', borderStrong: 'rgba(163,177,198,0.5)',
-      text: '#2b3446', textMuted: '#5c6b82', textFaint: '#8b97ab',
-      accent: '#2563eb', accentDark: '#1d4fd1', accentDim: 'rgba(37,99,235,0.12)', accentGlow: 'rgba(37,99,235,0.3)', accentContrast: '#ffffff',
-      blur: '0px', radius: [10, 20, 28],
-      shadowSm: '3px 3px 6px #b8c0cc, -3px -3px 6px #ffffff', shadowMd: '8px 8px 16px #b8c0cc, -8px -8px 16px #ffffff', shadowLg: '14px 14px 28px #b8c0cc, -14px -14px 28px #ffffff', shadowInset: 'inset 2px 2px 5px #b8c0cc, inset -2px -2px 5px #ffffff',
-    }),
-
-    /* 4. NATURE MINIMAL — sage green, dark forest bg, soft rounded cards */
-    natureMinimal: mkTheme({
-      bg: '#141d18', bgImage: 'none',
-      cardBg: '#1c2721', cardSolid: '#1c2721', sidebarBg: '#111a15', sidebarRgb: '17, 26, 21',
-      border: 'rgba(168,192,175,0.14)', borderStrong: 'rgba(168,192,175,0.28)',
-      text: '#e7efe9', textMuted: '#a3b6ab', textFaint: '#67796f',
-      accent: '#8faf8a', accentDark: '#6d8a68', accentDim: 'rgba(143,175,138,0.16)', accentGlow: 'rgba(143,175,138,0.28)', accentContrast: '#10190f',
-      blur: '0px', radius: [10, 18, 26],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.3)', shadowMd: '0 6px 20px rgba(0,0,0,0.32)', shadowLg: '0 14px 36px rgba(0,0,0,0.38)',
-      borderGlow: '0 0 16px rgba(143,175,138,0.3)',
-    }),
-
-    /* ================= PREMIUM EXECUTIVE 4 ================= */
-
-    /* 5. OLED MIDNIGHT EMERALD — ultra-deep black, neon mint accents, subtle blur */
-    oledMidnightEmerald: mkTheme({
-      bg: '#000000', bgImage: 'radial-gradient(circle at 25% 15%, rgba(0,255,180,0.06), transparent 50%)',
-      cardBg: 'rgba(0,255,180,0.035)', cardSolid: '#050a08', sidebarBg: 'rgba(0,0,0,0.94)', sidebarRgb: '0, 0, 0',
-      border: 'rgba(0,255,180,0.16)', borderStrong: 'rgba(0,255,180,0.3)',
-      text: '#e9fff6', textMuted: '#8fc4ac', textFaint: '#4f6f61',
-      accent: '#00ffb2', accentDark: '#00c98a', accentDim: 'rgba(0,255,178,0.13)', accentGlow: 'rgba(0,255,178,0.45)', accentContrast: '#001a10',
-      blur: '10px', radius: [8, 14, 20],
-      shadowSm: '0 0 0 1px rgba(0,255,178,0.14)', shadowMd: '0 0 22px rgba(0,255,178,0.14), 0 8px 20px rgba(0,0,0,0.65)', shadowLg: '0 0 44px rgba(0,255,178,0.2), 0 18px 42px rgba(0,0,0,0.75)',
-      borderGlow: '0 0 22px rgba(0,255,178,0.4)',
-    }),
-
-    /* 6. ROYAL OBSIDIAN — deep charcoal/slate, champagne-gold highlights, refined borders */
-    royalObsidian: mkTheme({
-      bg: '#14151a', bgImage: 'linear-gradient(160deg, rgba(212,184,128,0.05), transparent 45%)',
-      cardBg: 'rgba(212,184,128,0.045)', cardSolid: '#1c1d24', sidebarBg: 'rgba(10,11,14,0.92)', sidebarRgb: '10, 11, 14',
-      border: 'rgba(212,184,128,0.18)', borderStrong: 'rgba(212,184,128,0.32)',
-      text: '#f2efe6', textMuted: '#a9a49a', textFaint: '#66625c',
-      accent: '#d4b880', accentDark: '#b0925e', accentDim: 'rgba(212,184,128,0.14)', accentGlow: 'rgba(212,184,128,0.32)', accentContrast: '#14110a',
-      blur: '4px', radius: [6, 12, 18],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.4)', shadowMd: '0 0 20px rgba(212,184,128,0.1), 0 8px 22px rgba(0,0,0,0.5)', shadowLg: '0 0 40px rgba(212,184,128,0.16), 0 18px 42px rgba(0,0,0,0.58)',
-      borderGlow: '0 0 20px rgba(212,184,128,0.32)',
-    }),
-
-    /* 7. TITANIUM FROST — dark metallic grey, icy-blue accents, crisp glass cards */
-    titaniumFrost: mkTheme({
-      bg: '#111418', bgImage: 'radial-gradient(circle at 75% 15%, rgba(148,197,255,0.08), transparent 50%)',
-      cardBg: 'rgba(255,255,255,0.05)', cardSolid: '#1a1e24', sidebarBg: 'rgba(9,11,14,0.9)', sidebarRgb: '9, 11, 14',
-      border: 'rgba(148,197,255,0.16)', borderStrong: 'rgba(148,197,255,0.3)',
-      text: '#eaf2fb', textMuted: '#98a9bc', textFaint: '#586372',
-      accent: '#7fc4ff', accentDark: '#4fa3e8', accentDim: 'rgba(127,196,255,0.14)', accentGlow: 'rgba(127,196,255,0.38)', accentContrast: '#08131e',
-      blur: '14px', radius: [6, 12, 18],
-      shadowSm: '0 1px 2px rgba(0,0,0,0.35)', shadowMd: '0 8px 22px rgba(0,0,0,0.4)', shadowLg: '0 18px 42px rgba(0,0,0,0.48)', shadowInset: 'inset 0 1px 0 rgba(255,255,255,0.06)',
-      borderGlow: '0 0 18px rgba(127,196,255,0.38)',
-    }),
-
-    /* 8. VELVET SYNDICATE — dark plum/violet undertones, crimson-gold glowing accents */
-    velvetSyndicate: mkTheme({
-      bg: '#160c14', bgImage: 'radial-gradient(circle at 30% 20%, rgba(190,30,60,0.1), transparent 50%)',
-      cardBg: 'rgba(255,255,255,0.04)', cardSolid: '#20121d', sidebarBg: 'rgba(12,7,11,0.92)', sidebarRgb: '12, 7, 11',
-      border: 'rgba(212,166,90,0.16)', borderStrong: 'rgba(190,30,60,0.3)',
-      text: '#f6e9f0', textMuted: '#b393a3', textFaint: '#6d5763',
-      accent: '#c9366a', accentDark: '#a12454', accentDim: 'rgba(201,54,106,0.16)', accentGlow: 'rgba(212,166,90,0.35)', accentContrast: '#1a0d14',
-      blur: '4px', radius: [8, 14, 20],
-      shadowSm: '0 1px 3px rgba(0,0,0,0.4)', shadowMd: '0 0 20px rgba(201,54,106,0.14), 0 8px 22px rgba(0,0,0,0.5)', shadowLg: '0 0 42px rgba(212,166,90,0.2), 0 18px 42px rgba(0,0,0,0.58)',
-      borderGlow: '0 0 22px rgba(201,54,106,0.4)',
-    }),
-  };
-
-  // Metadata for the picker cards only — never read by applyTheme(), just rendering.
-  // The mini palette preview (bg / card / accent swatches) is generated directly from each
-  // preset's own tokens in renderDataPresetGrid() below, so it can never drift out of sync;
-  // only the display name + one-line tagline live here.
-  const themePresetMeta = {
-    glassmorphism:        { name: 'Glassmorphism',          tagline: 'Dark teal/emerald frosted glass, rounded corners.' },
-    cyberGold:            { name: 'Cyber Gold',             tagline: 'Pitch black with glowing amber-gold borders.' },
-    neumorphic:           { name: 'Soft Neumorphic',        tagline: 'Extruded grey-blue UI, tactile, bold blue accent.' },
-    natureMinimal:        { name: 'Nature Minimal',         tagline: 'Sage green on dark forest, soft rounded cards.' },
-
-    oledMidnightEmerald:  { name: 'OLED Midnight Emerald',  tagline: 'Ultra-deep black UI with neon mint accents & subtle blur.' },
-    royalObsidian:        { name: 'Royal Obsidian',         tagline: 'Charcoal/slate with luxury champagne-gold highlights.' },
-    titaniumFrost:        { name: 'Titanium Frost',         tagline: 'Dark metallic grey body, sharp icy-blue glass accents.' },
-    velvetSyndicate:      { name: 'Velvet Syndicate',       tagline: 'Dark plum/violet with rich crimson-gold glow.' },
-  };
-
-
-  /**
-   * Applies a theme preset: writes its --t-* tokens onto <html>, clears any inline legacy-var
-   * overrides the UI Launcher module may have set (so the CSS mapping takes over cleanly),
-   * flags <html> with data-theme-preset (wins the specificity tie vs. Dark/Light Mode — see the
-   * CSS comment near the token definitions), persists the choice, and re-syncs the picker UI.
-   */
-  function applyTheme(themeKey) {
-    const preset = themePresets[themeKey];
-    if (!preset) { console.warn(`applyTheme: unknown theme key "${themeKey}"`); return false; }
-
-    const root = document.documentElement;
-    LEGACY_VARS_TO_CLEAR.forEach(v => root.style.removeProperty(v));
-    for (const [varName, value] of Object.entries(preset)) {
-      root.style.setProperty(varName, value);
+  window.ThemeEngine = {
+    getSettings: () => settings,
+    applyAll, refreshUI, applyLauncherPreset, applyDataPreset,
+    resetAll: () => {
+      localStorage.removeItem(THEME_STORAGE_KEY);
+      localStorage.removeItem(LEGACY_LAUNCHER_KEY);
+      localStorage.removeItem(LEGACY_DATA_PRESET_KEY);
+      location.reload();
     }
-    root.setAttribute('data-theme-preset', themeKey);
-
-    try { localStorage.setItem(THEME_STORAGE_KEY, themeKey); } catch (e) { /* private mode etc. */ }
-    try { if (typeof pushUserSetting === 'function') pushUserSetting(THEME_STORAGE_KEY, themeKey); } catch (e) { /* Firebase not ready yet */ }
-
-    document.dispatchEvent(new CustomEvent('themechange', { detail: { theme: themeKey } }));
-    syncDataPresetActiveState(themeKey);
-    return true;
-  }
-
-  // Renders one card per preset into the scrollable #teDataPresetGrid container (see the
-  // .te-preset-grid / .te-preset-card CSS near the other Theme Engine styles). Each card shows
-  // a live 3-swatch mini palette (bg / card / accent) built straight from that preset's own
-  // tokens, plus its name — so what you see is exactly what tapping the card will apply.
-  function renderDataPresetGrid() {
-    const grid = document.getElementById('teDataPresetGrid');
-    if (!grid) return;
-    grid.innerHTML = '';
-    const frag = document.createDocumentFragment();
-    Object.keys(themePresets).forEach(key => {
-      const preset = themePresets[key];
-      const meta = themePresetMeta[key] || { name: key, tagline: '' };
-      const bgSwatch = preset['--t-bg'];
-      const cardSwatch = preset['--t-card-bg-solid'] || preset['--t-card-bg'];
-      const accentSwatch = preset['--t-accent'];
-      const card = document.createElement('div');
-      card.className = 'te-preset-card';
-      card.dataset.dataPreset = key;
-      card.setAttribute('role', 'button');
-      card.setAttribute('tabindex', '0');
-      card.setAttribute('aria-label', `Apply ${meta.name} theme`);
-      card.innerHTML = `
-        <div class="te-preset-check">✓</div>
-        <div class="te-preset-palette">
-          <span style="background:${bgSwatch}"></span>
-          <span style="background:${cardSwatch}"></span>
-          <span style="background:${accentSwatch}"></span>
-        </div>
-        <span class="te-preset-name">${meta.name}</span>
-        <span class="te-preset-tag">${meta.tagline}</span>
-      `;
-      card.addEventListener('click', () => applyTheme(key));
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); applyTheme(key); }
-      });
-      frag.appendChild(card);
-    });
-    grid.appendChild(frag);
-  }
-
-  function syncDataPresetActiveState(activeKey) {
-    document.querySelectorAll('#teDataPresetGrid .te-preset-card').forEach(card => {
-      card.classList.toggle('active', card.dataset.dataPreset === activeKey);
-    });
-  }
-
-  function initTheme() {
-    renderDataPresetGrid();
-
-    // Only reach for a Data Preset if the user has actually chosen one from the "Data
-    // Presets" grid. The old code defaulted `saved` to 'glassmorphism' and called
-    // applyTheme() unconditionally, which — every single time the app loaded — cleared
-    // the inline --bg-dark/--card-bg/etc. variables the Colors/Launcher panel had just set
-    // and stamped the Glassmorphism tokens over them via the data-theme-preset attribute.
-    // That's what made a saved custom theme look like it "reset to default" on every
-    // reload: it wasn't lost, it was being silently overridden a few hundred milliseconds
-    // after that Colors/Launcher module (see the UI Launcher & Theme Engine script above)
-    // had already applied it correctly.
-    let saved = null;
-    try { saved = localStorage.getItem(THEME_STORAGE_KEY); } catch (e) { /* ignore */ }
-
-    if (saved && themePresets[saved]) {
-      applyTheme(saved);
-    } else {
-      // No Data Preset has ever been explicitly picked — leave the base palette alone
-      // (whatever the Dark/Light Mode toggle and/or the Colors/Launcher panel already
-      // set) instead of forcing Glassmorphism over it.
-      syncDataPresetActiveState(null);
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initTheme);
-  } else {
-    initTheme();
-  }
-
-  window.DataThemeEngine = { themePresets, applyTheme };
+  };
+  // Kept for anything that might still reference the old Data-Driven Theme Engine global by
+  // name — everything it offered now lives in the single ThemeSystem module above.
+  window.DataThemeEngine = { themePresets, applyTheme: applyDataPreset };
 })();
 </script>
 
