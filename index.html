@@ -20881,10 +20881,28 @@
   }
 
   function initTheme() {
-    let saved = 'glassmorphism';
-    try { saved = localStorage.getItem(THEME_STORAGE_KEY) || 'glassmorphism'; } catch (e) { /* ignore */ }
     renderDataPresetGrid();
-    applyTheme(themePresets[saved] ? saved : 'glassmorphism');
+
+    // Only reach for a Data Preset if the user has actually chosen one from the "Data
+    // Presets" grid. The old code defaulted `saved` to 'glassmorphism' and called
+    // applyTheme() unconditionally, which — every single time the app loaded — cleared
+    // the inline --bg-dark/--card-bg/etc. variables the Colors/Launcher panel had just set
+    // and stamped the Glassmorphism tokens over them via the data-theme-preset attribute.
+    // That's what made a saved custom theme look like it "reset to default" on every
+    // reload: it wasn't lost, it was being silently overridden a few hundred milliseconds
+    // after that Colors/Launcher module (see the UI Launcher & Theme Engine script above)
+    // had already applied it correctly.
+    let saved = null;
+    try { saved = localStorage.getItem(THEME_STORAGE_KEY); } catch (e) { /* ignore */ }
+
+    if (saved && themePresets[saved]) {
+      applyTheme(saved);
+    } else {
+      // No Data Preset has ever been explicitly picked — leave the base palette alone
+      // (whatever the Dark/Light Mode toggle and/or the Colors/Launcher panel already
+      // set) instead of forcing Glassmorphism over it.
+      syncDataPresetActiveState(null);
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -20895,7 +20913,6 @@
 
   window.DataThemeEngine = { themePresets, applyTheme };
 })();
-</script>
 </script>
 
 <!-- ============================================================
