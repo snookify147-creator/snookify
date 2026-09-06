@@ -712,6 +712,15 @@
     #shiftArchiveBody tr.row-variance-negative { background: rgba(255,82,82,0.07); }
     #shiftArchiveBody tr.row-variance-positive { background: rgba(76,175,80,0.07); }
     #shiftArchiveFoot tr.shift-archive-totals td { font-weight: 800; background: rgba(255,179,0,0.08); border-top: 2px solid var(--accent-gold); }
+    /* Expense History footer Total row — sits directly under the AMOUNT (RS) column and updates
+       to reflect whichever filter (All Time / Month / Date / Range / Search) is active, so it
+       always matches exactly the rows currently shown in the table. */
+    #expensesTableFoot tr.expenses-totals-row td { font-weight: 800; background: rgba(255,179,0,0.08); border-top: 2px solid var(--accent-gold); white-space: nowrap; }
+    #expensesTableFoot tr.expenses-totals-row td.expenses-total-amount { color: var(--accent-green-dark, var(--accent-green)); font-size: 0.95rem; }
+    /* Partners Ledger — Contribution History footer Total row, same treatment as the Expense
+       History Total row: sits under AMOUNT (RS) and always matches the currently filtered rows. */
+    #partnerContributionsFoot tr.partner-totals-row td { font-weight: 800; background: rgba(255,179,0,0.08); border-top: 2px solid var(--accent-gold); white-space: nowrap; }
+    #partnerContributionsFoot tr.partner-totals-row td.partner-total-amount { color: var(--accent-green-dark, var(--accent-green)); font-size: 0.95rem; }
 
     /* Shift Handover History grew a handful of extra audit columns (frames/play time/discounts/
        udhaar) — wrap it so it scrolls horizontally on narrower screens instead of squeezing
@@ -731,7 +740,7 @@
        these widths the table now scrolls horizontally inside .table-scroll-wrap instead. */
     #udhaarTable { min-width: 920px; }
     #playersTable { min-width: 1040px; }
-    #partnerContributionsTable { min-width: 650px; }
+    #partnerContributionsTable { min-width: 780px; }
     #shiftArchiveTable th, #shiftArchiveTable td { white-space: nowrap; }
 
     /* Active Staff Selector (Shift Tracker) */
@@ -1344,6 +1353,9 @@
     #expenseBillViewModal .modal-box { max-width: 520px; text-align: center; }
     #expenseBillViewModal img { max-width: 100%; max-height: 70vh; max-height: 70dvh; border-radius: 8px; border: 1px solid var(--border-color); }
     #expenseBillViewModal iframe { width: 100%; height: 70vh; height: 70dvh; border: 1px solid var(--border-color); border-radius: 8px; background: #fff; }
+    #pcBillViewModal .modal-box { max-width: 520px; text-align: center; }
+    #pcBillViewModal img { max-width: 100%; max-height: 70vh; max-height: 70dvh; border-radius: 8px; border: 1px solid var(--border-color); }
+    #pcBillViewModal iframe { width: 100%; height: 70vh; height: 70dvh; border: 1px solid var(--border-color); border-radius: 8px; background: #fff; }
     .modal-box { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.12); border-radius: var(--r-lg); padding: 20px; width: 100%; max-width: 420px; max-height: 90vh; max-height: 90dvh; overflow-y: auto; box-shadow: var(--shadow-lg); }
     html[data-theme="light"] .modal-box { border-color: rgba(15,23,42,0.10); }
     .modal-box h3 { margin-bottom: 14px; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; letter-spacing: -0.01em; }
@@ -2743,6 +2755,7 @@
             <input type="text" id="expensesSearchFilter" placeholder="e.g. Rent, Repairs" oninput="renderExpensesScreen()">
           </div>
           <button class="btn" style="width:auto;" onclick="resetExpensesFilters()">↺ Reset Filters</button>
+          <button class="btn filter-export-btn" style="width:auto;" onclick="exportExpensesPDF()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M6 17h12v5H6z"/></svg> Export to PDF</button>
         </div>
 
         <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
@@ -2780,6 +2793,7 @@
           <table id="expensesTable">
             <thead><tr id="expensesHeadRow"><th>Date</th><th>Category</th><th>Type</th><th>Description</th><th>Amount (Rs)</th><th>Paid Via</th><th>Staff</th><th>Actions</th></tr></thead>
             <tbody id="expensesTableBody"></tbody>
+            <tfoot id="expensesTableFoot"></tfoot>
           </table>
         </div>
       </div>
@@ -4069,7 +4083,30 @@
             <label>Amount (PKR)</label>
             <input type="number" id="pcAmountInput" placeholder="0" min="0">
           </div>
-          <button class="btn" onclick="addPartnerContribution()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Log Contribution</button>
+          <div class="form-group">
+            <label>Paid Via</label>
+            <select id="pcPaymentTypeInput">
+              <option value="cash">Cash</option>
+              <option value="online">Bank Transfer / Online</option>
+              <option value="easypaisa_jazzcash">EasyPaisa / JazzCash</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Attach Receipt / Proof</label>
+            <div class="expense-attach-row">
+              <!-- Same attach pattern as Expenses' "Attach Bill": accept + capture="environment"
+                   together still opens the normal chooser (Camera / Gallery / Files) on mobile. -->
+              <input type="file" id="pcBillInput" accept="image/*,.pdf,application/pdf" capture="environment" style="display:none;" onchange="handlePcBillSelect(this)">
+              <button type="button" id="pcBillAttachBtn" class="btn-attach" onclick="document.getElementById('pcBillInput').click()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.4 21a5 5 0 0 1-7-7L14 5.5a3.5 3.5 0 0 1 5 5L10.5 19a2 2 0 0 1-3-3l7-7"/></svg> + Attach Proof</button>
+              <span id="pcBillFileName" class="expense-attach-filename">No file selected</span>
+              <button type="button" id="pcBillClearBtn" class="expense-attach-clear" onclick="clearPcBillSelection()" title="Remove attachment"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+            </div>
+            <div id="pcBillPreviewWrap" class="expense-attach-preview" style="display:none;">
+              <img id="pcBillPreviewImg" style="display:none;">
+              <span id="pcBillPreviewPdfBadge" class="expense-attach-pdf-badge" style="display:none;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg> <span id="pcBillPdfName"></span></span>
+            </div>
+          </div>
+          <button class="btn" id="pcSaveBtn" onclick="addPartnerContribution()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Log Contribution</button>
         </div>
 
         <div class="panel ledger-history-panel">
@@ -4078,21 +4115,75 @@
           </div>
           <div class="filter-row partner-history-filter-grid" id="partnerHistoryFilterRow">
             <div class="form-group" style="margin:0;">
+              <label>Filter View</label>
+              <div class="mode-toggle" style="min-width:280px;">
+                <button type="button" id="pcHistoryViewAll" class="toggle-btn active" onclick="setPcHistoryView('all')">All Time</button>
+                <button type="button" id="pcHistoryViewMonth" class="toggle-btn" onclick="setPcHistoryView('month')">By Month</button>
+                <button type="button" id="pcHistoryViewDate" class="toggle-btn" onclick="setPcHistoryView('date')">By Date</button>
+                <button type="button" id="pcHistoryViewRange" class="toggle-btn" onclick="setPcHistoryView('range')">By Range</button>
+              </div>
+            </div>
+            <div class="form-group" style="margin:0;">
               <label>Filter by Partner</label>
               <select id="pcHistoryFilter" onchange="renderPartnersLedgerScreen()"><option value="">All Partners</option></select>
             </div>
-            <div class="form-group" style="margin:0;">
+            <div class="form-group" style="margin:0; display:none;" id="pcHistoryMonthFilterGroup">
+              <label>Month</label>
+              <select id="pcHistoryMonthFilter" onchange="renderPartnersLedgerScreen()">
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0; display:none;" id="pcHistoryYearFilterGroup">
+              <label>Year</label>
+              <select id="pcHistoryYearFilter" onchange="renderPartnersLedgerScreen()">
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+                <option value="2029">2029</option>
+                <option value="2030">2030</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0; display:none;" id="pcHistoryDateFilterGroup">
               <label>Filter by Date</label>
               <input type="date" id="pcHistoryDateFilter" onchange="renderPartnersLedgerScreen()">
             </div>
-            <button class="btn btn-secondary" onclick="clearPartnerHistoryFilters()">Clear Filters</button>
+            <div class="form-group" style="margin:0; display:none;" id="pcHistoryFromDateFilterGroup">
+              <label>From Date</label>
+              <input type="date" id="pcHistoryFromDateFilter" onchange="renderPartnersLedgerScreen()">
+            </div>
+            <div class="form-group" style="margin:0; display:none;" id="pcHistoryToDateFilterGroup">
+              <label>To Date</label>
+              <input type="date" id="pcHistoryToDateFilter" onchange="renderPartnersLedgerScreen()">
+            </div>
+            <button class="btn btn-secondary" onclick="clearPartnerHistoryFilters()">↺ Reset Filters</button>
+            <button class="btn filter-export-btn" onclick="exportPartnerContributionsPDF()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M6 17h12v5H6z"/></svg> Export to PDF</button>
           </div>
+
+          <!-- Filtered Contribution Summary: per-partner breakdown for the currently selected
+               date/month/range view (independent of the Filter by Partner dropdown, so you can
+               always see how every partner compares side by side), plus a Filtered Total card. -->
+          <div class="metrics-grid" id="pcFilteredSummaryGrid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 14px;"></div>
+
           <div class="table-scroll-wrap">
             <table id="partnerContributionsTable">
               <thead>
-                <tr><th>Date</th><th>Partner</th><th>Category</th><th>Description</th><th>Amount (Rs)</th><th></th></tr>
+                <tr><th>Date</th><th>Partner</th><th>Category</th><th>Description</th><th>Amount (Rs)</th><th>Paid Via</th><th>Proof</th><th></th></tr>
               </thead>
               <tbody id="partnerContributionsBody"></tbody>
+              <tfoot id="partnerContributionsFoot"></tfoot>
             </table>
           </div>
         </div>
@@ -4502,6 +4593,18 @@
       <div id="expenseBillViewBody" style="margin: 14px 0;"></div>
       <a id="expenseBillViewOpenLink" href="#" target="_blank" rel="noopener">⤓ Open / Download in New Tab</a>
       <button class="btn btn-secondary" onclick="closeExpenseBillViewModal()">Close</button>
+    </div>
+  </div>
+
+  <!-- PARTNER CONTRIBUTION PROOF VIEWER — opened from the 📎 icon in the Contribution History
+       table's "Proof" column (see viewPcBill() near the Partners Ledger module). Same handling
+       as the Expense Bill viewer above: Firebase Storage URL, or inline base64 fallback. -->
+  <div id="pcBillViewModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3 id="pcBillViewTitle">Attached Proof</h3>
+      <div id="pcBillViewBody" style="margin: 14px 0;"></div>
+      <a id="pcBillViewOpenLink" href="#" target="_blank" rel="noopener">⤓ Open / Download in New Tab</a>
+      <button class="btn btn-secondary" onclick="closePcBillViewModal()">Close</button>
     </div>
   </div>
 
@@ -12804,8 +12907,123 @@
         </tr>
       `).join('') : `<tr><td colspan="${isAll ? 9 : 8}" class="empty-note">No expenses recorded.</td></tr>`;
 
+      // Footer Total row, directly under AMOUNT (RS) — always the exact sum of whichever rows
+      // are currently in `list` (i.e. after the active Filter View + Search are applied), so it
+      // updates live with every filter change (All Time / By Month / By Date / By Range / Search).
+      const foot = document.getElementById('expensesTableFoot');
+      if (foot) {
+        const filteredTotal = list.reduce((s, e) => s + Number(e.amount || 0), 0);
+        const labelColspan = isAll ? 5 : 4; // spans Branch?+Date+Category+Type+Description, up to (not incl.) Amount
+        foot.innerHTML = `
+          <tr class="expenses-totals-row">
+            <td colspan="${labelColspan}" style="text-align:right;">TOTAL (${list.length} ${list.length === 1 ? 'entry' : 'entries'})</td>
+            <td class="expenses-total-amount">Rs ${money(filteredTotal)}</td>
+            <td colspan="3"></td>
+          </tr>`;
+      }
+
       renderExpensesSummary(list);
       applyExpenseHistoryPrivacy(); // Security & Permissions > Dashboard & UI Privacy Controls — Lock/Blur/Hide for the whole section
+    }
+
+    // Builds a short human-readable label for whichever Expense History filter is currently
+    // active (All Time / By Month / By Date / By Range), plus the search term if one is typed —
+    // used in the PDF's header so the report says exactly what it's a report OF.
+    function expensesFilterLabel() {
+      const parts = [];
+      if (expensesView === 'month') {
+        const mSel = document.getElementById('expensesMonthFilter');
+        const ySel = document.getElementById('expensesYearFilter');
+        const mName = mSel.options[mSel.selectedIndex] ? mSel.options[mSel.selectedIndex].text : mSel.value;
+        parts.push(`Month: ${mName} ${ySel.value}`);
+      } else if (expensesView === 'date') {
+        const d = document.getElementById('expensesDateFilter').value;
+        parts.push(`Date: ${d || 'Not set'}`);
+      } else if (expensesView === 'range') {
+        const from = document.getElementById('expensesFromDateFilter').value;
+        const to = document.getElementById('expensesToDateFilter').value;
+        parts.push(`Range: ${from || 'earliest'} to ${to || 'latest'}`);
+      } else {
+        parts.push('All Time');
+      }
+      const q = (document.getElementById('expensesSearchFilter').value || '').trim();
+      if (q) parts.push(`Search: "${q}"`);
+      return parts.join('  ·  ');
+    }
+
+    // "📄 Export to PDF" — builds a real, downloadable PDF (jsPDF + autoTable, same libs used
+    // elsewhere in the app, e.g. exportShiftArchivePDF()) of EXACTLY the filtered Expense History
+    // rows currently on screen — same list getFilteredExpenses()/renderExpensesScreen() use — so
+    // the PDF always matches what's visible, with a Filtered Total footer row that matches the
+    // on-screen table's Total row.
+    function exportExpensesPDF() {
+      const list = getFilteredExpenses();
+      if (!list.length) { alert('No expenses match the current filter — nothing to export.'); return; }
+
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert('The PDF library failed to load (check your internet connection) — please try again once you\'re back online.');
+        return;
+      }
+
+      const isAll = state.activeBranch === ALL_BRANCHES_ID;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'portrait' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      let y = 40;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text('SNOOKIFY CLUB', pageWidth / 2, y, { align: 'center' });
+      y += 18;
+      doc.setFontSize(12);
+      doc.text('Expense History Report', pageWidth / 2, y, { align: 'center' });
+      y += 16;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(90);
+      doc.text(expensesFilterLabel(), pageWidth / 2, y, { align: 'center' });
+      y += 13;
+      doc.text(
+        `Generated: ${todayISO()} ${formatTime(new Date())}  ·  ${list.length} record${list.length === 1 ? '' : 's'}`,
+        pageWidth / 2, y, { align: 'center' }
+      );
+      doc.setTextColor(0);
+      y += 14;
+
+      const filteredTotal = list.reduce((s, e) => s + Number(e.amount || 0), 0);
+      const head = ['Date', 'Category', 'Type', 'Description', 'Amount (Rs)', 'Paid Via'];
+      if (isAll) head.splice(1, 0, 'Branch');
+
+      doc.autoTable({
+        startY: y,
+        margin: { left: 30, right: 30 },
+        theme: 'grid',
+        head: [head],
+        body: list.map(e => {
+          const row = [
+            e.dateISO,
+            e.category,
+            e.type === 'Capital' ? 'Capital' : 'Operational',
+            e.description || '-',
+            `Rs ${money(e.amount)}`,
+            (e.paymentType || 'cash') === 'online' ? 'Online' : 'Cash'
+          ];
+          if (isAll) row.splice(1, 0, branchLabel(e._branch));
+          return row;
+        }),
+        foot: [isAll
+          ? ['', '', '', '', 'FILTERED TOTAL', `Rs ${money(filteredTotal)}`, '']
+          : ['', '', '', 'FILTERED TOTAL', `Rs ${money(filteredTotal)}`, '']
+        ],
+        headStyles: { fillColor: [5, 150, 105], textColor: [255, 255, 255] },
+        footStyles: { fillColor: [255, 179, 0], textColor: [20, 20, 20], fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 5 },
+        columnStyles: isAll ? { 5: { halign: 'right' } } : { 4: { halign: 'right' } }
+      });
+
+      const tag = expensesView === 'all' ? 'All-Time' : expensesFilterLabel().split('·')[0].trim().replace(/[\s:]+/g, '-');
+      doc.save(`Expense-History_${tag}_${new Date().toISOString().slice(0, 10)}.pdf`);
     }
 
     /* ---------- Bin (Audit Trail) ---------- */
@@ -17032,6 +17250,90 @@
       return totalInvested - totalExpenses;
     }
 
+    // Which Contribution History filter mode is active: 'all' | 'month' | 'date' | 'range'
+    // (same pattern as Expense History's expensesView, for a consistent filtering UX app-wide).
+    let pcHistoryView = 'all';
+
+    function setPcHistoryView(view) {
+      pcHistoryView = ['month', 'date', 'range'].includes(view) ? view : 'all';
+
+      ['All', 'Month', 'Date', 'Range'].forEach(v => {
+        const btn = document.getElementById('pcHistoryView' + v);
+        if (btn) btn.classList.toggle('active', v.toLowerCase() === pcHistoryView);
+      });
+
+      document.getElementById('pcHistoryMonthFilterGroup').style.display = pcHistoryView === 'month' ? '' : 'none';
+      document.getElementById('pcHistoryYearFilterGroup').style.display = pcHistoryView === 'month' ? '' : 'none';
+      document.getElementById('pcHistoryDateFilterGroup').style.display = pcHistoryView === 'date' ? '' : 'none';
+      document.getElementById('pcHistoryFromDateFilterGroup').style.display = pcHistoryView === 'range' ? '' : 'none';
+      document.getElementById('pcHistoryToDateFilterGroup').style.display = pcHistoryView === 'range' ? '' : 'none';
+
+      // Sensible defaults so switching a mode on always shows something immediately
+      if (pcHistoryView === 'month') {
+        const mSel = document.getElementById('pcHistoryMonthFilter');
+        const ySel = document.getElementById('pcHistoryYearFilter');
+        if (!mSel.value) mSel.value = String(new Date().getMonth() + 1);
+        if (!ySel.value) ySel.value = String(new Date().getFullYear());
+      }
+      if (pcHistoryView === 'date' && !document.getElementById('pcHistoryDateFilter').value) {
+        document.getElementById('pcHistoryDateFilter').value = todayISO();
+      }
+
+      renderPartnersLedgerScreen();
+    }
+
+    // Applies only the active date/month/range view (NOT the Filter by Partner dropdown) to
+    // state.partnerContributions — used both for the table (further narrowed by partner below)
+    // and for the Filtered Contribution Summary cards, which always show every partner side by
+    // side for the selected period regardless of which partner is picked in the dropdown.
+    function getDateFilteredContributions() {
+      let list = state.partnerContributions.slice();
+
+      if (pcHistoryView === 'month') {
+        const m = parseInt(document.getElementById('pcHistoryMonthFilter').value, 10);
+        const y = parseInt(document.getElementById('pcHistoryYearFilter').value, 10);
+        list = list.filter(c => {
+          const parts = (c.dateISO || '').split('-').map(Number);
+          return parts[0] === y && parts[1] === m;
+        });
+      } else if (pcHistoryView === 'date') {
+        const d = document.getElementById('pcHistoryDateFilter').value;
+        if (d) list = list.filter(c => c.dateISO === d);
+      } else if (pcHistoryView === 'range') {
+        const from = document.getElementById('pcHistoryFromDateFilter').value;
+        const to = document.getElementById('pcHistoryToDateFilter').value;
+        if (from) list = list.filter(c => c.dateISO >= from);
+        if (to) list = list.filter(c => c.dateISO <= to);
+      }
+      // 'all' -> no date filtering
+
+      return list.sort((a, b) => (b.dateISO || '').localeCompare(a.dateISO || ''));
+    }
+
+    // Builds a short human-readable label for the active Contribution History filter — used in
+    // the PDF header so the report says exactly what it's a report OF.
+    function pcHistoryFilterLabel() {
+      const parts = [];
+      if (pcHistoryView === 'month') {
+        const mSel = document.getElementById('pcHistoryMonthFilter');
+        const ySel = document.getElementById('pcHistoryYearFilter');
+        const mName = mSel.options[mSel.selectedIndex] ? mSel.options[mSel.selectedIndex].text : mSel.value;
+        parts.push(`Month: ${mName} ${ySel.value}`);
+      } else if (pcHistoryView === 'date') {
+        parts.push(`Date: ${document.getElementById('pcHistoryDateFilter').value || 'Not set'}`);
+      } else if (pcHistoryView === 'range') {
+        const from = document.getElementById('pcHistoryFromDateFilter').value;
+        const to = document.getElementById('pcHistoryToDateFilter').value;
+        parts.push(`Range: ${from || 'earliest'} to ${to || 'latest'}`);
+      } else {
+        parts.push('All Time');
+      }
+      const partnerFilter = document.getElementById('pcHistoryFilter').value;
+      const partnerObj = state.partners.find(p => p.id === partnerFilter);
+      parts.push(partnerObj ? `Partner: ${partnerObj.name}` : 'Partner: All Partners');
+      return parts.join('  ·  ');
+    }
+
     function renderPartnersLedgerScreen() {
       const totalInvested = state.partnerContributions.reduce((a, c) => a + c.amount, 0);
       const totalExpenses = AB().expenses.reduce((a, e) => a + e.amount, 0);
@@ -17042,7 +17344,7 @@
       balEl.innerText = 'Rs ' + money(balance);
       balEl.classList.toggle('negative', balance < 0);
 
-      // partner profile cards
+      // partner profile cards (all-time totals — unaffected by the Contribution History filters)
       const grid = document.getElementById('partnerGrid');
       grid.innerHTML = state.partners.map(p => {
         const total = state.partnerContributions.filter(c => c.partnerId === p.id).reduce((a, c) => a + c.amount, 0);
@@ -17071,12 +17373,32 @@
 
       if (!document.getElementById('pcDateInput').value) document.getElementById('pcDateInput').value = todayISO();
 
-      // contribution history
+      // Contribution history: date/month/range view first, then narrow by the selected partner
+      const dateFilteredList = getDateFilteredContributions();
       const partnerFilter = historyFilter.value;
-      const dateFilter = document.getElementById('pcHistoryDateFilter').value;
-      let list = state.partnerContributions.slice().sort((a, b) => (b.dateISO || '').localeCompare(a.dateISO || ''));
-      if (partnerFilter) list = list.filter(c => c.partnerId === partnerFilter);
-      if (dateFilter) list = list.filter(c => c.dateISO === dateFilter);
+      const list = partnerFilter ? dateFilteredList.filter(c => c.partnerId === partnerFilter) : dateFilteredList;
+
+      // Filtered Contribution Summary cards — every partner's total for the current date/month/
+      // range view (independent of the partner dropdown), plus a Filtered Total card.
+      const summaryGrid = document.getElementById('pcFilteredSummaryGrid');
+      if (summaryGrid) {
+        const partnerCards = state.partners.map(p => {
+          const pTotal = dateFilteredList.filter(c => c.partnerId === p.id).reduce((a, c) => a + c.amount, 0);
+          return `
+          <div class="metric-card">
+            <div class="metric-title">${p.name}</div>
+            <div class="metric-val">${money(pTotal)}</div>
+            <div class="metric-unit">Rs</div>
+          </div>`;
+        }).join('');
+        const filteredTotalAll = dateFilteredList.reduce((a, c) => a + c.amount, 0);
+        summaryGrid.innerHTML = partnerCards + `
+          <div class="metric-card">
+            <div class="metric-title">Filtered Total</div>
+            <div class="metric-val">${money(filteredTotalAll)}</div>
+            <div class="metric-unit">Rs</div>
+          </div>`;
+      }
 
       const body = document.getElementById('partnerContributionsBody');
       body.innerHTML = list.length ? list.map(c => `
@@ -17086,9 +17408,25 @@
           <td>${c.category}</td>
           <td>${c.description || '-'}</td>
           <td>Rs ${money(c.amount)}</td>
+          <td>${pcPaymentTypeLabel(c.paymentType)}</td>
+          <td>${c.bill ? `<span class="expense-bill-icon" title="View attached proof: ${c.bill.name}" onclick="viewPcBill('${c.id}')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.4 21a5 5 0 0 1-7-7L14 5.5a3.5 3.5 0 0 1 5 5L10.5 19a2 2 0 0 1-3-3l7-7"/></svg></span>` : '-'}</td>
           <td><span class="row-action-icon delete-icon" title="Delete contribution (admin password required)" onclick="requestDeletePartnerContribution('${c.id}')">${ICONS.trash}</span></td>
         </tr>
-      `).join('') : `<tr><td colspan="6" class="empty-note">No contributions logged yet.</td></tr>`;
+      `).join('') : `<tr><td colspan="8" class="empty-note">No contributions logged yet.</td></tr>`;
+
+      // Footer Total row, directly under AMOUNT (RS) — always the exact sum of whichever rows
+      // are currently in `list` (i.e. after both the active date/month/range view AND the
+      // Filter by Partner dropdown are applied), matching exactly what's on screen in the table.
+      const foot = document.getElementById('partnerContributionsFoot');
+      if (foot) {
+        const filteredTotal = list.reduce((s, c) => s + Number(c.amount || 0), 0);
+        foot.innerHTML = `
+          <tr class="partner-totals-row">
+            <td colspan="4" style="text-align:right;">TOTAL (${list.length} ${list.length === 1 ? 'entry' : 'entries'})</td>
+            <td class="partner-total-amount">Rs ${money(filteredTotal)}</td>
+            <td colspan="3"></td>
+          </tr>`;
+      }
 
       updateMetrics();
     }
@@ -17102,7 +17440,228 @@
     function clearPartnerHistoryFilters() {
       document.getElementById('pcHistoryFilter').value = '';
       document.getElementById('pcHistoryDateFilter').value = '';
-      renderPartnersLedgerScreen();
+      document.getElementById('pcHistoryFromDateFilter').value = '';
+      document.getElementById('pcHistoryToDateFilter').value = '';
+      document.getElementById('pcHistoryMonthFilter').value = String(new Date().getMonth() + 1);
+      document.getElementById('pcHistoryYearFilter').value = String(new Date().getFullYear());
+      setPcHistoryView('all'); // also triggers renderPartnersLedgerScreen()
+    }
+
+    // "📄 Export to PDF" — builds a real, downloadable PDF (jsPDF + autoTable, same libs used by
+    // exportExpensesPDF() / exportShiftArchivePDF()) of EXACTLY the filtered Contribution History
+    // rows currently on screen, with a FILTERED TOTAL footer row matching the table's Total row.
+    function exportPartnerContributionsPDF() {
+      const dateFilteredList = getDateFilteredContributions();
+      const partnerFilter = document.getElementById('pcHistoryFilter').value;
+      const list = partnerFilter ? dateFilteredList.filter(c => c.partnerId === partnerFilter) : dateFilteredList;
+
+      if (!list.length) { alert('No contributions match the current filter — nothing to export.'); return; }
+
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert('The PDF library failed to load (check your internet connection) — please try again once you\'re back online.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'portrait' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      let y = 40;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text('SNOOKIFY CLUB', pageWidth / 2, y, { align: 'center' });
+      y += 18;
+      doc.setFontSize(12);
+      doc.text('Partner Contribution Report', pageWidth / 2, y, { align: 'center' });
+      y += 16;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(90);
+      doc.text(pcHistoryFilterLabel(), pageWidth / 2, y, { align: 'center' });
+      y += 13;
+      doc.text(
+        `Generated: ${todayISO()} ${formatTime(new Date())}  ·  ${list.length} record${list.length === 1 ? '' : 's'}`,
+        pageWidth / 2, y, { align: 'center' }
+      );
+      doc.setTextColor(0);
+      y += 14;
+
+      const filteredTotal = list.reduce((s, c) => s + Number(c.amount || 0), 0);
+
+      doc.autoTable({
+        startY: y,
+        margin: { left: 30, right: 30 },
+        theme: 'grid',
+        head: [['Date', 'Partner', 'Category', 'Description', 'Amount (Rs)', 'Paid Via']],
+        body: list.map(c => [
+          c.dateISO,
+          c.partnerName,
+          c.category,
+          c.description || '-',
+          `Rs ${money(c.amount)}`,
+          pcPaymentTypeLabel(c.paymentType)
+        ]),
+        foot: [['', '', '', 'FILTERED TOTAL', `Rs ${money(filteredTotal)}`, '']],
+        headStyles: { fillColor: [5, 150, 105], textColor: [255, 255, 255] },
+        footStyles: { fillColor: [255, 179, 0], textColor: [20, 20, 20], fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 5 },
+        columnStyles: { 4: { halign: 'right' } }
+      });
+
+      const tag = pcHistoryView === 'all' ? 'All-Time' : pcHistoryFilterLabel().split('·')[0].trim().replace(/[\s:]+/g, '-');
+      doc.save(`Partner-Contributions_${tag}_${new Date().toISOString().slice(0, 10)}.pdf`);
+    }
+
+    /* =====================================================================================
+       PARTNER CONTRIBUTION RECEIPT / PROOF ATTACHMENT
+       ---------------------------------------------------------------------------------------
+       Same pattern as the Expenses "Attach Bill" feature above: lets a partner's cash/online
+       contribution be backed by a photo or PDF of the receipt, screenshot, or bank transfer
+       slip. Uses the same EXPENSE_BILL_MAX_BYTES cap and readFileAsDataUrl()/withTimeout()
+       helpers already defined for Expenses — no need to duplicate them.
+       ===================================================================================== */
+    let _pendingPcBill = null; // { name, type, size, storedSize, dataUrl } for the form currently open
+    let _pcBillProcessing = false; // guards against double-submit while a file is being read
+
+    async function handlePcBillSelect(inputEl) {
+      const file = inputEl && inputEl.files && inputEl.files[0];
+      if (!file) return;
+
+      const isImage = file.type.startsWith('image/');
+      const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+      if (!isImage && !isPdf) {
+        showToast('Please attach an image or a PDF file.', 'error');
+        inputEl.value = '';
+        return;
+      }
+      if (file.size > EXPENSE_BILL_MAX_BYTES) {
+        showToast(`That file is ${formatFileSize(file.size)} — please attach one under ${formatFileSize(EXPENSE_BILL_MAX_BYTES)}.`, 'error');
+        inputEl.value = '';
+        return;
+      }
+
+      const attachBtn = document.getElementById('pcBillAttachBtn');
+      _pcBillProcessing = true;
+      if (attachBtn) { attachBtn.disabled = true; attachBtn.textContent = '⏳ Processing…'; }
+
+      try {
+        const dataUrl = await readFileAsDataUrl(file);
+        _pendingPcBill = {
+          name: file.name,
+          type: isPdf ? 'application/pdf' : (file.type || 'image/jpeg'),
+          size: file.size,
+          storedSize: dataUrlByteSize(dataUrl),
+          dataUrl
+        };
+        renderPcBillPreview();
+      } catch (err) {
+        console.error('Snookify: failed to read partner contribution proof attachment', err);
+        showToast('Could not process that file — please try again.', 'error');
+        clearPcBillSelection();
+      } finally {
+        _pcBillProcessing = false;
+        if (attachBtn) { attachBtn.disabled = false; attachBtn.textContent = '+ Attach Proof'; }
+        if (inputEl) inputEl.value = '';
+      }
+    }
+
+    function renderPcBillPreview() {
+      const nameEl = document.getElementById('pcBillFileName');
+      const clearBtn = document.getElementById('pcBillClearBtn');
+      const wrap = document.getElementById('pcBillPreviewWrap');
+      const img = document.getElementById('pcBillPreviewImg');
+      const pdfBadge = document.getElementById('pcBillPreviewPdfBadge');
+      const pdfNameEl = document.getElementById('pcBillPdfName');
+      if (!_pendingPcBill) {
+        nameEl.textContent = 'No file selected';
+        nameEl.classList.remove('has-file');
+        clearBtn.style.display = 'none';
+        wrap.style.display = 'none';
+        return;
+      }
+      const sizeLabel = formatFileSize(_pendingPcBill.size);
+      nameEl.textContent = `${_pendingPcBill.name} (${sizeLabel})`;
+      nameEl.classList.add('has-file');
+      clearBtn.style.display = 'inline-flex';
+      wrap.style.display = 'block';
+      if (_pendingPcBill.type.startsWith('image/')) {
+        img.src = _pendingPcBill.dataUrl;
+        img.style.display = 'block';
+        pdfBadge.style.display = 'none';
+      } else {
+        img.style.display = 'none';
+        pdfBadge.style.display = 'inline-flex';
+        if (pdfNameEl) pdfNameEl.textContent = `${_pendingPcBill.name} (${sizeLabel})`;
+      }
+    }
+
+    function clearPcBillSelection() {
+      _pendingPcBill = null;
+      const inputEl = document.getElementById('pcBillInput');
+      if (inputEl) inputEl.value = '';
+      renderPcBillPreview();
+    }
+
+    // Returns { name, type, url, storedIn: 'storage' } or { name, type, dataUrl, storedIn: 'inline' },
+    // or null if no proof was attached. Partner Contributions are shared across branches (not
+    // per-branch like Expenses), so the Storage path is keyed by contribution id only.
+    async function persistPcBill(contributionId, bill) {
+      if (!bill) return null;
+      if (firebaseReady && typeof firebase !== 'undefined' && firebase.storage) {
+        try {
+          const storageRef = firebase.storage().ref(`partnerContributionBills/${contributionId}_${bill.name}`);
+          await withTimeout(
+            storageRef.putString(bill.dataUrl, 'data_url'),
+            15000,
+            'Proof upload timed out'
+          );
+          const url = await withTimeout(storageRef.getDownloadURL(), 8000, 'Could not fetch upload URL in time');
+          return { name: bill.name, type: bill.type, url, storedIn: 'storage' };
+        } catch (err) {
+          console.error('Snookify: Firebase Storage upload failed or timed out, saving proof inline instead', err);
+        }
+      }
+      return { name: bill.name, type: bill.type, dataUrl: bill.dataUrl, storedIn: 'inline' };
+    }
+
+    /* ---------- Viewer (📎 icon on any Contribution History row that has attached proof) ---------- */
+    function viewPcBill(contributionId) {
+      const c = state.partnerContributions.find(x => x.id === contributionId);
+      if (!c || !c.bill) return;
+      const src = c.bill.storedIn === 'storage' ? c.bill.url : c.bill.dataUrl;
+      document.getElementById('pcBillViewTitle').textContent = `Attached Proof — ${c.bill.name}`;
+      const body = document.getElementById('pcBillViewBody');
+      if (c.bill.type && c.bill.type.startsWith('image/')) {
+        body.innerHTML = `<img src="${src}" alt="${c.bill.name}">`;
+      } else {
+        body.innerHTML = `<iframe src="${src}" title="${c.bill.name}"></iframe>`;
+      }
+      const openLink = document.getElementById('pcBillViewOpenLink');
+      if (openLink) {
+        openLink.href = src;
+        if (c.bill.storedIn === 'storage') {
+          openLink.target = '_blank';
+          openLink.removeAttribute('download');
+          openLink.textContent = '⤓ Open in New Tab';
+        } else {
+          openLink.removeAttribute('target');
+          openLink.setAttribute('download', c.bill.name || 'proof');
+          openLink.textContent = '⤓ Download';
+        }
+      }
+      document.getElementById('pcBillViewModal').classList.add('open');
+    }
+    function closePcBillViewModal() {
+      document.getElementById('pcBillViewModal').classList.remove('open');
+      document.getElementById('pcBillViewBody').innerHTML = '';
+    }
+
+    // Human-readable label for a contribution's Paid Via value, used in the table and PDF export.
+    function pcPaymentTypeLabel(paymentType) {
+      if (paymentType === 'online') return 'Bank Transfer / Online';
+      if (paymentType === 'easypaisa_jazzcash') return 'EasyPaisa / JazzCash';
+      return 'Cash';
     }
 
     // Log Contribution is gated by the "Partners Ledger" Feature Locker toggle the same way
@@ -17116,6 +17675,7 @@
       if (!partner) { alert('Select a partner.'); return; }
       const amount = Math.max(0, parseFloat(document.getElementById('pcAmountInput').value) || 0);
       if (amount <= 0) { alert('Enter a valid contribution amount.'); return; }
+      if (_pcBillProcessing) { showToast('Still processing the attached file — one moment.', 'error'); return; }
 
       guardFeatureAction(
         'partnersLedger',
@@ -17124,34 +17684,54 @@
       );
     }
 
-    function performAddPartnerContribution(partner) {
+    async function performAddPartnerContribution(partner) {
       const phone = (document.getElementById('pcPhoneInput').value || '').trim();
       const dateISO = document.getElementById('pcDateInput').value || todayISO();
       const category = document.getElementById('pcCategoryInput').value;
       const description = (document.getElementById('pcDescInput').value || '').trim();
       const amount = Math.max(0, parseFloat(document.getElementById('pcAmountInput').value) || 0);
+      const paymentType = document.getElementById('pcPaymentTypeInput').value || 'cash';
       if (amount <= 0) return; // re-guard in case the form changed while the PIN modal was open
 
       // keep the partner profile's phone in sync if it was added/changed here
       if (phone && phone !== partner.phone) partner.phone = phone;
 
-      state.partnerContributions.unshift({
-        id: genId('pc'),
-        partnerId: partner.id,
-        partnerName: partner.name,
-        phone,
-        dateISO,
-        category,
-        description,
-        amount
-      });
+      const saveBtn = document.getElementById('pcSaveBtn');
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
 
-      saveState();
-      document.getElementById('pcDescInput').value = '';
-      document.getElementById('pcAmountInput').value = '';
-      document.getElementById('pcDateInput').value = todayISO();
-      renderPartnersLedgerScreen();
-      if (document.getElementById('reports').classList.contains('active')) renderPartnerContributionReport();
+      try {
+        const contributionId = genId('pc');
+        // Awaited so the contribution is only saved once any attached proof has fully finished
+        // being read/uploaded — same flow as addExpense()'s bill handling.
+        const bill = await persistPcBill(contributionId, _pendingPcBill);
+
+        state.partnerContributions.unshift({
+          id: contributionId,
+          partnerId: partner.id,
+          partnerName: partner.name,
+          phone,
+          dateISO,
+          category,
+          description,
+          amount,
+          paymentType,
+          bill // { name, type, url|dataUrl, storedIn } or null — see persistPcBill() above
+        });
+
+        saveState();
+        document.getElementById('pcDescInput').value = '';
+        document.getElementById('pcAmountInput').value = '';
+        document.getElementById('pcDateInput').value = todayISO();
+        clearPcBillSelection();
+        renderPartnersLedgerScreen();
+        if (document.getElementById('reports').classList.contains('active')) renderPartnerContributionReport();
+        showToast(bill ? 'Contribution saved with attached proof.' : 'Contribution saved.', 'success');
+      } catch (err) {
+        console.error('Snookify: failed to save partner contribution', err);
+        showToast('Could not save this contribution — please try again.', 'error');
+      } finally {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Log Contribution'; }
+      }
     }
 
     // Partner Contribution deletes route through the same Feature Locker gate ('partnersLedger')
