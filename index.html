@@ -5775,6 +5775,14 @@
     let firebaseReady = false;
     let functionsReady = false; // true only if Cloud Functions SDK loaded AND initializeApp succeeded — gates the reverseGeocodeLocation callable
 
+    // Data-loss guard: true only once we've heard from appStateDoc's Firestore listener at
+    // least once for the CURRENTLY logged-in tenant — either "here is the real saved state" or
+    // "this tenant genuinely has no state yet". Until then, `state` is just the fresh empty
+    // template from resetToCleanTenantDefaults() (see bindTenantFirestoreRefs()), so pushing it
+    // to the shared cloud doc would permanently wipe that tenant's real data for every device.
+    // See saveState()/initAppStateSync() below.
+    let appStateSyncedOnce = false;
+
     // Unsubscribe handles for every tenant-scoped onSnapshot listener, so a logout (or a
     // different account logging in on the same page) tears down the OLD tenant's listeners
     // before any new ones are attached — otherwise a stale listener could keep pushing one
@@ -5869,6 +5877,7 @@
       unbindTenantFirestoreRefs();
       if (!firebaseReady || !db || !tenantId) return;
       currentTenantId = tenantId;
+      appStateSyncedOnce = false; // fresh login — don't allow any cloud push until the real data comes back (see saveState())
       try { localStorage.setItem(LAST_TENANT_KEY, tenantId); } catch (e) { /* ignore */ }
       tenantRootRef = db.collection('tenants').doc(tenantId);
       branchesCollection = tenantRootRef.collection('branches');
@@ -6011,6 +6020,7 @@
         unsubFeatureVisibility = unsubNavHierarchy = unsubUserSettings = null;
       if (typeof presenceUnsub !== 'undefined') presenceUnsub = null;
       currentTenantId = null;
+      appStateSyncedOnce = false;
       tenantRootRef = null;
       branchesCollection = staffCollection = staffSessionsCollection = resourceLinksCollection = null;
       appStateDoc = settingsSecurityDoc = featureVisibilityDoc = navHierarchyDoc = userSettingsDoc = auditLogCollection = null;
@@ -8531,6 +8541,17 @@
     function saveState() {
       localStorage.setItem(tenantStorageKey('snookify_full_state'), JSON.stringify(state));
       if (firebaseReady && appStateDoc) {
+        if (!appStateSyncedOnce) {
+          // CRITICAL: we haven't yet heard back from Firestore about what this tenant's real
+          // saved state actually is (still mid-login, right after resetToCleanTenantDefaults()).
+          // `state` in memory right now is only the empty/local-cache version — pushing it would
+          // overwrite the tenant's real cloud data for every device watching appStateDoc. The
+          // local write above still happened (so nothing is lost on THIS device), and once
+          // initAppStateSync()'s listener confirms the real data, appStateSyncedOnce flips true
+          // and the next change will sync normally.
+          console.warn('Snookify: change made before initial cloud sync — cloud push deferred until sync completes.');
+          return;
+        }
         // Mark "syncing" immediately (don't wait for the debounce) so the pill reflects reality
         // the instant a staff member makes an entry, not 400ms later.
         syncPendingWrites = true;
@@ -8688,6 +8709,19 @@
     // file) — the app keeps working exactly as before, local-only, until then.
     function initAppStateSync() {
       if (!firebaseReady || !appStateDoc) return;
+      // Fail-safe: if Firestore never responds (dead network, blocked, etc.) don't leave the
+      // app permanently unable to save — after a generous timeout, allow local saves to reach
+      // the cloud anyway. By then either the listener below already fired (making this a no-op)
+      // or the tenant is genuinely offline and pushStateToFirestore()'s own .catch() already
+      // handles that gracefully.
+      const boundTenantId = currentTenantId;
+      setTimeout(() => {
+        if (currentTenantId === boundTenantId && !appStateSyncedOnce) {
+          console.warn('Snookify: initial cloud sync timed out — allowing local saves to sync anyway.');
+          appStateSyncedOnce = true;
+        }
+      }, 8000);
+
       // includeMetadataChanges: true is what makes this fire again once a pending write is
       // actually acknowledged by the server (snap.metadata.hasPendingWrites flips false) and
       // whenever the SDK's view of connectivity changes (snap.metadata.fromCache) — both of
@@ -8704,16 +8738,26 @@
           setSyncStatus('online', 'All changes synced');
         }
 
-        if (!snap.exists) { pushStateToFirestore(); return; } // first session to connect seeds the doc
+        if (!snap.exists) {
+          // Confirmed straight from the server: this tenant genuinely has no saved state yet —
+          // now it's safe to seed it from local `state` without risking overwriting real data.
+          appStateSyncedOnce = true;
+          pushStateToFirestore();
+          return;
+        }
         // A snapshot fired purely because our own pending write just got server-confirmed (no
         // new remote data to apply) — the pill update above already happened, nothing else to do.
-        if (snap.metadata.hasPendingWrites) return;
+        if (snap.metadata.hasPendingWrites) { appStateSyncedOnce = true; return; }
         const data = snap.data();
+        appStateSyncedOnce = true; // we've now seen this tenant's real cloud copy — safe to push local edits from here on
         if (!data || data._lastWriter === getDeviceId()) return; // our own write echoing back — already applied locally
         if (typeof data.payload !== 'string') return;
         localStorage.setItem(tenantStorageKey('snookify_full_state'), data.payload); // keep the offline cache in step too
         applyStatePayload(data.payload, { isInitialLoad: false });
-      }, err => console.error('Snookify: state sync listener error', err));
+      }, err => {
+        console.error('Snookify: state sync listener error', err);
+        appStateSyncedOnce = true; // fail-open — don't block local saves forever over a listener error
+      });
     }
 
     /* ---------- Navigation ---------- */
