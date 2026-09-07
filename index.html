@@ -36,7 +36,41 @@
   <!-- UI Launcher & Theme Engine — additional font families available to the Typography
        switcher (see the Theme Engine module near the end of <body>). Loaded alongside the
        existing Plus Jakarta Sans / Inter pairing so switching fonts never requires a reload. -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+  <!-- Chart.js loader with automatic mirror fallback — some networks/firewalls block cdnjs
+       specifically while the rest of the internet (including Firebase/Firestore, which is why
+       tables still populate) works fine. This tries a few CDN mirrors in turn, then an optional
+       self-hosted copy at ./vendor/chart.umd.min.js (download chart.umd.min.js from
+       https://www.jsdelivr.com/package/npm/chart.js and drop it in a vendor/ folder next to this
+       file for fully offline use). If every source fails, the app still works: the four
+       analytics screens fall back to a built-in, dependency-free canvas chart renderer (see
+       registerChartFallbackRetry()/drawFallback*() further down) instead of just an error
+       message, and silently upgrade to the real Chart.js if it finishes loading afterwards. -->
+  <script>
+    (function () {
+      var CHART_JS_SOURCES = [
+        'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js',
+        'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js',
+        'https://unpkg.com/chart.js@4.4.4/dist/chart.umd.min.js',
+        'vendor/chart.umd.min.js'
+      ];
+      window.__chartRetryQueue = window.__chartRetryQueue || [];
+      function tryNext(i) {
+        if (i >= CHART_JS_SOURCES.length) {
+          console.warn('Chart.js: all CDN mirrors (and local vendor/ copy) failed to load — using built-in mini-chart fallback.');
+          return;
+        }
+        var s = document.createElement('script');
+        s.src = CHART_JS_SOURCES[i];
+        s.onload = function () {
+          var queue = window.__chartRetryQueue.splice(0);
+          queue.forEach(function (fn) { try { fn(); } catch (e) { /* screen may no longer be visible */ } });
+        };
+        s.onerror = function () { tryNext(i + 1); };
+        document.head.appendChild(s);
+      }
+      tryNext(0);
+    })();
+  </script>
   <!-- Firebase (compat SDK — plain <script> tags, no bundler required) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
@@ -14042,6 +14076,185 @@
       }, 150);
     });
 
+    /* ============================================================
+       CHART.JS-FREE FALLBACK RENDERER
+       If every Chart.js source in the <head> loader fails (CDN blocked), the four analytics
+       widgets below draw a simplified doughnut/bar/line chart straight onto their existing
+       <canvas> with the plain 2D context — no external library, same "no CDN" philosophy as
+       the hand-built SVG revenue trend chart above. registerChartFallbackRetry() remembers
+       which screen(s) drew a fallback chart so that if Chart.js does finish loading in the
+       background afterwards, they get silently redrawn as full interactive Chart.js charts.
+       ============================================================ */
+    function registerChartFallbackRetry(fn) {
+      window.__chartRetryQueue = window.__chartRetryQueue || [];
+      if (window.__chartRetryQueue.indexOf(fn) === -1) window.__chartRetryQueue.push(fn);
+    }
+
+    function sizeCanvasToWrap(canvas) {
+      const wrap = canvas.parentElement;
+      const rect = wrap.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const width = Math.max(240, Math.round(rect.width));
+      const height = Math.max(160, Math.round(rect.height));
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+      return { ctx, width, height };
+    }
+
+    function drawFallbackDoughnut(canvas, labels, data, colors) {
+      const { ctx, width, height } = sizeCanvasToWrap(canvas);
+      const legendH = 34;
+      const cx = width / 2, cy = (height - legendH) / 2 + 6;
+      const r = Math.max(20, Math.min(cx, cy) - 10);
+      const total = data.reduce((a, v) => a + v, 0) || 1;
+      let start = -Math.PI / 2;
+      data.forEach((v, i) => {
+        const angle = (v / total) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, start, start + angle);
+        ctx.closePath();
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fill();
+        start += angle;
+      });
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.58, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
+      let lx = 10, ly = height - legendH / 2;
+      labels.forEach((label, i) => {
+        const swatch = 9;
+        const textW = ctx.measureText(label).width;
+        const itemW = swatch + 6 + textW + 16;
+        if (lx + itemW > width - 10 && lx > 10) { lx = 10; ly += 18; }
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fillRect(lx, ly - swatch / 2, swatch, swatch);
+        ctx.fillStyle = '#8b95a5';
+        ctx.fillText(label, lx + swatch + 6, ly);
+        lx += itemW;
+      });
+    }
+
+    function drawFallbackBars(canvas, labels, datasets) {
+      const { ctx, width, height } = sizeCanvasToWrap(canvas);
+      const margin = { top: 14, right: 14, bottom: 40, left: 64 };
+      const legendH = 22;
+      const plotW = Math.max(10, width - margin.left - margin.right);
+      const plotH = Math.max(10, height - margin.top - margin.bottom - legendH);
+      const maxVal = Math.max(1, ...datasets.flatMap(d => d.data));
+      const yMax = maxVal * 1.15;
+
+      ctx.strokeStyle = 'rgba(139,149,165,0.25)';
+      ctx.fillStyle = '#8b95a5';
+      ctx.font = '10px Inter, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      const bands = 4;
+      for (let s = 0; s <= bands; s++) {
+        const val = (yMax / bands) * s;
+        const y = margin.top + plotH - (val / yMax) * plotH;
+        ctx.beginPath(); ctx.moveTo(margin.left, y); ctx.lineTo(margin.left + plotW, y); ctx.stroke();
+        ctx.fillText(Math.round(val).toLocaleString(), margin.left - 8, y);
+      }
+
+      const groupW = plotW / Math.max(1, labels.length);
+      const barGap = 4;
+      const barW = Math.max(4, (groupW - barGap * (datasets.length + 1)) / datasets.length);
+
+      labels.forEach((label, i) => {
+        const groupX = margin.left + i * groupW;
+        datasets.forEach((d, di) => {
+          const val = d.data[i] || 0;
+          const barH = (val / yMax) * plotH;
+          const x = groupX + barGap + di * (barW + barGap);
+          const y = margin.top + plotH - barH;
+          ctx.fillStyle = d.backgroundColor;
+          ctx.fillRect(x, y, barW, Math.max(0, barH));
+        });
+        ctx.fillStyle = '#8b95a5';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.font = '10px Inter, sans-serif';
+        const shortLabel = label.length > 8 ? label.slice(0, 7) + '…' : label;
+        ctx.fillText(shortLabel, groupX + groupW / 2, margin.top + plotH + 8);
+      });
+
+      let lx = margin.left, ly = height - legendH / 2;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.font = '10.5px Inter, sans-serif';
+      datasets.forEach(d => {
+        ctx.fillStyle = d.backgroundColor;
+        ctx.fillRect(lx, ly - 4, 9, 9);
+        ctx.fillStyle = '#8b95a5';
+        ctx.fillText(d.label, lx + 14, ly);
+        lx += 14 + ctx.measureText(d.label).width + 20;
+      });
+    }
+
+    function drawFallbackLine(canvas, labels, dataset) {
+      const { ctx, width, height } = sizeCanvasToWrap(canvas);
+      const margin = { top: 14, right: 14, bottom: 32, left: 64 };
+      const plotW = Math.max(10, width - margin.left - margin.right);
+      const plotH = Math.max(10, height - margin.top - margin.bottom);
+      const data = dataset.data;
+      const maxVal = Math.max(1, ...data, 0);
+      const yMax = maxVal * 1.15;
+
+      ctx.strokeStyle = 'rgba(139,149,165,0.25)';
+      ctx.fillStyle = '#8b95a5';
+      ctx.font = '10px Inter, sans-serif';
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      const bands = 4;
+      for (let s = 0; s <= bands; s++) {
+        const val = (yMax / bands) * s;
+        const y = margin.top + plotH - (val / yMax) * plotH;
+        ctx.beginPath(); ctx.moveTo(margin.left, y); ctx.lineTo(margin.left + plotW, y); ctx.stroke();
+        ctx.fillText(Math.round(val).toLocaleString(), margin.left - 8, y);
+      }
+
+      const xFor = (i) => margin.left + (data.length > 1 ? (i / (data.length - 1)) * plotW : plotW / 2);
+      const yFor = (v) => margin.top + plotH - (v / yMax) * plotH;
+      const points = data.map((v, i) => ({ x: xFor(i), y: yFor(v) }));
+
+      if (points.length > 1) {
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        points.forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.lineTo(points[points.length - 1].x, margin.top + plotH);
+        ctx.lineTo(points[0].x, margin.top + plotH);
+        ctx.closePath();
+        ctx.fillStyle = dataset.backgroundColor || 'rgba(0,230,118,0.12)';
+        ctx.fill();
+      }
+
+      ctx.beginPath();
+      points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+      ctx.strokeStyle = dataset.borderColor || '#00e676';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      ctx.fillStyle = dataset.borderColor || '#00e676';
+      points.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill(); });
+
+      const maxLabels = Math.max(3, Math.floor(plotW / 60));
+      const step = Math.max(1, Math.ceil(labels.length / maxLabels));
+      ctx.fillStyle = '#8b95a5'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      labels.forEach((label, i) => {
+        if (i % step !== 0 && i !== labels.length - 1) return;
+        ctx.fillText(label.length > 8 ? label.slice(0, 7) + '…' : label, xFor(i), margin.top + plotH + 6);
+      });
+    }
+
     /* ---------- Partner-wise Contribution Report ---------- */
     const PARTNER_CHART_COLORS = ['#ffb300', '#00e676', '#29b6f6', '#ff5252', '#aab2bd', '#8c5a3c', '#ffe27a', '#00a854'];
 
@@ -14081,12 +14294,6 @@
         </tr>
       `;
 
-      if (typeof Chart === 'undefined') {
-        emptyNote.innerText = 'Chart library failed to load (check your internet connection) — table above is still accurate.';
-        emptyNote.style.display = '';
-        canvas.style.display = 'none';
-        return;
-      }
       if (totalPool <= 0) {
         emptyNote.innerText = 'No partner contributions logged yet.';
         emptyNote.style.display = '';
@@ -14100,6 +14307,14 @@
       const labels = rows.filter(r => r.total > 0).map(r => r.name);
       const data = rows.filter(r => r.total > 0).map(r => r.total);
       const colors = labels.map((_, i) => PARTNER_CHART_COLORS[i % PARTNER_CHART_COLORS.length]);
+
+      if (typeof Chart === 'undefined') {
+        // Chart.js unavailable (every CDN mirror blocked) — draw a simplified doughnut
+        // directly instead of just an error message; auto-upgrades if Chart.js loads later.
+        drawFallbackDoughnut(canvas, labels, data, colors);
+        registerChartFallbackRetry(renderPartnerContributionReport);
+        return;
+      }
 
       if (partnerShareChartInstance) {
         partnerShareChartInstance.data.labels = labels;
@@ -14184,12 +14399,6 @@
         </tr>
       `).join('') : `<tr><td colspan="3" class="empty-note">No expenses recorded yet.</td></tr>`;
 
-      if (typeof Chart === 'undefined') {
-        emptyNote.innerText = 'Chart library failed to load (check your internet connection) — tables above are still accurate.';
-        emptyNote.style.display = '';
-        canvas.style.display = 'none';
-        return;
-      }
       if (grandTotal <= 0) {
         emptyNote.innerText = 'No expenses recorded yet.';
         emptyNote.style.display = '';
@@ -14203,6 +14412,12 @@
       const labels = ['Operational', 'Capital / Investment'];
       const data = [opTotal, capTotal];
       const colors = ['#29b6f6', '#ffb300'];
+
+      if (typeof Chart === 'undefined') {
+        drawFallbackDoughnut(canvas, labels, data, colors);
+        registerChartFallbackRetry(renderExpenseInvestmentBreakdown);
+        return;
+      }
 
       if (expenseTypeChartInstance) {
         expenseTypeChartInstance.data.datasets[0].data = data;
@@ -14782,11 +14997,6 @@
       const canvas = document.getElementById('msPeriodChart');
       const emptyNote = document.getElementById('msPeriodChartEmpty');
       if (!canvas) return;
-      if (typeof Chart === 'undefined') {
-        emptyNote.innerText = 'Chart library failed to load (check your internet connection) — the tables above are still accurate.';
-        emptyNote.style.display = ''; canvas.style.display = 'none';
-        return;
-      }
       if (!series.length) {
         emptyNote.innerText = 'No activity in this range / filter.';
         emptyNote.style.display = ''; canvas.style.display = 'none';
@@ -14798,6 +15008,15 @@
       const labels = series.map(s => s.label);
       const revenueData = series.map(s => s.revenue);
       const cashData = series.map(s => s.cashCollected);
+
+      if (typeof Chart === 'undefined') {
+        drawFallbackBars(canvas, labels, [
+          { label: 'Total Revenue (Billed)', data: revenueData, backgroundColor: '#ffb300' },
+          { label: 'Actual Cash Collected', data: cashData, backgroundColor: '#00e676' }
+        ]);
+        registerChartFallbackRetry(() => renderMsPeriodChart(series));
+        return;
+      }
 
       if (msPeriodChartInstance) {
         msPeriodChartInstance.data.labels = labels;
@@ -14839,11 +15058,6 @@
       const canvas = document.getElementById('msSalesTrendChart');
       const emptyNote = document.getElementById('msSalesTrendEmpty');
       if (!canvas) return;
-      if (typeof Chart === 'undefined') {
-        emptyNote.innerText = 'Chart library failed to load (check your internet connection).';
-        emptyNote.style.display = ''; canvas.style.display = 'none';
-        return;
-      }
       if (!series.length) {
         emptyNote.innerText = 'No sales in this range / filter.';
         emptyNote.style.display = ''; canvas.style.display = 'none';
@@ -14854,6 +15068,12 @@
 
       const labels = series.map(s => s.label);
       const data = series.map(s => s.revenue);
+
+      if (typeof Chart === 'undefined') {
+        drawFallbackLine(canvas, labels, { data, borderColor: '#00e676', backgroundColor: 'rgba(0,230,118,0.12)' });
+        registerChartFallbackRetry(() => renderMsSalesTrendChart(series));
+        return;
+      }
 
       if (msSalesTrendChartInstance) {
         msSalesTrendChartInstance.data.labels = labels;
