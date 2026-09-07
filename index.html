@@ -5946,17 +5946,26 @@
       if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
         auth = firebase.auth();
 
-        // ---- Session persistence across page refresh ----
-        // Compat-SDK equivalent of the modular setPersistence(auth, browserLocalPersistence).
-        // LOCAL keeps the signed-in session in IndexedDB/localStorage so it survives a full
-        // page reload or browser restart (not just an SPA route change). This is already
-        // Firebase's default for compat auth in a browser, but it's set explicitly here so
-        // the intent is documented and the app doesn't silently regress to SESSION/NONE if
-        // that default ever changes. Must be called before any sign-in call and before the
-        // onAuthStateChanged listener below is attached, so the very first auth check on
-        // page load already reflects the persisted session.
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err => {
-          console.error('Snookify: setPersistence(LOCAL) failed — falling back to default persistence.', err);
+        // ---- Session persistence: per-tab isolation, not per-browser ----
+        // Compat-SDK equivalent of the modular setPersistence(auth, browserSessionPersistence).
+        // SESSION keeps the signed-in session in this tab's own sessionStorage. That storage is
+        // only ever visible to the tab that created it, so signing in as Tenant B in a second tab
+        // can no longer flip Tenant A's already-open tab over to Tenant B's account — which is
+        // exactly what used to happen with the old LOCAL persistence. LOCAL persists in
+        // IndexedDB, which is shared by every tab on the origin, and the SDK deliberately
+        // broadcasts every auth-state change to all of them via onAuthStateChanged — great for
+        // "one login, many tabs of the same account," but the opposite of the multi-tab
+        // isolation this app needs when different tabs are meant to run different tenants'
+        // sessions side by side.
+        // Trade-off (expected, not a bug): a session now lives and dies with its tab. Reloading
+        // a tab keeps you signed in (sessionStorage survives a reload); opening a brand-new tab,
+        // or closing every tab and reopening the app, requires signing in again in that tab.
+        // That's the correct behavior for independent sessions — it's what stops one tab's login
+        // from silently taking over another's. Must be called before any sign-in call and before
+        // the onAuthStateChanged listener below is attached, so the very first auth check on page
+        // load already reflects this tab's own persisted session (if any).
+        auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(err => {
+          console.error('Snookify: setPersistence(SESSION) failed — falling back to default persistence.', err);
         });
       }
     } catch (e) {
@@ -18385,12 +18394,17 @@
       { id: 'staffAuthHistory', label: 'Staff Login/Logout & Location History', group: 'Manage', selectors: ['.nav-item[data-tab="staffAuthHistory"]'], minPermission: 'manage' }
     ];
 
-    /* ---------- Master PIN storage ---------- */
+    /* ---------- Master PIN storage ----------
+       Wrapped in tenantStorageKey() so this cache is per-tenant, not per-browser: without it,
+       a second tenant signing in on the same browser/device would briefly read (and could
+       overwrite) the previous tenant's cached Master PIN until initSecuritySync()'s Firestore
+       listener caught up (or indefinitely, if offline). The cloud copy was always correctly
+       scoped under tenants/{uid}/settings/security — only this local fast-path cache wasn't. */
     function getMasterPin() {
-      return localStorage.getItem(MASTER_PIN_KEY) || DEFAULT_MASTER_PIN;
+      return localStorage.getItem(tenantStorageKey(MASTER_PIN_KEY)) || DEFAULT_MASTER_PIN;
     }
     function setMasterPin(pin) {
-      localStorage.setItem(MASTER_PIN_KEY, pin);
+      localStorage.setItem(tenantStorageKey(MASTER_PIN_KEY), pin);
       pushSecuritySetting(MASTER_PIN_KEY, pin);
     }
 
@@ -18419,15 +18433,20 @@
       return `${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}`;
     }
 
+    // Also scoped per-tenant now: an unscoped recovery hash would let a code generated for one
+    // tenant reset the cached Master PIN of a completely different tenant that later signs in on
+    // the same browser (the reset itself would still only ever be pushed to whichever tenant is
+    // currently signed in, but there's no reason a stale code from a different business should
+    // work at all here).
     function hasRecoveryCode() {
-      return !!localStorage.getItem(RECOVERY_HASH_KEY);
+      return !!localStorage.getItem(tenantStorageKey(RECOVERY_HASH_KEY));
     }
 
     async function regenerateRecoveryCode() {
       if (hasRecoveryCode() && !confirm('This replaces the existing recovery code — the old one will stop working. Continue?')) return;
       const code = randomRecoveryCode();
       const hash = await sha256Hex(code);
-      localStorage.setItem(RECOVERY_HASH_KEY, hash);
+      localStorage.setItem(tenantStorageKey(RECOVERY_HASH_KEY), hash);
       logAudit({ action: 'RECOVERY_CODE_REGENERATED' });
       refreshRecoveryCodeStatus();
       // Shown exactly once — it is NOT retrievable again after this alert closes, since only
@@ -18470,7 +18489,7 @@
       if (nw !== conf) { msg.innerText = 'New PIN and confirmation do not match.'; return; }
 
       const enteredHash = await sha256Hex(entered);
-      const storedHash = localStorage.getItem(RECOVERY_HASH_KEY);
+      const storedHash = localStorage.getItem(tenantStorageKey(RECOVERY_HASH_KEY));
       if (!storedHash || enteredHash !== storedHash) {
         msg.innerText = 'Invalid recovery code. Access denied.';
         logAudit({ action: 'MASTER_PIN_RECOVERY_FAILED' });
@@ -18496,10 +18515,10 @@
     const DEFAULT_CANCEL_SESSION_PIN = '2210';
 
     function getCancelSessionPin() {
-      return localStorage.getItem(CANCEL_SESSION_PIN_KEY) || DEFAULT_CANCEL_SESSION_PIN;
+      return localStorage.getItem(tenantStorageKey(CANCEL_SESSION_PIN_KEY)) || DEFAULT_CANCEL_SESSION_PIN;
     }
     function setCancelSessionPinCode(pin) {
-      localStorage.setItem(CANCEL_SESSION_PIN_KEY, pin);
+      localStorage.setItem(tenantStorageKey(CANCEL_SESSION_PIN_KEY), pin);
       pushSecuritySetting(CANCEL_SESSION_PIN_KEY, pin);
     }
 
@@ -18521,14 +18540,14 @@
       if (msg) { msg.innerText = 'Saved'; msg.className = 'sec-code-msg ok'; setTimeout(() => { if (msg) { msg.innerText = ''; msg.className = 'sec-code-msg'; } }, 2500); }
     }
 
-    /* ---------- Per-feature lock state (persisted) ---------- */
+    /* ---------- Per-feature lock state (persisted, per-tenant) ---------- */
     function getLockState() {
-      try { return JSON.parse(localStorage.getItem(FEATURE_LOCK_KEY)) || {}; }
+      try { return JSON.parse(localStorage.getItem(tenantStorageKey(FEATURE_LOCK_KEY))) || {}; }
       catch (e) { return {}; }
     }
     function setLockState(state) {
       const json = JSON.stringify(state);
-      localStorage.setItem(FEATURE_LOCK_KEY, json);
+      localStorage.setItem(tenantStorageKey(FEATURE_LOCK_KEY), json);
       pushSecuritySetting(FEATURE_LOCK_KEY, json);
     }
     function isFeatureLocked(id) {
@@ -18552,12 +18571,12 @@
        seconds — see revealPrivacyEl(). Both states are independent and both persist. ---------- */
     const BLUR_STATE_KEY = 'snookify_blurState_v1';
     function getBlurState() {
-      try { return JSON.parse(localStorage.getItem(BLUR_STATE_KEY)) || {}; }
+      try { return JSON.parse(localStorage.getItem(tenantStorageKey(BLUR_STATE_KEY))) || {}; }
       catch (e) { return {}; }
     }
     function setBlurState(state) {
       const json = JSON.stringify(state);
-      localStorage.setItem(BLUR_STATE_KEY, json);
+      localStorage.setItem(tenantStorageKey(BLUR_STATE_KEY), json);
       pushSecuritySetting(BLUR_STATE_KEY, json);
     }
     function isFeatureBlurred(id) {
@@ -18577,12 +18596,12 @@
        applyPrivacyMask() below. Independent storage/toggle, same pattern as Lock and Blur. ---------- */
     const HIDE_STATE_KEY = 'snookify_hideState_v1';
     function getHideState() {
-      try { return JSON.parse(localStorage.getItem(HIDE_STATE_KEY)) || {}; }
+      try { return JSON.parse(localStorage.getItem(tenantStorageKey(HIDE_STATE_KEY))) || {}; }
       catch (e) { return {}; }
     }
     function setHideState(state) {
       const json = JSON.stringify(state);
-      localStorage.setItem(HIDE_STATE_KEY, json);
+      localStorage.setItem(tenantStorageKey(HIDE_STATE_KEY), json);
       pushSecuritySetting(HIDE_STATE_KEY, json);
     }
     function isFeatureHidden(id) {
@@ -18643,8 +18662,9 @@
         let changed = false;
         Object.entries(SECURITY_SYNC_FIELDS).forEach(([localKey, field]) => {
           if (data[field] === undefined) return;
-          if (localStorage.getItem(localKey) === data[field]) return;
-          localStorage.setItem(localKey, data[field]);
+          const scopedKey = tenantStorageKey(localKey); // this doc is already this tenant's own — keep the local cache scoped to match
+          if (localStorage.getItem(scopedKey) === data[field]) return;
+          localStorage.setItem(scopedKey, data[field]);
           changed = true;
         });
         if (!changed) return;
@@ -18752,12 +18772,12 @@
        Admin/Manager, on top of whatever Visible/Blurred/Hidden value happens to be stored for
        them (same self-healing read-time behavior as the safeguard always had). */
     function isProtectedModeEnabled() {
-      const raw = localStorage.getItem(PROTECTED_MODE_KEY);
+      const raw = localStorage.getItem(tenantStorageKey(PROTECTED_MODE_KEY));
       return raw === null ? true : raw === 'true';
     }
     function setProtectedModeEnabled(enabled) {
       enabled = !!enabled;
-      localStorage.setItem(PROTECTED_MODE_KEY, String(enabled));
+      localStorage.setItem(tenantStorageKey(PROTECTED_MODE_KEY), String(enabled));
       pushSecuritySetting(PROTECTED_MODE_KEY, String(enabled));
       logAudit({ action: enabled ? 'PROTECTED_MODE_ENABLED' : 'PROTECTED_MODE_DISABLED', features: ESSENTIAL_FEATURES.slice() });
       renderProtectedModeToggle();
