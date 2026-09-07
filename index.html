@@ -5494,6 +5494,55 @@
     </div>
   </div>
 
+  <!-- EDIT PARTNER CONTRIBUTION MODAL — mirrors Edit Expense above (same field set: Category,
+       Description, Amount, Date, Paid Via) plus a Partner selector, since a contribution is
+       always tied to a specific partner. Attachment is not editable here — same as Expenses,
+       where the proof/bill can only be set when the entry is first logged. -->
+  <div id="editPcModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>Edit Contribution</h3>
+      <div class="form-group">
+        <label>Partner</label>
+        <select id="editPcPartnerSelect"></select>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="editPcCategory">
+          <option value="Renovation">Renovation</option>
+          <option value="Equipment Purchase">Equipment Purchase</option>
+          <option value="Table Transport">Table Transport</option>
+          <option value="Working Capital">Working Capital</option>
+          <option value="Rent / Deposit">Rent / Deposit</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" id="editPcDesc" placeholder="e.g. Renovation - Flooring">
+      </div>
+      <div class="form-group">
+        <label>Amount (PKR)</label>
+        <input type="number" id="editPcAmount" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="editPcDate">
+      </div>
+      <div class="form-group">
+        <label>Paid Via</label>
+        <select id="editPcPaymentType">
+          <option value="cash">Cash</option>
+          <option value="online">Bank Transfer / Online</option>
+          <option value="easypaisa_jazzcash">EasyPaisa / JazzCash</option>
+        </select>
+      </div>
+      <div class="btn-row" style="flex-direction: column;">
+        <button class="btn" onclick="saveEditedPartnerContribution()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Save Changes</button>
+        <button class="btn btn-secondary" onclick="closeEditPcModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- EDIT EXPENSE MODAL -->
   <div id="editExpenseModal" class="modal-overlay">
     <div class="modal-box">
@@ -17437,7 +17486,10 @@
           <td>Rs ${money(c.amount)}</td>
           <td>${pcPaymentTypeLabel(c.paymentType)}</td>
           <td>${c.bill ? `<span class="expense-bill-icon" title="View attached proof: ${c.bill.name}" onclick="viewPcBill('${c.id}')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.4 21a5 5 0 0 1-7-7L14 5.5a3.5 3.5 0 0 1 5 5L10.5 19a2 2 0 0 1-3-3l7-7"/></svg></span>` : '-'}</td>
-          <td><span class="row-action-icon delete-icon" title="Delete contribution (admin password required)" onclick="requestDeletePartnerContribution('${c.id}')">${ICONS.trash}</span></td>
+          <td>
+            <span class="row-action-icon edit-icon" title="Edit contribution" onclick="requestEditPartnerContribution('${c.id}')"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+            <span class="row-action-icon delete-icon" title="Delete contribution (admin password required)" onclick="requestDeletePartnerContribution('${c.id}')">${ICONS.trash}</span>
+          </td>
         </tr>
       `).join('') : `<tr><td colspan="8" class="empty-note">No contributions logged yet.</td></tr>`;
 
@@ -17759,6 +17811,76 @@
       } finally {
         if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M4 21h16"/></svg> Log Contribution'; }
       }
+    }
+
+    // Edit Contribution — mirrors requestEditExpense / openEditExpenseModal / saveEditedExpense
+    // above. Gated by the same 'partnersLedger' Feature Locker toggle as Log/Delete. Attachment
+    // is intentionally left untouched here (same as Expenses — proof can't be swapped after the
+    // fact from this modal); only Partner, Category, Description, Amount, Date, Paid Via change.
+    let editingPcId = null;
+
+    function requestEditPartnerContribution(id) {
+      guardFeatureAction('partnersLedger', 'Edit Partner Contribution', () => openEditPcModal(id));
+    }
+
+    function openEditPcModal(id) {
+      const c = state.partnerContributions.find(x => x.id === id);
+      if (!c) return;
+      editingPcId = id;
+
+      const sel = document.getElementById('editPcPartnerSelect');
+      sel.innerHTML = state.partners.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+      sel.value = c.partnerId;
+
+      document.getElementById('editPcCategory').value = c.category;
+      document.getElementById('editPcDesc').value = c.description || '';
+      document.getElementById('editPcAmount').value = c.amount;
+      document.getElementById('editPcDate').value = c.dateISO;
+      document.getElementById('editPcPaymentType').value = c.paymentType || 'cash';
+      document.getElementById('editPcModal').classList.add('open');
+    }
+
+    function closeEditPcModal() {
+      editingPcId = null;
+      document.getElementById('editPcModal').classList.remove('open');
+    }
+
+    function saveEditedPartnerContribution() {
+      const c = state.partnerContributions.find(x => x.id === editingPcId);
+      if (!c) { closeEditPcModal(); return; }
+      const amount = Math.max(0, parseFloat(document.getElementById('editPcAmount').value) || 0);
+      if (amount <= 0) { alert('Enter a valid contribution amount.'); return; }
+
+      const partnerId = document.getElementById('editPcPartnerSelect').value;
+      const partner = state.partners.find(x => x.id === partnerId);
+      if (!partner) { alert('Select a partner.'); return; }
+
+      const before = JSON.parse(JSON.stringify(c)); // snapshot prior to mutation, for the Bin
+
+      c.partnerId = partner.id;
+      c.partnerName = partner.name;
+      c.category = document.getElementById('editPcCategory').value;
+      c.description = document.getElementById('editPcDesc').value.trim();
+      c.amount = amount;
+      c.dateISO = document.getElementById('editPcDate').value || c.dateISO;
+      c.paymentType = document.getElementById('editPcPaymentType').value || 'cash';
+      // c.bill is left untouched — attachment can't be swapped from this modal (same as Expenses).
+
+      logBinEntry({
+        source: 'Partner Contribution',
+        action: 'Edited',
+        recordId: c.id,
+        summary: `${c.partnerName} — ${c.category}${c.description ? ' — ' + c.description : ''} — Rs ${money(c.amount)} (${c.dateISO})`,
+        before,
+        after: c
+      });
+
+      saveState();
+      closeEditPcModal();
+      renderPartnersLedgerScreen();
+      if (document.getElementById('reports').classList.contains('active')) renderPartnerContributionReport();
+      if (document.getElementById('bin').classList.contains('active')) renderBinScreen();
+      showToast('Contribution updated.', 'success');
     }
 
     // Partner Contribution deletes route through the same Feature Locker gate ('partnersLedger')
