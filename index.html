@@ -16,7 +16,14 @@
   <script>
     (function () {
       try {
-        var mode = localStorage.getItem('snookify_themeMode') || 'dark';
+        // Account-scoped read, mirroring tenantStorageKey() further down: 'snookify_lastTenantId'
+        // remembers which account was last signed in on this browser (set/cleared from
+        // bindTenantFirestoreRefs()/unbindTenantFirestoreRefs()), so even this pre-Firebase,
+        // pre-auth paint reads THAT account's own theme key instead of one shared key that
+        // would otherwise flash a different account's leftover Dark/Light choice for an instant.
+        var lastUid = localStorage.getItem('snookify_lastTenantId');
+        var themeKey = lastUid ? ('snookify_themeMode_' + lastUid) : 'snookify_themeMode';
+        var mode = localStorage.getItem(themeKey) || 'dark';
         if (mode === 'light') document.documentElement.setAttribute('data-theme', 'light');
       } catch (e) { /* localStorage unavailable — falls back to the default dark palette */ }
     })();
@@ -5779,6 +5786,7 @@
       unbindTenantFirestoreRefs();
       if (!firebaseReady || !db || !tenantId) return;
       currentTenantId = tenantId;
+      try { localStorage.setItem(LAST_TENANT_KEY, tenantId); } catch (e) { /* ignore */ }
       tenantRootRef = db.collection('tenants').doc(tenantId);
       branchesCollection = tenantRootRef.collection('branches');
       staffCollection = tenantRootRef.collection('staff');
@@ -5924,6 +5932,7 @@
       branchesCollection = staffCollection = staffSessionsCollection = resourceLinksCollection = null;
       appStateDoc = settingsSecurityDoc = featureVisibilityDoc = navHierarchyDoc = userSettingsDoc = auditLogCollection = null;
       if (typeof presenceCollection !== 'undefined') presenceCollection = null;
+      try { localStorage.removeItem(LAST_TENANT_KEY); } catch (e) { /* ignore */ }
       resetToCleanTenantDefaults(); // don't leave the previous tenant's data sitting in memory behind the login overlay
     }
 
@@ -5934,6 +5943,15 @@
     function tenantStorageKey(baseKey) {
       return currentTenantId ? (baseKey + '_' + currentTenantId) : baseKey;
     }
+
+    // Remembers which account last signed in on this browser, in a small always-unscoped
+    // marker key. Used ONLY to pick the right scoped key to read for the split-second before
+    // Firebase has resolved auth on a fresh page load (see the inline theme-mode snippet at
+    // the very top of <head>, which runs before this script — and before firebaseConfig —
+    // even exists). Holds no settings of its own, so it isn't itself an isolation leak; it's
+    // cleared on logout so a shared/public device doesn't keep hinting at the last signed-in
+    // account once nobody is signed in.
+    const LAST_TENANT_KEY = 'snookify_lastTenantId';
 
 
     /* ---------- App Authentication (Email/Password) ---------- */
@@ -17945,7 +17963,9 @@
       }
     };
 
-    function getLocale() { return localStorage.getItem(I18N_KEY) || 'en'; }
+    // Account-scoped, same as MASTER_PIN_KEY etc. — two different accounts signing in on the
+    // same browser must never inherit each other's saved language.
+    function getLocale() { return localStorage.getItem(tenantStorageKey(I18N_KEY)) || 'en'; }
 
     function t(key, fallback) {
       const locale = getLocale();
@@ -17956,7 +17976,7 @@
 
     function setLocale(locale) {
       if (!TRANSLATIONS[locale]) locale = 'en';
-      localStorage.setItem(I18N_KEY, locale);
+      localStorage.setItem(tenantStorageKey(I18N_KEY), locale);
       if (typeof pushUserSetting === 'function') pushUserSetting(I18N_KEY, locale);
       document.documentElement.lang = locale;
       // Layout direction is pinned to LTR for every language — see the RTL_LOCALES comment
@@ -19236,8 +19256,14 @@
     /* =====================================================================================
        GLOBAL USER SETTINGS SYNC (theme, layout, locale, appearance)
        ---------------------------------------------------------------------------------------
-       Everything below is genuinely user-configurable UI state that, before this module, only
-       ever lived in localStorage — so it never followed an owner to a second till/device/browser:
+       Account-isolated: every local cache key below is wrapped in tenantStorageKey() (suffixed
+       with currentTenantId, the signed-in account's Firebase Auth uid), same pattern as
+       MASTER_PIN_KEY/FEATURE_LOCK_KEY/etc. Two different accounts signing into the same browser
+       therefore each read and write their own copy, both locally and in Firestore — one never
+       overwrites or inherits the other's Dark/Light mode, sidebar state, language, or Theme &
+       Appearance. Everything below is genuinely user-configurable UI state that, before this
+       module, only ever lived in localStorage — so it never followed an owner to a second
+       till/device/browser:
          • Dark/Light Mode              (snookify_themeMode      — Dark/Light toggle)
          • Sidebar collapsed/expanded   (snookify_sidebarCollapsed)
          • Language / locale            (snookify_locale_v1      — I18N_KEY)
@@ -19281,7 +19307,7 @@
     function getLocalUserSettingsSnapshot() {
       const snapshot = {};
       Object.keys(USER_SETTINGS_SYNC_FIELDS).forEach(localKey => {
-        const val = localStorage.getItem(localKey);
+        const val = localStorage.getItem(tenantStorageKey(localKey));
         if (val !== null) snapshot[localKey] = val;
       });
       return snapshot;
@@ -19297,7 +19323,7 @@
       if (!settingsObj || typeof settingsObj !== 'object') return;
       const toSync = {};
       Object.entries(settingsObj).forEach(([localKey, rawValue]) => {
-        localStorage.setItem(localKey, rawValue);
+        localStorage.setItem(tenantStorageKey(localKey), rawValue);
         const field = USER_SETTINGS_SYNC_FIELDS[localKey];
         if (field) toSync[field] = rawValue;
       });
@@ -19335,8 +19361,9 @@
           let changed = false;
           Object.entries(USER_SETTINGS_SYNC_FIELDS).forEach(([localKey, field]) => {
             if (data[field] === undefined) return;
-            if (localStorage.getItem(localKey) === data[field]) return;
-            localStorage.setItem(localKey, data[field]);
+            const scopedKey = tenantStorageKey(localKey); // this doc is already this tenant's own — keep the local cache scoped to match
+            if (localStorage.getItem(scopedKey) === data[field]) return;
+            localStorage.setItem(scopedKey, data[field]);
             changed = true;
           });
           if (changed) {
@@ -19362,8 +19389,9 @@
         let changed = false;
         Object.entries(USER_SETTINGS_SYNC_FIELDS).forEach(([localKey, field]) => {
           if (data[field] === undefined) return;
-          if (localStorage.getItem(localKey) === data[field]) return;
-          localStorage.setItem(localKey, data[field]);
+          const scopedKey = tenantStorageKey(localKey);
+          if (localStorage.getItem(scopedKey) === data[field]) return;
+          localStorage.setItem(scopedKey, data[field]);
           changed = true;
         });
         // Another device changed the theme/locale/layout — reload so it takes effect here too
@@ -20939,7 +20967,11 @@
 
   function loadSettings() {
     try {
-      const raw = localStorage.getItem(THEME_STORAGE_KEY);
+      // Account-scoped (tenantStorageKey lives in the main app script, loaded before this
+      // module, so it's already available here as a global) — otherwise a second account
+      // signing in on the same browser would see the previous account's saved wallpaper,
+      // colors, logo, and typography.
+      const raw = localStorage.getItem(typeof tenantStorageKey === 'function' ? tenantStorageKey(THEME_STORAGE_KEY) : THEME_STORAGE_KEY);
       if (raw) {
         const saved = JSON.parse(raw);
         return {
@@ -20960,7 +20992,7 @@
         // Persist immediately under the new unified key — otherwise this migration would
         // silently re-run (harmlessly, but wastefully) on every load until the old keys are
         // gone, and would be lost entirely if something else ever clears them first.
-        try { localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(migrated)); } catch (e) { /* ignore */ }
+        try { localStorage.setItem(typeof tenantStorageKey === 'function' ? tenantStorageKey(THEME_STORAGE_KEY) : THEME_STORAGE_KEY, JSON.stringify(migrated)); } catch (e) { /* ignore */ }
         return migrated;
       }
       return JSON.parse(JSON.stringify(defaults));
@@ -20973,7 +21005,7 @@
   function saveSettings() {
     try {
       const json = JSON.stringify(settings);
-      localStorage.setItem(THEME_STORAGE_KEY, json);
+      localStorage.setItem(typeof tenantStorageKey === 'function' ? tenantStorageKey(THEME_STORAGE_KEY) : THEME_STORAGE_KEY, json);
       if (typeof pushUserSetting === 'function') pushUserSetting(THEME_STORAGE_KEY, json);
     } catch (e) {
       console.error('[ThemeSystem] Save failed (storage full?).', e);
@@ -21553,10 +21585,11 @@
     });
     document.getElementById('teResetAll').addEventListener('click', () => {
       if (!confirm('Reset all theme, wallpaper, colors and logo to default?')) return;
-      // Clear the unified key AND the two retired legacy keys — otherwise the very next load
-      // would find no unified key, fall back to migrateLegacySettings(), and silently resurrect
-      // whatever those old keys still held, undoing the reset.
-      localStorage.removeItem(THEME_STORAGE_KEY);
+      // Clear the unified key (this account's own copy) AND the two retired legacy keys —
+      // otherwise the very next load would find no unified key, fall back to
+      // migrateLegacySettings(), and silently resurrect whatever those old keys still held,
+      // undoing the reset.
+      localStorage.removeItem(typeof tenantStorageKey === 'function' ? tenantStorageKey(THEME_STORAGE_KEY) : THEME_STORAGE_KEY);
       localStorage.removeItem(LEGACY_LAUNCHER_KEY);
       localStorage.removeItem(LEGACY_DATA_PRESET_KEY);
       location.reload();
@@ -21601,7 +21634,7 @@
     getSettings: () => settings,
     applyAll, refreshUI, applyLauncherPreset, applyDataPreset,
     resetAll: () => {
-      localStorage.removeItem(THEME_STORAGE_KEY);
+      localStorage.removeItem(typeof tenantStorageKey === 'function' ? tenantStorageKey(THEME_STORAGE_KEY) : THEME_STORAGE_KEY);
       localStorage.removeItem(LEGACY_LAUNCHER_KEY);
       localStorage.removeItem(LEGACY_DATA_PRESET_KEY);
       location.reload();
@@ -21675,14 +21708,18 @@
         });
       }
 
-      const saved = localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === '1';
+      // Account-scoped: tenantStorageKey is a global function defined in the main app script
+      // (loaded earlier in <body>), so it's already available here even though this module is
+      // its own IIFE. Falls back to the plain key only in the split-second before any account
+      // has signed in (currentTenantId still null), same as every other tenantStorageKey() call.
+      const saved = localStorage.getItem(tenantStorageKey(SIDEBAR_COLLAPSE_KEY)) === '1';
       applyState(saved);
 
       btn.addEventListener('click', () => {
         const collapsed = !sidebar.classList.contains('collapsed');
         applyState(collapsed);
         const val = collapsed ? '1' : '0';
-        localStorage.setItem(SIDEBAR_COLLAPSE_KEY, val);
+        localStorage.setItem(tenantStorageKey(SIDEBAR_COLLAPSE_KEY), val);
         if (typeof pushUserSetting === 'function') pushUserSetting(SIDEBAR_COLLAPSE_KEY, val);
       });
     }
@@ -21702,13 +21739,15 @@
         applyBrandLogoForTheme(mode);
       }
 
-      const saved = localStorage.getItem(THEME_MODE_KEY) || 'dark';
+      // Account-scoped, same reasoning as SIDEBAR_COLLAPSE_KEY above — and matches the scoped
+      // key the inline pre-auth snippet at the very top of <head> already reads for first paint.
+      const saved = localStorage.getItem(tenantStorageKey(THEME_MODE_KEY)) || 'dark';
       applyMode(saved);
 
       toggle.addEventListener('change', () => {
         const mode = toggle.checked ? 'dark' : 'light';
         applyMode(mode);
-        localStorage.setItem(THEME_MODE_KEY, mode);
+        localStorage.setItem(tenantStorageKey(THEME_MODE_KEY), mode);
         if (typeof pushUserSetting === 'function') pushUserSetting(THEME_MODE_KEY, mode);
       });
     }
