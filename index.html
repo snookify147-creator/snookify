@@ -656,7 +656,7 @@
        than the space body actually has for it — the real mechanism behind the app-wide
        horizontal wobble/side-clipping. width/max-width/overflow-x are a second, redundant layer
        on top of that so this container itself can never exceed the viewport either. */
-    .main-content { flex: 1; min-width: 0; width: 100%; max-width: 100%; overflow-y: auto; overflow-x: hidden; padding: 25px; box-sizing: border-box; }
+    .main-content { flex: 1; min-width: 0; min-height: 0; width: 100%; max-width: 100%; overflow-y: auto; overflow-x: hidden; padding: 25px; box-sizing: border-box; }
     .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
     .branch-select-wrap { display: flex; align-items: center; gap: 10px; }
     #branchSelector { min-width: 240px; font-weight: 700; border-color: var(--accent-gold); cursor: pointer; }
@@ -5897,6 +5897,7 @@
       if (!firebaseReady || !db || !tenantId) return;
       currentTenantId = tenantId;
       appStateSyncedOnce = false; // fresh login — don't allow any cloud push until the real data comes back (see saveState())
+      auditLogFirestoreRows = null; // fresh login — drop any other tenant's cached Activity Log rows
       try { localStorage.setItem(LAST_TENANT_KEY, tenantId); } catch (e) { /* ignore */ }
       tenantRootRef = db.collection('tenants').doc(tenantId);
       branchesCollection = tenantRootRef.collection('branches');
@@ -19841,7 +19842,12 @@
         auditLogCollection.add({ ...record, tenantId: currentTenantId }).catch(err => console.error('Snookify: audit log sync failed', err));
       }
       if (document.getElementById('auditLog') && document.getElementById('auditLog').classList.contains('active')) {
-        renderAuditLogScreen();
+        // Reflect the brand-new entry immediately without re-querying Firestore (avoids an
+        // extra read on every single logged action while this screen is open) — the next full
+        // renderAuditLogScreen() call (tab re-open) will still pick up anything from other
+        // devices in the meantime.
+        if (auditLogFirestoreRows) auditLogFirestoreRows = [...auditLogFirestoreRows, record];
+        renderAuditLogRows(auditLogFirestoreRows || JSON.parse(localStorage.getItem(tenantStorageKey(AUDIT_LOG_KEY)) || '[]'));
       }
     }
 
@@ -19859,11 +19865,39 @@
       renderAuditLogScreen();
     }
 
+    // Renders instantly from this device's local cache (fast, works offline), then — if
+    // Firebase is available — fetches the full shared history from Firestore's auditLogCollection
+    // and re-renders merged with it. This is the fix for a real gap: logAudit() always mirrored
+    // entries to Firestore ("survives even if this device's storage is cleared", per the intro
+    // text on this screen), but this function used to only ever read the LOCAL copy — so any
+    // entries logged on a different device, or before this device's local storage was reset,
+    // were silently invisible here even though they were safely sitting in the cloud the whole
+    // time. Firestore is now the source of truth for what's displayed; localStorage is only the
+    // instant-first-paint / offline fallback.
+    let auditLogFirestoreRows = null; // cached across re-renders within a session; null = not fetched yet
     function renderAuditLogScreen() {
       const body = document.getElementById('auditLogBody');
       if (!body) return;
-      let log = [];
-      try { log = JSON.parse(localStorage.getItem(tenantStorageKey(AUDIT_LOG_KEY)) || '[]'); } catch (e) { /* ignore */ }
+      let localLog = [];
+      try { localLog = JSON.parse(localStorage.getItem(tenantStorageKey(AUDIT_LOG_KEY)) || '[]'); } catch (e) { /* ignore */ }
+
+      renderAuditLogRows(auditLogFirestoreRows || localLog);
+
+      if (firebaseReady && auditLogCollection && currentTenantId) {
+        const boundTenantId = currentTenantId;
+        auditLogCollection.orderBy('ts', 'desc').limit(500).get().then(snap => {
+          if (currentTenantId !== boundTenantId) return; // logged out / switched tenant while this was in flight
+          auditLogFirestoreRows = snap.docs.map(d => d.data()).reverse(); // oldest-first, matching localLog's order
+          renderAuditLogRows(auditLogFirestoreRows);
+        }).catch(err => {
+          console.error('Snookify: could not load full activity history from cloud — showing this device\'s local copy only', err);
+        });
+      }
+    }
+
+    function renderAuditLogRows(log) {
+      const body = document.getElementById('auditLogBody');
+      if (!body) return;
       body.innerHTML = log.slice().reverse().map(r => `
         <tr>
           <td>${new Date(r.ts).toLocaleString()}</td>
@@ -19871,7 +19905,7 @@
           <td>${branchLabel(r.branchId)}</td>
           <td>${r.action || ''}</td>
           <td style="font-size:0.72rem; color:var(--text-muted);">${escapeLsm(JSON.stringify(
-            Object.fromEntries(Object.entries(r).filter(([k]) => !['ts', 'staffId', 'staffName', 'branchId', 'action'].includes(k)))
+            Object.fromEntries(Object.entries(r).filter(([k]) => !['ts', 'staffId', 'staffName', 'branchId', 'action', 'tenantId'].includes(k)))
           ))}</td>
         </tr>`).join('') || '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No activity logged yet.</td></tr>';
     }
