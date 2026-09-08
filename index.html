@@ -4387,6 +4387,23 @@
         </div>
       </div>
 
+      <div class="panel" style="margin-bottom: 15px;">
+        <div class="section-header" style="margin-bottom: 4px;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.6-1.6A4 4 0 0 0 6 16"/></svg> Cloud Backups</div>
+        <div class="sec-intro" style="margin-bottom:10px;">
+          A full safety copy of your data (tables, expenses, partners ledger — everything) is saved
+          automatically about once a day, and kept for the last 14 backups. If anything is ever
+          accidentally lost or corrupted, restore any of them here — it syncs to every device.
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px;">
+          <button class="btn" style="width:auto;" onclick="backupNowClicked()"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.6-1.6A4 4 0 0 0 6 16"/></svg> Back Up Now</button>
+          <button class="btn" style="width:auto; background:transparent; border:1px solid var(--border-color);" onclick="renderBackupList()">Refresh List</button>
+          <span id="backupStatusMsg" style="font-size:0.72rem; color:var(--text-muted);"></span>
+        </div>
+        <div id="backupListContainer" style="max-height:280px; overflow-y:auto;">
+          <div style="font-size:0.75rem; color:var(--text-muted);">Loading backups…</div>
+        </div>
+      </div>
+
       <!-- Forgot Master PIN modal: recovers via a per-installation recovery code the owner
            saved themselves at setup time — NOT a fixed key shared across every deployment of
            this file. See generateRecoveryCode()/verifyRecoveryCode() below for why. -->
@@ -5772,6 +5789,8 @@
     let navHierarchyDoc = null;         // sidebar dropdown grouping — see initNavHierarchySync() below
     let userSettingsDoc = null;         // theme/locale/layout UI preferences — see initUserSettingsSync() below
     let auditLogCollection = null;      // Audit Log — see logAudit() below
+    let stateBackupsCollection = null;  // Daily automatic safety-net copies of appState — see maybeCreateAutoBackup()/restoreFromBackup() below
+    let backupMetaDoc = null;           // Tracks lastAutoBackupAt so multiple devices don't all fire a backup at once
     let firebaseReady = false;
     let functionsReady = false; // true only if Cloud Functions SDK loaded AND initializeApp succeeded — gates the reverseGeocodeLocation callable
 
@@ -5890,6 +5909,8 @@
       navHierarchyDoc = tenantRootRef.collection('settings').doc('navHierarchy');
       userSettingsDoc = tenantRootRef.collection('settings').doc('uiPreferences');
       auditLogCollection = tenantRootRef.collection('auditLog');
+      stateBackupsCollection = tenantRootRef.collection('stateBackups');
+      backupMetaDoc = tenantRootRef.collection('settings').doc('backupMeta');
       bindPresenceCollection(); // presence lives under the same tenant root — see Live Presence module
 
       // Always reset BRANCHES/STAFF/state to a clean, deterministic baseline BEFORE loading or
@@ -6023,7 +6044,7 @@
       appStateSyncedOnce = false;
       tenantRootRef = null;
       branchesCollection = staffCollection = staffSessionsCollection = resourceLinksCollection = null;
-      appStateDoc = settingsSecurityDoc = featureVisibilityDoc = navHierarchyDoc = userSettingsDoc = auditLogCollection = null;
+      appStateDoc = settingsSecurityDoc = featureVisibilityDoc = navHierarchyDoc = userSettingsDoc = auditLogCollection = stateBackupsCollection = backupMetaDoc = null;
       if (typeof presenceCollection !== 'undefined') presenceCollection = null;
       try { localStorage.removeItem(LAST_TENANT_KEY); } catch (e) { /* ignore */ }
       resetToCleanTenantDefaults(); // don't leave the previous tenant's data sitting in memory behind the login overlay
@@ -8563,14 +8584,17 @@
 
     function pushStateToFirestore() {
       if (!firebaseReady || !appStateDoc) return;
+      const payloadStr = JSON.stringify(state);
       // .set() resolves once Firestore's SDK has durably queued the write — while offline (with
       // enablePersistence active) that means "safely in the IndexedDB outbox", not "confirmed by
       // the server". The onSnapshot listener below (with includeMetadataChanges) is what actually
       // clears syncPendingWrites once the server confirms — see initAppStateSync().
       appStateDoc.set({
-        payload: JSON.stringify(state),
+        payload: payloadStr,
         _lastWriter: getDeviceId(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        maybeCreateAutoBackup(payloadStr); // safety net — throttled to roughly once/day, see below
       }).catch(err => console.error('Snookify: state sync failed — change is still saved locally', err));
     }
 
@@ -19930,6 +19954,128 @@
       applyLockBadges();
     }
 
+    /* ============================================================
+       CLOUD BACKUPS — automatic daily safety-net copies of the whole tenant's appState, kept
+       separate from the live appState doc so a bug or accidental action anywhere else in the app
+       (including a race like the one that caused the appStateSyncedOnce guard above to be added)
+       can always be recovered from. See the Cloud Backups card in the Security & Permissions
+       screen for the restore UI.
+       ============================================================ */
+    const AUTO_BACKUP_MIN_INTERVAL_MS = 20 * 60 * 60 * 1000; // ~once/day, with slack so it isn't skipped by a few minutes' drift
+    const AUTO_BACKUP_KEEP = 14; // keep the last 14 daily backups (~2 weeks); older ones auto-prune
+
+    function maybeCreateAutoBackup(payloadStr) {
+      if (!firebaseReady || !stateBackupsCollection || !backupMetaDoc || !currentTenantId) return;
+      const boundTenantId = currentTenantId;
+      backupMetaDoc.get().then(metaSnap => {
+        if (currentTenantId !== boundTenantId) return; // logged out / switched tenant while this was in flight
+        const meta = metaSnap.exists ? metaSnap.data() : null;
+        const lastAt = meta && meta.lastAutoBackupAt ? new Date(meta.lastAutoBackupAt).getTime() : 0;
+        if (Date.now() - lastAt < AUTO_BACKUP_MIN_INTERVAL_MS) return; // not due yet
+        const nowIso = new Date().toISOString();
+        return stateBackupsCollection.add({ ts: nowIso, payload: payloadStr, kind: 'auto', deviceId: getDeviceId() })
+          .then(() => backupMetaDoc.set({ lastAutoBackupAt: nowIso }, { merge: true }))
+          .then(() => pruneOldBackups());
+      }).catch(err => console.error('Snookify: auto backup failed', err));
+    }
+
+    function pruneOldBackups() {
+      if (!stateBackupsCollection) return Promise.resolve();
+      return stateBackupsCollection.orderBy('ts', 'desc').get().then(snap => {
+        if (snap.size <= AUTO_BACKUP_KEEP) return;
+        const batch = db.batch();
+        snap.docs.slice(AUTO_BACKUP_KEEP).forEach(d => batch.delete(d.ref));
+        return batch.commit();
+      }).catch(err => console.error('Snookify: prune old backups failed', err));
+    }
+
+    // "Back Up Now" button — bypasses the once/day throttle (this is an explicit ask, not the
+    // automatic safety net), but still respects AUTO_BACKUP_KEEP via pruneOldBackups() so manual
+    // backups don't grow the collection unbounded either.
+    function backupNowClicked() {
+      if (!firebaseReady || !stateBackupsCollection || !backupMetaDoc) {
+        showToast('Cloud backup needs an internet connection.', 'error');
+        return;
+      }
+      const msgEl = document.getElementById('backupStatusMsg');
+      if (msgEl) msgEl.innerText = 'Backing up…';
+      const nowIso = new Date().toISOString();
+      stateBackupsCollection.add({ ts: nowIso, payload: JSON.stringify(state), kind: 'manual', deviceId: getDeviceId() })
+        .then(() => backupMetaDoc.set({ lastAutoBackupAt: nowIso }, { merge: true }))
+        .then(() => pruneOldBackups())
+        .then(() => {
+          if (msgEl) msgEl.innerText = '';
+          showToast('Backup saved.', 'success');
+          renderBackupList();
+        })
+        .catch(err => {
+          console.error('Snookify: manual backup failed', err);
+          if (msgEl) msgEl.innerText = '';
+          showToast('Backup failed — see console for details.', 'error');
+        });
+    }
+
+    function renderBackupList() {
+      const el = document.getElementById('backupListContainer');
+      if (!el) return; // Security & Permissions panel not open
+      if (!firebaseReady || !stateBackupsCollection) {
+        el.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted);">Cloud backups need an internet connection.</div>';
+        return;
+      }
+      el.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted);">Loading backups…</div>';
+      stateBackupsCollection.orderBy('ts', 'desc').limit(AUTO_BACKUP_KEEP).get().then(snap => {
+        if (el !== document.getElementById('backupListContainer')) return; // panel changed while loading
+        if (snap.empty) {
+          el.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted);">No backups yet — the first automatic one is created the next time data syncs, or tap "Back Up Now".</div>';
+          return;
+        }
+        el.innerHTML = snap.docs.map(doc => {
+          const d = doc.data();
+          const dt = new Date(d.ts);
+          const label = isNaN(dt.getTime()) ? d.ts : dt.toLocaleString();
+          const kindLabel = d.kind === 'manual' ? 'Manual' : 'Auto';
+          return `
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--border-color);">
+              <div style="font-size:0.78rem;">
+                ${label}
+                <span style="font-size:0.65rem; color:var(--text-muted); margin-left:6px;">${kindLabel}</span>
+              </div>
+              <button class="btn" style="width:auto; padding:4px 10px; font-size:0.7rem;" onclick="confirmRestoreFromBackup('${doc.id}', '${label.replace(/'/g, "\\'")}')">Restore</button>
+            </div>`;
+        }).join('');
+      }).catch(err => {
+        console.error('Snookify: could not load backups', err);
+        el.innerHTML = '<div style="font-size:0.75rem; color:var(--accent-red, #ff5252);">Could not load backups — see console for details.</div>';
+      });
+    }
+
+    // Restoring overwrites EVERYTHING currently on the shared cloud document (same as any other
+    // save) — so this always confirms first, and pushes the restored payload straight through
+    // saveState()'s normal path (which also updates every connected device via the live listener).
+    function confirmRestoreFromBackup(backupId, label) {
+      if (!confirm(`Restore the backup from ${label}?\n\nThis will REPLACE all current data (tables, expenses, partners ledger, everything) on every device with what was saved at that time. This cannot be undone.`)) return;
+      restoreFromBackup(backupId);
+    }
+
+    function restoreFromBackup(backupId) {
+      if (!stateBackupsCollection) return;
+      stateBackupsCollection.doc(backupId).get().then(snap => {
+        if (!snap.exists) { showToast('That backup no longer exists.', 'error'); return; }
+        const data = snap.data();
+        if (!data || typeof data.payload !== 'string') { showToast('That backup is empty or corrupted.', 'error'); return; }
+        applyStatePayload(data.payload, { isInitialLoad: false });
+        appStateSyncedOnce = true; // we now hold a deliberately-chosen, known-good state — safe to push
+        saveState();
+        renderTables();
+        renderActiveTableList();
+        updateMetrics();
+        showToast('Backup restored.', 'success');
+      }).catch(err => {
+        console.error('Snookify: restore failed', err);
+        showToast('Restore failed — see console for details.', 'error');
+      });
+    }
+
     /* ---------- Security & Permissions panel (itself always PIN-gated) ---------- */
     function requestSecurityPanelAccess(el) {
       showFeaturePinModal('Security & Permissions', () => {
@@ -19941,6 +20087,7 @@
         renderNavHierarchyPanel();
         renderCancelSessionSecuritySettings();
         refreshRecoveryCodeStatus();
+        renderBackupList();
       });
     }
 
