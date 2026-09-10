@@ -2372,7 +2372,11 @@
       </div>
     </div>
 
-    <div class="theme-toggle-row">
+    <!-- Dark Mode row hidden per owner request — their chosen theme (Theme & Appearance) is
+         what should stick; this legacy quick-toggle stays in the DOM (initThemeToggle() above
+         still safely no-ops if it's ever shown again) so nothing else that reads its checked
+         state breaks, it's just not presented in the sidebar anymore. -->
+    <div class="theme-toggle-row" style="display:none;">
       <span class="theme-toggle-label"><span id="themeToggleIcon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></span><span> Dark Mode</span></span>
       <div class="theme-switch">
         <input type="checkbox" id="themeToggle" checked>
@@ -18982,7 +18986,7 @@
     function setLockState(state) {
       const json = JSON.stringify(state);
       localStorage.setItem(tenantStorageKey(FEATURE_LOCK_KEY), json);
-      pushSecuritySetting(FEATURE_LOCK_KEY, json);
+      return pushSecuritySetting(FEATURE_LOCK_KEY, json);
     }
     function isFeatureLocked(id) {
       return !!getLockState()[id];
@@ -19011,7 +19015,7 @@
     function setBlurState(state) {
       const json = JSON.stringify(state);
       localStorage.setItem(tenantStorageKey(BLUR_STATE_KEY), json);
-      pushSecuritySetting(BLUR_STATE_KEY, json);
+      return pushSecuritySetting(BLUR_STATE_KEY, json);
     }
     function isFeatureBlurred(id) {
       return !!getBlurState()[id];
@@ -19036,7 +19040,7 @@
     function setHideState(state) {
       const json = JSON.stringify(state);
       localStorage.setItem(tenantStorageKey(HIDE_STATE_KEY), json);
-      pushSecuritySetting(HIDE_STATE_KEY, json);
+      return pushSecuritySetting(HIDE_STATE_KEY, json);
     }
     function isFeatureHidden(id) {
       return !!getHideState()[id];
@@ -19075,14 +19079,22 @@
     };
 
     function pushSecuritySetting(localKey, rawValue) {
-      if (!firebaseReady || !settingsSecurityDoc) return;
+      if (!firebaseReady || !settingsSecurityDoc) return Promise.resolve();
       const field = SECURITY_SYNC_FIELDS[localKey];
-      if (!field) return;
-      settingsSecurityDoc.set({
+      if (!field) return Promise.resolve();
+      // Returns the write's promise (previously fire-and-forget) so callers that need to know
+      // the change has actually reached the cloud — not just localStorage — can wait for it.
+      // See resetAllDashboardPrivacy(): a reset that's refreshed away from before this promise
+      // resolves is exactly how a stale server copy can come back and undo a local reset — the
+      // .set() below is async network I/O, it does not complete just because the function returned.
+      return settingsSecurityDoc.set({
         [field]: rawValue,
         _lastWriter: getDeviceId(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true }).catch(err => console.error('Snookify: security setting sync failed — change is still saved locally', err));
+      }, { merge: true }).catch(err => {
+        console.error('Snookify: security setting sync failed — change is still saved locally', err);
+        throw err;
+      });
     }
 
     // No-op until firebaseConfig above has real credentials — everything keeps working exactly
@@ -20363,12 +20375,28 @@
     // made while testing, with no visual trace of why once the Security panel is scrolled past it.
     function resetAllDashboardPrivacy() {
       if (!confirm('Reset ALL Dashboard & UI Privacy Controls?\n\nThis un-hides, un-blurs, and un-locks every item in this list (Live Tables, all Today\'s.../This Shift\'s... cards, Expense History, Live Status Widget, Cancel Session Button). It does not affect the separate Feature Locker (sidebar/menu) settings above.')) return;
-      setLockState({});
-      setBlurState({});
-      setHideState({});
+      // Each setXState() call updates localStorage synchronously (so the UI below reflects the
+      // reset immediately) and also kicks off an async Firestore write, whose promise it returns.
+      const lockWrite = setLockState({});
+      const blurWrite = setBlurState({});
+      const hideWrite = setHideState({});
       applyAllPrivacyMasks();
       renderPrivacyPanel();
-      showToast('Dashboard privacy reset — everything is visible again.', 'success');
+      // The three writes above are async network calls to Firestore — the dashboard already
+      // looks reset locally, but if the tab is refreshed before these actually land on the
+      // server, initSecuritySync()'s listener will pull the OLD (still-hidden) copy back down
+      // on reload and silently undo this reset. So: explicitly wait for all three before telling
+      // the person it's safe to leave, rather than firing-and-forgetting like a single toggle
+      // does (where an instant refresh is a rare accident, not the expected next action here).
+      const msgEl = document.getElementById('backupStatusMsg'); // reused: same "quiet status line" pattern as Cloud Backups above
+      if (msgEl) msgEl.innerText = 'Saving to cloud…';
+      Promise.all([lockWrite, blurWrite, hideWrite]).then(() => {
+        if (msgEl) msgEl.innerText = '';
+        showToast('Dashboard privacy reset and saved to cloud — safe to refresh now.', 'success');
+      }).catch(() => {
+        if (msgEl) msgEl.innerText = '';
+        showToast('Reset saved on this device, but the cloud save failed — don\'t refresh yet, try again once online.', 'error');
+      });
     }
 
     function renderPrivacyPanel() {
