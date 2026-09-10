@@ -4529,6 +4529,9 @@
           table cards entirely; Blur obscures it until tapped once to reveal; Lock leaves the button visible but
           requires the Cancel Session Authorization Code (or Master PIN) before the cancellation can be confirmed.
         </div>
+        <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+          <button class="btn" style="width:auto; background:transparent; border:1px solid var(--border-color); font-size:0.75rem; padding:5px 10px;" onclick="resetAllDashboardPrivacy()">Reset All (unlock/unblur/unhide everything)</button>
+        </div>
         <div class="sec-privacy-header-row">
           <span>Item</span>
           <span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Lock</span>
@@ -20350,6 +20353,22 @@
 
     function initPrivacyLocker() {
       applyAllPrivacyMasks();
+    }
+
+    // Diagnostic/escape-hatch for the Dashboard & UI Privacy Controls above: clears every
+    // Lock/Blur/Hide flag for every item in PRIVACY_ITEMS back to fully visible, in one step.
+    // Exists because these three maps are cumulative (toggling Hide ON for an item and
+    // forgetting to toggle it back off leaves it hidden indefinitely) and there was previously
+    // no single place to see/clear that — a card could end up permanently hidden from a toggle
+    // made while testing, with no visual trace of why once the Security panel is scrolled past it.
+    function resetAllDashboardPrivacy() {
+      if (!confirm('Reset ALL Dashboard & UI Privacy Controls?\n\nThis un-hides, un-blurs, and un-locks every item in this list (Live Tables, all Today\'s.../This Shift\'s... cards, Expense History, Live Status Widget, Cancel Session Button). It does not affect the separate Feature Locker (sidebar/menu) settings above.')) return;
+      setLockState({});
+      setBlurState({});
+      setHideState({});
+      applyAllPrivacyMasks();
+      renderPrivacyPanel();
+      showToast('Dashboard privacy reset — everything is visible again.', 'success');
     }
 
     function renderPrivacyPanel() {
