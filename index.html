@@ -1453,17 +1453,50 @@
     .co-actions .btn:disabled { opacity: 0.35; cursor: not-allowed; }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.3); }
 
-    .receipt-thermal { box-sizing: border-box; background: #fff; color: #000; font-family: 'Courier New', monospace; padding: 15px; border-radius: 6px; font-size: 0.8rem; line-height: 1.6; max-width: 100%; overflow-x: hidden; }
-    .receipt-thermal hr { border: none; border-top: 1px dashed #000; margin: 8px 0; }
-    .receipt-thermal .r-row { display: flex; justify-content: space-between; gap: 10px; }
-    .receipt-thermal .r-title { text-align: center; font-weight: 800; font-size: 1rem; margin-bottom: 4px; }
-    .receipt-thermal .r-center { text-align: center; }
+    /* Fixed px sizes throughout .receipt-thermal (not rem) — the app's UI Density setting
+       (Theme Engine → --te-density-scale, see html{font-size:calc(16px * var(--te-density-scale))}
+       further down this file) rescales the ROOT font-size app-wide, and every rem value here was
+       silently inheriting that scale. On screen that's invisible, but on a fixed 80mm thermal
+       roll it desyncs the text/column sizing from the physical page width — columns and rows
+       drift out of place ("aagay peechay"). Pixels are immune to that, on screen and in print. */
+    .receipt-thermal { box-sizing: border-box; background: #fff; color: #000; font-family: 'Courier New', monospace; padding: 15px; border-radius: 6px; font-size: 12px; line-height: 1.5; max-width: 100%; overflow-x: hidden; }
+    .receipt-thermal hr { border: none; border-top: 1px dashed #000; margin: 6px 0; }
+    /* r-row (label/value line): CSS table display, not Flexbox. Some thermal-printer print
+       pipelines (embedded WebViews / Bluetooth print-bridge apps) don't reliably lay out flex
+       children — that mismatch is what was pushing labels and values out of alignment. display:
+       table / table-cell is the CSS-table equivalent of an HTML <table> row, without needing to
+       change every place in the JS that builds this markup. Also guarded against splitting a
+       row across a page-break, which looked like the same misalignment symptom on longer receipts. */
+    .receipt-thermal .r-row {
+      display: table;
+      width: 100%;
+      table-layout: fixed;
+      margin: 1px 0;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .receipt-thermal .r-row > span:first-child {
+      display: table-cell;
+      text-align: left;
+      vertical-align: top;
+      word-break: break-word;
+      padding-right: 6px;
+    }
+    .receipt-thermal .r-row > span:last-child {
+      display: table-cell;
+      text-align: right;
+      vertical-align: top;
+      white-space: nowrap;
+      width: 1%; /* shrink-to-fit: the value column takes only what it needs, label gets the rest */
+    }
+    .receipt-thermal .r-title { text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+    .receipt-thermal .r-center { text-align: center; font-size: 12px; }
     /* table-layout: fixed + explicit % widths below stop columns from sizing off their content
        (long names/phone numbers, "10:30 AM" times) — that was what pushed the table past the
        container and clipped PRICE. Widths sum to exactly 100%. */
-    .receipt-thermal table { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; margin: 4px 0 6px; font-size: 0.65rem; }
-    .receipt-thermal th, .receipt-thermal td { box-sizing: border-box; border: 1px solid #ccc; padding: 2px 3px; text-align: left; background: transparent; color: #000; overflow-wrap: break-word; word-break: break-word; }
-    .receipt-thermal th { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0; }
+    .receipt-thermal table { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; margin: 4px 0 6px; font-size: 10px; }
+    .receipt-thermal th, .receipt-thermal td { box-sizing: border-box; border: 1px solid #ccc; padding: 2px 3px; text-align: left; background: transparent; color: #000; overflow-wrap: break-word; word-break: break-word; font-size: 10px; page-break-inside: avoid; break-inside: avoid; }
+    .receipt-thermal th { font-size: 9px; text-transform: uppercase; letter-spacing: 0; }
     .receipt-thermal th:nth-child(1), .receipt-thermal td:nth-child(1) { width: 6%; }   /* # */
     .receipt-thermal th:nth-child(2), .receipt-thermal td:nth-child(2) { width: 24%; }  /* Player */
     .receipt-thermal th:nth-child(3), .receipt-thermal td:nth-child(3) { width: 15%; }  /* Start */
@@ -1477,8 +1510,8 @@
        bill without stretching the receipt or wasting thermal paper. */
     .receipt-thermal .r-qr-block { text-align: center; margin: 8px auto 4px; padding-top: 6px; border-top: 1px dashed #999; width: 100%; }
     .receipt-thermal .r-qr-block img { width: 100px; height: 100px; max-width: 100%; display: block; margin: 0 auto; }
-    .receipt-thermal .r-qr-caption { font-size: 0.65rem; font-weight: 700; text-align: center; margin-top: 4px; letter-spacing: 0.2px; color: #000; }
-    .receipt-thermal .r-qr-amount { font-size: 0.62rem; text-align: center; margin-top: 1px; color: #000; }
+    .receipt-thermal .r-qr-caption { font-size: 10px; font-weight: 700; text-align: center; margin-top: 4px; letter-spacing: 0.2px; color: #000; }
+    .receipt-thermal .r-qr-amount { font-size: 10px; text-align: center; margin-top: 1px; color: #000; }
 
     /* Quick-Fill Suggestion Button (Add Frame modal) */
     .quick-suggest-btn { background: rgba(0,230,118,0.12); color: var(--accent-green); border: 1px dashed var(--accent-green); padding: 9px; border-radius: 6px; font-weight: 700; cursor: pointer; width: 100%; text-align: center; margin-bottom: 14px; font-size: 0.8rem; }
@@ -1668,7 +1701,11 @@
        sidebar, no app chrome, no wasted paper. */
     @media print {
       @page { size: 80mm auto; margin: 0; }
-      html, body { width: 80mm; margin: 0; padding: 0; background: #fff; }
+      /* !important on font-size here: the Theme Engine's html{font-size:calc(16px *
+         var(--te-density-scale))} rule (defined later in this file) has the same selector
+         specificity and would otherwise win the cascade by source order even inside this
+         @media print block, letting a non-default UI Density setting resize the whole receipt. */
+      html, body { width: 80mm; margin: 0; padding: 0; background: #fff; font-size: 12px !important; }
       body * { visibility: hidden; }
       #receiptContent, #receiptContent * { visibility: visible; }
       #receiptContent {
@@ -1676,9 +1713,12 @@
         width: 80mm; max-width: 80mm;
         margin: 0; padding: 2mm 3mm;
         border-radius: 0; box-shadow: none;
-        font-size: 11px; line-height: 1.4;
+        font-size: 12px; line-height: 1.45;
       }
       .receipt-thermal .r-qr-block img { width: 90px; height: 90px; }
+      /* Never split a label/value line or a table row across a page-break — on longer receipts
+         (frame-by-frame breakdowns) this was the other source of rows looking shifted/overlapped. */
+      .receipt-thermal .r-row, .receipt-thermal tr { page-break-inside: avoid; break-inside: avoid; }
     }
 
     /* ---- Reports → Export to PDF (browser print / "Save as PDF") ----
