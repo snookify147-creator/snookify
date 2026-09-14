@@ -1459,14 +1459,32 @@
        silently inheriting that scale. On screen that's invisible, but on a fixed 80mm thermal
        roll it desyncs the text/column sizing from the physical page width — columns and rows
        drift out of place ("aagay peechay"). Pixels are immune to that, on screen and in print. */
-    .receipt-thermal { box-sizing: border-box; background: #fff; color: #000; font-family: 'Courier New', monospace; padding: 15px; border-radius: 6px; font-size: 12px; line-height: 1.5; max-width: 100%; overflow-x: hidden; }
+    /* width: 80mm here is deliberate and works fine outside @media print too — "mm" is a real,
+       absolute CSS length in every context, not just print. That makes the on-screen preview an
+       actual to-scale mockup of the 80mm slip instead of a wide dialog with the receipt loosely
+       floating inside it — the previous mismatch (a ~380px-wide card holding text sized/wrapped
+       for a narrower roll) is exactly what was pushing the right-hand column past the visible
+       area and letting the old overflow-x:hidden below clip it. */
+    .receipt-thermal {
+      box-sizing: border-box;
+      width: 80mm;
+      max-width: 100%;
+      margin: 0 auto;
+      background: #fff;
+      color: #000;
+      font-family: 'Courier New', monospace;
+      padding: 3mm 3mm;
+      border-radius: 6px;
+      font-size: 11px;
+      line-height: 1.5;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
     .receipt-thermal hr { border: none; border-top: 1px dashed #000; margin: 6px 0; }
-    /* r-row (label/value line): CSS table display, not Flexbox. Some thermal-printer print
-       pipelines (embedded WebViews / Bluetooth print-bridge apps) don't reliably lay out flex
-       children — that mismatch is what was pushing labels and values out of alignment. display:
-       table / table-cell is the CSS-table equivalent of an HTML <table> row, without needing to
-       change every place in the JS that builds this markup. Also guarded against splitting a
-       row across a page-break, which looked like the same misalignment symptom on longer receipts. */
+    /* Legacy `.r-row` (div/span) rule kept only as a safety net for any markup that somehow
+       bypasses setReceiptContent() — normal flow now converts every r-row into a real
+       `<table class="r-table">` (see buildThermalTableMarkup() in the script below), which is
+       what's actually shown on screen AND printed, so preview and printout always match. */
     .receipt-thermal .r-row {
       display: table;
       width: 100%;
@@ -1486,17 +1504,32 @@
       display: table-cell;
       text-align: right;
       vertical-align: top;
-      white-space: nowrap;
-      width: 1%; /* shrink-to-fit: the value column takes only what it needs, label gets the rest */
+      word-break: break-word;
     }
-    .receipt-thermal .r-title { text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 4px; }
-    .receipt-thermal .r-center { text-align: center; font-size: 12px; }
-    /* table-layout: fixed + explicit % widths below stop columns from sizing off their content
-       (long names/phone numbers, "10:30 AM" times) — that was what pushed the table past the
-       container and clipped PRICE. Widths sum to exactly 100%. */
-    .receipt-thermal table { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; margin: 4px 0 6px; font-size: 10px; }
-    .receipt-thermal th, .receipt-thermal td { box-sizing: border-box; border: 1px solid #ccc; padding: 2px 3px; text-align: left; background: transparent; color: #000; overflow-wrap: break-word; word-break: break-word; font-size: 10px; page-break-inside: avoid; break-inside: avoid; }
-    .receipt-thermal th { font-size: 9px; text-transform: uppercase; letter-spacing: 0; }
+    .receipt-thermal .r-title { text-align: center; font-weight: 800; font-size: 13px; margin-bottom: 4px; word-break: break-word; }
+    .receipt-thermal .r-center { text-align: center; font-size: 11px; word-break: break-word; }
+
+    /* Real `<table class="r-table">` label/value rows — this is what setReceiptContent() actually
+       renders now, on screen and at print time, so there's a single source of truth for layout.
+       Fixed 60/40 column split + word-break (never nowrap) means a long amount wraps onto a
+       second line inside its own column instead of being pushed past the edge and clipped. */
+    .receipt-thermal table.r-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 1px 0 3px; }
+    .receipt-thermal table.r-table td { padding: 1px 2px; vertical-align: top; font-size: 11px; }
+    .receipt-thermal table.r-table td.r-label { width: 60%; text-align: left; word-break: break-word; padding-right: 4px; }
+    .receipt-thermal table.r-table td.r-value { width: 40%; text-align: right; word-break: break-word; }
+
+    /* Item / frame breakdown tables (the app's own real <table> markup — Player/Start/End/etc.).
+       table-layout: fixed + word-break: break-all + overflow: hidden guarantee a cell can never
+       push wider than its assigned % column or spill past the 80mm container — long names, phone
+       numbers, or "10:30 AM" times wrap/clip inside their own cell instead of shifting every
+       column to the right of them. */
+    .receipt-thermal table:not(.r-table) { width: 100% !important; max-width: 100%; table-layout: fixed !important; border-collapse: collapse; margin: 4px 0 6px; }
+    .receipt-thermal th, .receipt-thermal td {
+      box-sizing: border-box; border: 1px solid #ccc; padding: 2px 0; text-align: left;
+      background: transparent; color: #000; word-break: break-all; overflow: hidden;
+      vertical-align: top; font-size: 11px; page-break-inside: avoid; break-inside: avoid;
+    }
+    .receipt-thermal th { font-size: 10px; text-transform: uppercase; letter-spacing: 0; }
     .receipt-thermal th:nth-child(1), .receipt-thermal td:nth-child(1) { width: 6%; }   /* # */
     .receipt-thermal th:nth-child(2), .receipt-thermal td:nth-child(2) { width: 24%; }  /* Player */
     .receipt-thermal th:nth-child(3), .receipt-thermal td:nth-child(3) { width: 15%; }  /* Start */
@@ -1510,8 +1543,8 @@
        bill without stretching the receipt or wasting thermal paper. */
     .receipt-thermal .r-qr-block { text-align: center; margin: 8px auto 4px; padding-top: 6px; border-top: 1px dashed #999; width: 100%; }
     .receipt-thermal .r-qr-block img { width: 100px; height: 100px; max-width: 100%; display: block; margin: 0 auto; }
-    .receipt-thermal .r-qr-caption { font-size: 10px; font-weight: 700; text-align: center; margin-top: 4px; letter-spacing: 0.2px; color: #000; }
-    .receipt-thermal .r-qr-amount { font-size: 10px; text-align: center; margin-top: 1px; color: #000; }
+    .receipt-thermal .r-qr-caption { font-size: 10px; font-weight: 700; text-align: center; margin-top: 4px; letter-spacing: 0.2px; color: #000; word-break: break-word; }
+    .receipt-thermal .r-qr-amount { font-size: 10px; text-align: center; margin-top: 1px; color: #000; word-break: break-word; }
 
     /* Quick-Fill Suggestion Button (Add Frame modal) */
     .quick-suggest-btn { background: rgba(0,230,118,0.12); color: var(--accent-green); border: 1px dashed var(--accent-green); padding: 9px; border-radius: 6px; font-weight: 700; cursor: pointer; width: 100%; text-align: center; margin-bottom: 14px; font-size: 0.8rem; }
@@ -7531,7 +7564,7 @@
         <div class="r-center" style="margin-top:4px;">Signature: ______________</div>
         <div class="r-center" style="margin-top:8px;">Received By: ______________</div>
       `;
-      document.getElementById('receiptContent').innerHTML = html;
+      setReceiptContent(html);
       document.getElementById('receiptModal').classList.add('open');
       setReceiptWhatsAppContext('', ''); // internal handover slip, not a customer receipt
 
@@ -11420,7 +11453,7 @@
         ${receiptQrBlockHtml(record.total, record.id)}
         <div class="r-center">Thank you for visiting!</div>
       `;
-      document.getElementById('receiptContent').innerHTML = html;
+      setReceiptContent(html);
       document.getElementById('receiptModal').classList.add('open');
 
       const waText = `SNOOKIFY CLUB — Table Receipt\n`
@@ -11442,6 +11475,18 @@
 
     function closeReceiptModal() {
       document.getElementById('receiptModal').classList.remove('open');
+    }
+
+    // Every place in this app that opens the receipt modal should go through this instead of
+    // setting #receiptContent.innerHTML directly. It runs the same r-row → real <table> markup
+    // conversion used for printing (see buildThermalTableMarkup() just below) BEFORE the content
+    // ever reaches the screen, so the on-screen preview and the printed thermal slip are always
+    // built from the exact same table-based layout — no more "looks fine on screen, cuts off on
+    // paper" (or vice versa) mismatches.
+    function setReceiptContent(rawHtml) {
+      const el = document.getElementById('receiptContent');
+      if (!el) return;
+      el.innerHTML = buildThermalTableMarkup(rawHtml);
     }
 
     // Converts the receipt's on-screen `<div class="r-row"><span>Label</span><span>Value</span></div>`
@@ -12113,7 +12158,7 @@
         ${receiptQrBlockHtml(record.total, record.id)}
         <div class="r-center">Thank you for visiting!</div>
       `;
-      document.getElementById('receiptContent').innerHTML = html;
+      setReceiptContent(html);
       document.getElementById('receiptModal').classList.add('open');
 
       const waText = `SNOOKIFY CLUB — Canteen Receipt\n`
@@ -12311,7 +12356,7 @@
         <div class="r-center">Thank you for shopping with us!</div>
         <div class="r-center" style="font-size:0.7rem; margin-top:2px;">Please retain this invoice for warranty / service claims.</div>
       `;
-      document.getElementById('receiptContent').innerHTML = html;
+      setReceiptContent(html);
       document.getElementById('receiptModal').classList.add('open');
 
       const waText = `SNOOKIFY CUE SHOP — Invoice ${invoiceLabel}\n`
@@ -15576,7 +15621,7 @@
         <div class="r-center">Verified By: ______________</div>
         <div class="r-center" style="margin-top:4px;">Signature: ______________</div>
       `;
-      document.getElementById('receiptContent').innerHTML = html;
+      setReceiptContent(html);
       document.getElementById('receiptModal').classList.add('open');
       setReceiptWhatsAppContext('', '');
 
@@ -16382,7 +16427,7 @@
         <div class="r-center">Verified & Closed By: ______________</div>
         <div class="r-center" style="margin-top:4px;">Signature: ______________</div>
       `;
-      document.getElementById('receiptContent').innerHTML = html;
+      setReceiptContent(html);
       document.getElementById('receiptModal').classList.add('open');
       setReceiptWhatsAppContext('', ''); // Z-report is an internal closing slip, not a customer receipt
 
