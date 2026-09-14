@@ -1692,34 +1692,21 @@
     #revenueTrendChart .rt-point:hover { r: 6; }
     .chart-tooltip { position: absolute; transform: translate(-50%, -100%); background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 10px; border-radius: 8px; font-size: 0.72rem; line-height: 1.35; pointer-events: none; white-space: nowrap; z-index: 5; box-shadow: 0 4px 12px rgba(0,0,0,0.35); }
 
-    /* ---- 80mm Thermal Receipt Print Layout ----
-       @page here is what actually stops the browser defaulting to a full A4/Letter sheet:
-       it tells the print pipeline the target stock is an 80mm roll (58mm printers can override
-       by editing this one rule), so a thermal printer picked in the OS print dialog is used at
-       its native width instead of being scaled into an A4-shaped page with huge margins.
-       Everything outside #receiptContent is hidden so only the receipt itself prints — no
-       sidebar, no app chrome, no wasted paper. */
-    @media print {
-      @page { size: 80mm auto; margin: 0; }
-      /* !important on font-size here: the Theme Engine's html{font-size:calc(16px *
-         var(--te-density-scale))} rule (defined later in this file) has the same selector
-         specificity and would otherwise win the cascade by source order even inside this
-         @media print block, letting a non-default UI Density setting resize the whole receipt. */
-      html, body { width: 80mm; margin: 0; padding: 0; background: #fff; font-size: 12px !important; }
-      body * { visibility: hidden; }
-      #receiptContent, #receiptContent * { visibility: visible; }
-      #receiptContent {
-        position: absolute; top: 0; left: 0;
-        width: 80mm; max-width: 80mm;
-        margin: 0; padding: 2mm 3mm;
-        border-radius: 0; box-shadow: none;
-        font-size: 12px; line-height: 1.45;
-      }
-      .receipt-thermal .r-qr-block img { width: 90px; height: 90px; }
-      /* Never split a label/value line or a table row across a page-break — on longer receipts
-         (frame-by-frame breakdowns) this was the other source of rows looking shifted/overlapped. */
-      .receipt-thermal .r-row, .receipt-thermal tr { page-break-inside: avoid; break-inside: avoid; }
-    }
+    /* ---- 80mm Thermal Receipt Printing — NOW HANDLED VIA ISOLATED IFRAME ----
+       IMPORTANT FIX (root cause of "blank A4 pages" / missing data / broken layout):
+       this file used to declare TWO @page rules in the same stylesheet — this one
+       (80mm, for the receipt) and another one further below, inside #reportsPrintArea's
+       @media print block (A4 portrait, for the Reports export). @page is a document-level
+       at-rule, NOT scoped to whichever element happens to be visible — so whichever @page
+       rule appears LAST in source order wins the cascade for every single print job in this
+       document, receipt included. That's what was silently forcing the thermal receipt onto
+       a full A4 sheet, and the leftover (still-in-flow, merely visibility:hidden) app chrome
+       behind it is what produced the extra blank trailing pages.
+       The fix: receipt printing no longer relies on this document's @page/@media print at
+       all. printReceipt() now builds the receipt into a separate, fully self-contained
+       hidden <iframe> document (see printReceipt() + buildThermalTableMarkup() in the script
+       below) with its own single @page{size:80mm auto} rule that can never collide with
+       anything else on this page. That iframe is the only place 80mm sizing is declared now. */
 
     /* ---- Reports → Export to PDF (browser print / "Save as PDF") ----
        Same isolation trick as #receiptContent above: #reportsPrintArea sits hidden in
@@ -5241,6 +5228,15 @@
       </div>
     </div>
   </div>
+
+  <!-- Dedicated hidden print target for the thermal receipt (see printReceipt() /
+       buildThermalTableMarkup() in the script below). Printing happens inside THIS iframe's
+       own isolated document — never on the main document — so the receipt's @page{80mm}
+       rule can never collide with any other @page rule elsewhere in the app, and none of the
+       app's own UI (sidebar, modals, etc.) can ever leak onto the printed page or pad it out
+       with extra blank pages. -->
+  <iframe id="thermalPrintFrame" aria-hidden="true" tabindex="-1"
+    style="position:fixed; top:-10000px; left:-10000px; width:0; height:0; border:0; visibility:hidden;"></iframe>
 
   <!-- PRINTABLE RECEIPT MODAL -->
   <div id="receiptModal" class="modal-overlay">
@@ -11448,15 +11444,130 @@
       document.getElementById('receiptModal').classList.remove('open');
     }
 
+    // Converts the receipt's on-screen `<div class="r-row"><span>Label</span><span>Value</span></div>`
+    // markup into REAL `<table>` rows for the printed output. Consecutive r-rows are grouped into a
+    // single <table> so their label/value columns line up consistently, exactly like the item tables
+    // already used for frame/order breakdowns. Anything that already IS a <table> (frame lists, etc.)
+    // passes through untouched. This runs only at print time — the modal's on-screen preview keeps its
+    // existing CSS-table (display:table) rendering, which already looks correct on screen.
+    function buildThermalTableMarkup(rawHtml) {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = rawHtml;
+      const kids = Array.from(wrap.children);
+      let i = 0;
+      while (i < kids.length) {
+        if (kids[i].classList && kids[i].classList.contains('r-row')) {
+          let j = i;
+          const group = [];
+          while (j < kids.length && kids[j].classList && kids[j].classList.contains('r-row')) {
+            group.push(kids[j]);
+            j++;
+          }
+          const table = document.createElement('table');
+          table.className = 'r-table';
+          group.forEach(rowEl => {
+            const spans = rowEl.querySelectorAll(':scope > span');
+            const tr = document.createElement('tr');
+            if (rowEl.getAttribute('style')) tr.setAttribute('style', rowEl.getAttribute('style'));
+            const tdLabel = document.createElement('td');
+            tdLabel.className = 'r-label';
+            tdLabel.innerHTML = spans[0] ? spans[0].innerHTML : '';
+            const tdValue = document.createElement('td');
+            tdValue.className = 'r-value';
+            tdValue.innerHTML = spans[1] ? spans[1].innerHTML : '';
+            tr.appendChild(tdLabel);
+            tr.appendChild(tdValue);
+            table.appendChild(tr);
+          });
+          group[0].replaceWith(table);
+          group.slice(1).forEach(el => el.remove());
+          i = j;
+        } else {
+          i++;
+        }
+      }
+      return wrap.innerHTML;
+    }
+
+    // Self-contained CSS for the print-only iframe document. Nothing here can ever collide with
+    // the main app's stylesheet (Theme Engine density scale, other @page rules, etc.) because
+    // this lives in a completely separate document.
+    const THERMAL_PRINT_STYLE = `
+      @page { size: 80mm auto; margin: 0mm; }
+      * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      html, body {
+        width: 80mm; margin: 0; padding: 0;
+        background: #fff; color: #000;
+        font-family: 'Courier New', monospace;
+        font-size: 11px; line-height: 1.4;
+      }
+      .receipt-container { width: 80mm; padding: 2mm 3mm; }
+      hr { border: none; border-top: 1px dashed #000; margin: 4px 0; }
+      .r-title { text-align: center; font-weight: 800; font-size: 13px; margin-bottom: 4px; }
+      .r-center { text-align: center; font-size: 11px; }
+      /* Label/value rows — real <table>, not flexbox, so columns can never overlap or drift. */
+      table.r-table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 1px 0 3px; }
+      table.r-table td { padding: 1px 2px; vertical-align: top; font-size: 11px; word-break: break-word; }
+      table.r-table td.r-label { text-align: left; }
+      table.r-table td.r-value { text-align: right; white-space: nowrap; width: 1%; padding-left: 6px; }
+      /* Item/frame breakdown tables (already real <table> markup from the app). */
+      table:not(.r-table) { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; margin: 4px 0 6px; font-size: 10px; }
+      table:not(.r-table) th, table:not(.r-table) td {
+        border: 1px solid #000; padding: 2px 3px; text-align: left; font-size: 10px;
+        overflow-wrap: break-word; word-break: break-word;
+      }
+      table:not(.r-table) th { font-size: 9px; text-transform: uppercase; }
+      tr { page-break-inside: avoid; break-inside: avoid; }
+      .r-qr-block { text-align: center; margin: 6px auto 2px; padding-top: 4px; border-top: 1px dashed #000; width: 100%; }
+      .r-qr-block img { width: 90px; height: 90px; max-width: 100%; display: block; margin: 0 auto; }
+      .r-qr-caption { font-size: 9px; font-weight: 700; text-align: center; margin-top: 3px; }
+      .r-qr-amount { font-size: 9px; text-align: center; margin-top: 1px; }
+    `;
+
     // Print — the receipt modal's primary button. Saving is not this button's job: every
     // transaction is already written to `state` and persisted to localStorage the instant
     // it's completed/processed, inside finalizeSession() (and the walk-in/cue-shop/shift
     // equivalents) — see saveState() calls there — well before this modal ever opens. So by
     // the time the cashier sees Print, the data is already safely saved in the background;
     // this button's only job is to trigger the print dialog.
+    //
+    // Printing happens inside #thermalPrintFrame — a hidden iframe with its own totally
+    // separate document (own <html>, own <style>, own @page rule) — instead of window.print()
+    // on the main document. This is what fixes the "missing data / blank A4 pages / broken
+    // layout" bug: the main document can never leak its own @page rules, sidebar, or modal
+    // chrome into what actually gets sent to the printer, because the printer only ever sees
+    // this tiny, purpose-built document.
     function printReceipt() {
       try {
-        window.print();
+        const source = document.getElementById('receiptContent');
+        if (!source) { window.print(); return; }
+
+        const tableMarkup = buildThermalTableMarkup(source.innerHTML);
+        let frame = document.getElementById('thermalPrintFrame');
+        if (!frame) {
+          frame = document.createElement('iframe');
+          frame.id = 'thermalPrintFrame';
+          frame.setAttribute('aria-hidden', 'true');
+          frame.style.cssText = 'position:fixed; top:-10000px; left:-10000px; width:0; height:0; border:0; visibility:hidden;';
+          document.body.appendChild(frame);
+        }
+
+        const doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Receipt</title>'
+          + '<style>' + THERMAL_PRINT_STYLE + '</style></head>'
+          + '<body><div class="receipt-container">' + tableMarkup + '</div></body></html>';
+
+        frame.onload = function () {
+          try {
+            frame.contentWindow.focus();
+            frame.contentWindow.print();
+          } catch (err) {
+            console.error('Snookify: thermal print failed', err);
+            alert('The print dialog could not be opened. The transaction is already saved — use "Print" again or your browser\'s print option to print this receipt.');
+          }
+        };
+        // The QR code is an inline base64 data: URL (no network fetch needed), so srcdoc's
+        // 'load' event firing once parsing completes is enough — no extra image-wait needed.
+        frame.srcdoc = doc;
       } catch (e) {
         console.error('Snookify: receipt print failed', e);
         alert('The print dialog could not be opened. The transaction is already saved — use "Print" again or your browser\'s print option to print this receipt.');
