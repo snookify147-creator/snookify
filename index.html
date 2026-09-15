@@ -1540,6 +1540,8 @@
          fixed pitch keeps columns/labels perfectly aligned print-to-print, unlike Arial's
          variable-width glyphs which can drift a pixel or two between characters. */
       font-family: 'Courier New', Courier, monospace;
+      /* Minimal thermal-safe margin, top/bottom kept as tight as a real thermal head's own feed
+         allows (2mm) — this alone trims a few mm off every single receipt printed. */
       padding: 2mm 3mm;
       border-radius: 6px;
       font-size: 11px;
@@ -1548,9 +1550,10 @@
          specific total rows (Gross Total, NET PAYABLE, Amount Due, and now the highlighted
          player-breakdown figures) are bolded back explicitly via their own inline style. */
       font-weight: 400;
-      /* 1.35 line-height (up from the previous 1.2) so ascenders/descenders on consecutive
-         lines never touch — that's what was reading as "letters merging into each other". */
-      line-height: 1.35;
+      /* 1.2 — tight enough to cut real paper length across a full receipt, still with enough
+         gap that ascenders/descenders on consecutive lines don't touch (that gap is what solid
+         #000 ink and monospace glyph metrics need, not extra line-height). */
+      line-height: 1.2;
       /* Explicit normal letter-spacing — nothing in this block should ever compress glyphs
          tighter than the font's own metrics, which is what caused the grainy/merged look. */
       letter-spacing: normal;
@@ -1565,7 +1568,20 @@
       color-adjust: exact;
       print-color-adjust: exact;
     }
-    .receipt-thermal hr { border: none; border-top: 1px solid #000; margin: 3px 0; }
+    /* HARD OVERRIDE: every descendant of the receipt — span, p, td, th, div, whatever — is
+       forced to solid black. This exists specifically to defeat any --text-muted/--text-faint/
+       --info/--accent-gold variable or inline `style="color:..."` that a JS-built string might
+       carry over from the app's dark-mode UI (e.g. frameTypeBadge()'s S/D letter + "BOx" tag,
+       or any future sub-text span). `!important` here beats a *non*-important inline style, so
+       nothing inside the receipt can ever render lighter than pure black on the white paper. */
+    .receipt-thermal, .receipt-thermal * {
+      color: #000000 !important;
+      line-height: 1.2 !important;
+    }
+    /* hr margin trimmed 3px → 1px — this rule fires between every single section (header,
+       breakdown, totals, footer), so shaving 2px here compounds into real length saved across
+       a whole receipt. */
+    .receipt-thermal hr { border: none; border-top: 1px solid #000; margin: 1px 0; }
     /* Legacy `.r-row` (div/span) rule kept only as a safety net for any markup that somehow
        bypasses setReceiptContent() — normal flow now converts every r-row into a real
        `<table class="r-table">` (see buildThermalTableMarkup() in the script below), which is
@@ -1575,12 +1591,15 @@
       width: 100%;
       table-layout: fixed;
       margin: 0;
-      padding: 2px 0;
+      /* Was 3px 0 — every label/value line on the receipt is one of these, so this is the
+         single biggest lever for shrinking total paper length. */
+      padding: 0.5px 0;
       page-break-inside: avoid;
       break-inside: avoid;
     }
     .receipt-thermal .r-row > span:first-child {
       display: table-cell;
+      width: 60%;
       text-align: left;
       vertical-align: top;
       word-break: break-word;
@@ -1588,63 +1607,70 @@
     }
     .receipt-thermal .r-row > span:last-child {
       display: table-cell;
+      width: 40%;
       text-align: right;
       vertical-align: top;
       word-break: break-word;
     }
-    .receipt-thermal .r-title { text-align: center; font-weight: 400; font-size: 14px; line-height: 1.35; letter-spacing: normal; margin-bottom: 2px; word-break: break-word; }
-    .receipt-thermal .r-center { text-align: center; font-size: 11px; font-weight: 400; line-height: 1.35; letter-spacing: normal; word-break: break-word; }
+    .receipt-thermal .r-title { text-align: center; font-weight: 400; font-size: 14px; letter-spacing: normal; margin-bottom: 1px; word-break: break-word; }
+    .receipt-thermal .r-center { text-align: center; font-size: 11px; font-weight: 400; letter-spacing: normal; word-break: break-word; }
 
     /* Real `<table class="r-table">` label/value rows — this is what setReceiptContent() actually
        renders now, on screen and at print time, so there's a single source of truth for layout.
        Fixed 60/40 column split + word-break (never nowrap) means a long amount wraps onto a
        second line inside its own column instead of being pushed past the edge and clipped. */
-    .receipt-thermal table.r-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 1px 0 2px; }
-    .receipt-thermal table.r-table td { padding: 2px 2px; vertical-align: top; font-size: 11px; font-weight: 400; line-height: 1.35; letter-spacing: normal; }
-    .receipt-thermal table.r-table td.r-label { width: 58%; text-align: left; word-break: break-word; padding-right: 4px; }
-    .receipt-thermal table.r-table td.r-value { width: 42%; text-align: right; word-break: break-word; }
+    .receipt-thermal table.r-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 0; }
+    .receipt-thermal table.r-table td { padding: 0.5px 2px; vertical-align: top; font-size: 11px; font-weight: 400; letter-spacing: normal; }
+    .receipt-thermal table.r-table td.r-label { width: 60%; text-align: left; word-break: break-word; padding-right: 6px; }
+    .receipt-thermal table.r-table td.r-value { width: 40%; text-align: right; word-break: break-word; }
 
     /* Item / frame breakdown tables (the app's own real <table> markup — Player/Start/End/etc.).
-       table-layout: fixed + word-break: break-all + overflow: hidden guarantee a cell can never
-       push wider than its assigned % column or spill past the 80mm container — long names, phone
-       numbers, or "10:30 AM" times wrap/clip inside their own cell instead of shifting every
-       column to the right of them. */
-    .receipt-thermal table:not(.r-table) { width: 100% !important; max-width: 100%; table-layout: fixed !important; border-collapse: collapse; margin: 2px 0 3px; }
+       table-layout: fixed guarantees a cell can never push wider than its assigned % column or
+       spill past the 80mm container. Player/Dur./Price are single short tokens (a name, "45
+       min", "Rs 500") so they're set to white-space: nowrap + ellipsis — clipping gracefully
+       beats an ugly mid-word wrap (e.g. "Walk-in" breaking at the hyphen onto its own line).
+       Time is the one column that's SUPPOSED to break — it already carries its own explicit
+       <br> between Start and End — so it keeps normal wrapping instead of nowrap. */
+    .receipt-thermal table:not(.r-table) { width: 100% !important; max-width: 100%; table-layout: fixed !important; border-collapse: collapse; margin: 1px 0; }
     /* No grid lines anywhere in the body — every row sits flush against the next with no
        separator at all. The ONLY line in this table is a single thin rule under the header
        row (thead th), separating column titles from the data. Section breaks (after the
        header block, after this breakdown, under Net Payable) are handled by the receipt's
        own <hr> markup elsewhere, not by per-row table borders. */
     .receipt-thermal th, .receipt-thermal td {
-      box-sizing: border-box; border: none; padding: 2px 2px; text-align: left;
-      background: transparent; color: #000; word-break: break-word; overflow: hidden;
-      vertical-align: top; font-size: 11px; font-weight: 400; line-height: 1.35; letter-spacing: normal;
+      box-sizing: border-box; border: none; padding: 0.5px 2px; text-align: left;
+      background: transparent; color: #000; overflow: hidden;
+      vertical-align: top; font-size: 11px; font-weight: 400; letter-spacing: normal;
       page-break-inside: avoid; break-inside: avoid;
     }
     .receipt-thermal thead th { border-bottom: 1px solid #000; }
-    .receipt-thermal th { font-size: 11px; font-weight: 400; text-transform: uppercase; letter-spacing: normal; }
+    .receipt-thermal th { font-size: 11px; font-weight: 400; text-transform: uppercase; letter-spacing: normal; white-space: nowrap; }
     /* 5 columns sized for an 80mm roll (~300px usable width) — #, Player, Time (Start+End
-       stacked in one cell), Dur., Price. Widths sum to exactly 100%. Player/Time widened
-       slightly and Price given more room so TIME and PRICE never truncate or wrap awkwardly. */
-    .receipt-thermal th:nth-child(1), .receipt-thermal td:nth-child(1) { width: 7%; }   /* # */
-    .receipt-thermal th:nth-child(2), .receipt-thermal td:nth-child(2) { width: 26%; }  /* Player */
-    .receipt-thermal th:nth-child(3), .receipt-thermal td:nth-child(3) { width: 28%; }  /* Time (Start / End) */
-    .receipt-thermal th:nth-child(4), .receipt-thermal td:nth-child(4) { width: 14%; }  /* Dur. */
-    .receipt-thermal th:nth-child(5), .receipt-thermal td:nth-child(5) { width: 25%; text-align: right; padding-right: 3px; } /* Price */
+       stacked in one cell), Dur., Price. Widths sum to exactly 100%. Player widened further
+       (32%) since it's the column that was wrapping names/badges awkwardly; short single-token
+       columns get white-space: nowrap + ellipsis instead of a mid-word wrap; Time keeps
+       word-break: break-word since it's the only column meant to wrap (at its own <br>). */
+    .receipt-thermal th:nth-child(1), .receipt-thermal td:nth-child(1) { width: 6%; white-space: nowrap; }   /* # */
+    .receipt-thermal th:nth-child(2), .receipt-thermal td:nth-child(2) { width: 32%; white-space: nowrap; text-overflow: ellipsis; }  /* Player */
+    .receipt-thermal th:nth-child(3), .receipt-thermal td:nth-child(3) { width: 28%; word-break: break-word; }  /* Time (Start / End) */
+    .receipt-thermal th:nth-child(4), .receipt-thermal td:nth-child(4) { width: 12%; white-space: nowrap; }  /* Dur. */
+    .receipt-thermal th:nth-child(5), .receipt-thermal td:nth-child(5) { width: 22%; text-align: right; padding-right: 3px; white-space: nowrap; } /* Price */
     /* ---- Payment QR Code block (printed in the receipt footer / payment section) ----
-       Sized for reliable mobile-camera scanning: 140x140px minimum, generous white-space
-       margin on every side (thermal printers need a quiet zone or the scanner can't lock
-       onto the QR's finder patterns), and crisp/pixelated rendering so the printer's dot
-       matrix reproduces sharp square modules instead of a blurred/anti-aliased image. */
-    .receipt-thermal .r-qr-block { text-align: center; margin: 6px auto 4px; padding: 6px 0 2px; border-top: 1px dashed #999; width: 100%; }
+       Sized for reliable mobile-camera scanning: 110x110px minimum (still comfortably above the
+       ~100px floor most phone cameras need to lock focus at arm's length) with a slimmer quiet
+       zone than before, and crisp/pixelated rendering so the printer's dot matrix reproduces
+       sharp square modules instead of a blurred/anti-aliased image. This block, image included,
+       is the single largest fixed chunk of vertical paper on the whole receipt, so it's the
+       other big lever (besides row padding) for cutting total length. */
+    .receipt-thermal .r-qr-block { text-align: center; margin: 2px auto 1px; padding: 2px 0 1px; border-top: 1px dashed #999; width: 100%; }
     .receipt-thermal .r-qr-block img {
-      width: 130px; height: 130px; max-width: 130px; max-height: 130px;
-      display: block; margin: 0 auto; padding: 4px; background: #fff;
+      width: 110px; height: 110px; max-width: 110px; max-height: 110px;
+      display: block; margin: 0 auto; padding: 2px; background: #fff;
       image-rendering: pixelated; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;
     }
-    .receipt-thermal .r-qr-caption { font-size: 11px; font-weight: 400; text-align: center; line-height: 1.35; margin-top: 4px; letter-spacing: normal; color: #000; word-break: break-word; }
+    .receipt-thermal .r-qr-caption { font-size: 11px; font-weight: 400; text-align: center; margin-top: 1px; letter-spacing: normal; color: #000; word-break: break-word; }
     /* "Amount Due" is one of the three important totals kept bold (per requirement). */
-    .receipt-thermal .r-qr-amount { font-size: 11px; font-weight: 700; text-align: center; line-height: 1.35; letter-spacing: normal; margin-top: 1px; color: #000; word-break: break-word; }
+    .receipt-thermal .r-qr-amount { font-size: 11px; font-weight: 700; text-align: center; letter-spacing: normal; margin-top: 0; color: #000; word-break: break-word; }
 
     /* Quick-Fill Suggestion Button (Add Frame modal) */
     .quick-suggest-btn { background: rgba(0,230,118,0.12); color: var(--accent-green); border: 1px dashed var(--accent-green); padding: 9px; border-radius: 6px; font-weight: 700; cursor: pointer; width: 100%; text-align: center; margin-bottom: 14px; font-size: 0.8rem; }
