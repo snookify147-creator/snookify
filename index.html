@@ -1536,7 +1536,11 @@
       padding: 2mm 3mm;
       border-radius: 6px;
       font-size: 11px;
-      font-weight: 700;
+      /* Default is normal weight — thermal printers render font-weight:700+ as smudgy/overly
+         dark ink at small sizes, which was making the whole slip look "bold/kharab". Only the
+         specific total rows (Gross Total, NET PAYABLE, Amount Due) are bolded back explicitly
+         below via their own inline style / .r-qr-amount rule. */
+      font-weight: 400;
       line-height: 1.15;
       word-wrap: break-word;
       overflow-wrap: break-word;
@@ -1573,15 +1577,15 @@
       vertical-align: top;
       word-break: break-word;
     }
-    .receipt-thermal .r-title { text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 2px; word-break: break-word; }
-    .receipt-thermal .r-center { text-align: center; font-size: 11px; font-weight: 700; line-height: 1.15; word-break: break-word; }
+    .receipt-thermal .r-title { text-align: center; font-weight: 400; font-size: 14px; margin-bottom: 2px; word-break: break-word; }
+    .receipt-thermal .r-center { text-align: center; font-size: 11px; font-weight: 400; line-height: 1.15; word-break: break-word; }
 
     /* Real `<table class="r-table">` label/value rows — this is what setReceiptContent() actually
        renders now, on screen and at print time, so there's a single source of truth for layout.
        Fixed 60/40 column split + word-break (never nowrap) means a long amount wraps onto a
        second line inside its own column instead of being pushed past the edge and clipped. */
     .receipt-thermal table.r-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 1px 0 2px; }
-    .receipt-thermal table.r-table td { padding: 2px 2px; vertical-align: top; font-size: 11px; font-weight: 700; line-height: 1.15; }
+    .receipt-thermal table.r-table td { padding: 2px 2px; vertical-align: top; font-size: 11px; font-weight: 400; line-height: 1.15; }
     .receipt-thermal table.r-table td.r-label { width: 58%; text-align: left; word-break: break-word; padding-right: 4px; }
     .receipt-thermal table.r-table td.r-value { width: 42%; text-align: right; word-break: break-word; }
 
@@ -1599,11 +1603,11 @@
     .receipt-thermal th, .receipt-thermal td {
       box-sizing: border-box; border: none; padding: 2px 2px; text-align: left;
       background: transparent; color: #000; word-break: break-word; overflow: hidden;
-      vertical-align: top; font-size: 11px; font-weight: 700; line-height: 1.15;
+      vertical-align: top; font-size: 11px; font-weight: 400; line-height: 1.15;
       page-break-inside: avoid; break-inside: avoid;
     }
     .receipt-thermal thead th { border-bottom: 1px solid #000; }
-    .receipt-thermal th { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0; }
+    .receipt-thermal th { font-size: 11px; font-weight: 400; text-transform: uppercase; letter-spacing: 0; }
     /* 5 columns sized for an 80mm roll (~300px usable width) — #, Player, Time (Start+End
        stacked in one cell), Dur., Price. Widths sum to exactly 100%. Player/Time widened
        slightly and Price given more room so TIME and PRICE never truncate or wrap awkwardly. */
@@ -1612,12 +1616,6 @@
     .receipt-thermal th:nth-child(3), .receipt-thermal td:nth-child(3) { width: 28%; }  /* Time (Start / End) */
     .receipt-thermal th:nth-child(4), .receipt-thermal td:nth-child(4) { width: 14%; }  /* Dur. */
     .receipt-thermal th:nth-child(5), .receipt-thermal td:nth-child(5) { width: 25%; text-align: right; padding-right: 3px; } /* Price */
-    /* Player name + phone-number line stacked via <br> inside the same cell (the S/D frame-type
-       badge stays inline right after the name — only the phone-number line below it gets its
-       own class). Extra top margin + line-height keeps the two lines legible and stops them
-       visually overlapping the row above/below on a tight thermal line pitch. */
-    .receipt-thermal td:nth-child(2) .r-phone { display: block; margin-top: 1px; line-height: 1.15; font-size: 10px; font-weight: 700; }
-
     /* ---- Payment QR Code block (printed in the receipt footer / payment section) ----
        Sized for reliable mobile-camera scanning: 140x140px minimum, generous white-space
        margin on every side (thermal printers need a quiet zone or the scanner can't lock
@@ -1629,7 +1627,8 @@
       display: block; margin: 0 auto; padding: 4px; background: #fff;
       image-rendering: pixelated; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;
     }
-    .receipt-thermal .r-qr-caption { font-size: 11px; font-weight: 800; text-align: center; margin-top: 4px; letter-spacing: 0.2px; color: #000; word-break: break-word; }
+    .receipt-thermal .r-qr-caption { font-size: 11px; font-weight: 400; text-align: center; margin-top: 4px; letter-spacing: 0.2px; color: #000; word-break: break-word; }
+    /* "Amount Due" is one of the three important totals kept bold (per requirement). */
     .receipt-thermal .r-qr-amount { font-size: 11px; font-weight: 700; text-align: center; margin-top: 1px; color: #000; word-break: break-word; }
 
     /* Quick-Fill Suggestion Button (Add Frame modal) */
@@ -11585,7 +11584,7 @@
       const anySeriesTag = isFrameSession && record.frameLog.some(f => f.seriesTarget);
 
       const frameBreakdownHtml = isFrameSession ? `
-        <div class="r-row" style="font-weight:700;"><span>Frame-by-Frame Breakdown</span><span></span></div>
+        <div class="r-row"><span>Frame-by-Frame Breakdown</span><span></span></div>
         ${anySeriesTag ? `<div class="r-row"><span style="font-size:0.62rem; color:var(--text-muted);">TYPE: <span style="color:var(--info); font-weight:700;">S</span>=Single &nbsp; <span style="color:var(--accent-gold); font-weight:700;">D</span>=Double &nbsp; BOx=series tag</span><span></span></div>` : ''}
         <table>
           <thead>
@@ -11595,7 +11594,7 @@
             ${record.frameLog.map(f => `
               <tr>
                 <td>${f.frameNo}</td>
-                <td>${f.playerName || 'Walk-in'} ${frameTypeBadge(f)}${f.playerPhone ? '<br><span class="r-phone">' + f.playerPhone + '</span>' : ''}</td>
+                <td>${f.playerName || 'Walk-in'} ${frameTypeBadge(f)}</td>
                 <td>${formatTime(f.startTime)}<br>${f.endTime ? '– ' + formatTime(f.endTime) : '—'}</td>
                 <td>${formatDuration(f.duration)}</td>
                 <td style="text-align:right;">Rs ${money(f.cost || 0)}</td>
@@ -11639,7 +11638,7 @@
           return `<div class="r-row"><span>Frames Played</span><span>${playedCount}</span></div>` +
             (penaltyCount > 0
               ? `<div class="r-row"><span>Forfeit Penalty Frames Charged</span><span>${penaltyCount}</span></div>` +
-                `<div class="r-row" style="font-weight:700;"><span>Total Frames Billed</span><span>${record.frameLog.length}</span></div>`
+                `<div class="r-row"><span>Total Frames Billed</span><span>${record.frameLog.length}</span></div>`
               : '');
         })() : ''}
         <div class="r-row"><span>Game Fee (${record.mode})</span><span>Rs ${money(record.tableBill)}</span></div>
@@ -11653,12 +11652,12 @@
           const cueSub = cueLines.reduce((a, ci) => a + ci.qty * ci.price, 0);
           let html = '';
           if (cafeLines.length) {
-            html += `<div class="r-row"><span style="font-weight:700;">Canteen Items</span><span></span></div>`;
+            html += `<div class="r-row"><span>Canteen Items</span><span></span></div>`;
             html += cafeLines.map(ci => `<div class="r-row"><span>${ci.qty} x ${ci.name}</span><span>Rs ${money(ci.qty * ci.price)}</span></div>`).join('');
             html += `<div class="r-row"><span>Canteen Subtotal</span><span>Rs ${money(cafeSub)}</span></div>`;
           }
           if (cueLines.length) {
-            html += `<div class="r-row"><span style="font-weight:700;">Cue Shop / Accessories</span><span></span></div>`;
+            html += `<div class="r-row"><span>Cue Shop / Accessories</span><span></span></div>`;
             html += cueLines.map(ci => `<div class="r-row"><span>${ci.qty} x ${ci.name}</span><span>Rs ${money(ci.qty * ci.price)}</span></div>`).join('');
             html += `<div class="r-row"><span>Cue Shop Subtotal</span><span>Rs ${money(cueSub)}</span></div>`;
           }
@@ -11668,10 +11667,10 @@
         `}
         ${playerBreakdown ? `
         <hr>
-        <div class="r-row" style="font-weight:700;"><span>Player-by-Player Breakdown</span><span></span></div>
+        <div class="r-row"><span>Player-by-Player Breakdown</span><span></span></div>
         ${!isFrameSession ? `<div style="color:var(--text-muted); font-size:0.65rem; margin-bottom:2px;">Table time is billed as one shared session — only canteen/cue items are split by player below.</div>` : ''}
         ${playerBreakdown.map(p => `
-          <div class="r-row" style="font-weight:700; margin-top:6px;"><span>${p.name}</span><span>Rs ${money(p.subtotal)}</span></div>
+          <div class="r-row" style="margin-top:6px;"><span>${p.name}</span><span>Rs ${money(p.subtotal)}</span></div>
           ${isFrameSession ? `<div class="r-row" style="font-size:0.7rem; color:var(--text-muted);"><span>${p.framesCount} frame${p.framesCount === 1 ? '' : 's'} played</span><span>Rs ${money(p.frameCost)}</span></div>` : ''}
           ${p.items.length
             ? p.items.map(ci => `<div class="r-row" style="font-size:0.7rem; color:var(--text-muted);"><span>&nbsp;&nbsp;${ci.qty} x ${ci.name}</span><span>Rs ${money(ci.qty * ci.price)}</span></div>`).join('')
@@ -11679,14 +11678,14 @@
         `).join('')}
         ` : ''}
         <hr>
-        <div class="r-row"><span>Gross Total</span><span>Rs ${money(record.tableBill + record.canteen)}</span></div>
+        <div class="r-row" style="font-weight:700;"><span>Gross Total</span><span>Rs ${money(record.tableBill + record.canteen)}</span></div>
         <div class="r-row"><span>Discount Applied</span><span>-Rs ${money(record.discount)}</span></div>
         ${record.advanceRedeemFrames ? `<div class="r-row" style="font-size:0.7rem; color:var(--text-muted);"><span>&nbsp;&nbsp;incl. ${ICONS.target} ${record.advanceRedeemFrames} Advance Frame${record.advanceRedeemFrames === 1 ? '' : 's'} redeemed</span><span>-Rs ${money(record.advanceRedeemAmount || 0)}</span></div>` : ''}
-        <div class="r-row" style="font-weight:800; font-size:13px;"><span>NET PAYABLE</span><span>Rs ${money(record.total)}</span></div>
+        <div class="r-row" style="font-weight:700; font-size:13px;"><span>NET PAYABLE</span><span>Rs ${money(record.total)}</span></div>
         <div class="r-row"><span>Payment Type</span><span>${paymentTypeLabel(record)}</span></div>
         ${record.paymentStatus === 'split' ? `
         <div class="r-row"><span>Amount Paid Now</span><span>Rs ${money(record.amountPaid || 0)}</span></div>
-        <div class="r-row" style="font-weight:800;"><span>Balance to Udhaar</span><span>Rs ${money(Math.max(0, record.total - (record.amountPaid || 0)))}</span></div>
+        <div class="r-row"><span>Balance to Udhaar</span><span>Rs ${money(Math.max(0, record.total - (record.amountPaid || 0)))}</span></div>
         ` : ''}
         ${record.paymentNote ? `<div class="r-row"><span>Payment Note</span><span>${record.paymentNote}</span></div>` : ''}
         <hr>
@@ -11753,13 +11752,21 @@
           group.forEach(rowEl => {
             const spans = rowEl.querySelectorAll(':scope > span');
             const tr = document.createElement('tr');
-            if (rowEl.getAttribute('style')) tr.setAttribute('style', rowEl.getAttribute('style'));
+            const rowStyle = rowEl.getAttribute('style');
+            if (rowStyle) tr.setAttribute('style', rowStyle);
             const tdLabel = document.createElement('td');
             tdLabel.className = 'r-label';
             tdLabel.innerHTML = spans[0] ? spans[0].innerHTML : '';
             const tdValue = document.createElement('td');
             tdValue.className = 'r-value';
             tdValue.innerHTML = spans[1] ? spans[1].innerHTML : '';
+            // table.r-table td sets font-weight/font-size directly, which otherwise wins over
+            // anything inherited from the tr — so a row's own bold/size style (e.g. NET PAYABLE,
+            // Gross Total) must be copied onto each td itself, not just the tr, to actually show.
+            if (rowStyle) {
+              tdLabel.setAttribute('style', rowStyle);
+              tdValue.setAttribute('style', rowStyle);
+            }
             tr.appendChild(tdLabel);
             tr.appendChild(tdValue);
             table.appendChild(tr);
@@ -11784,7 +11791,9 @@
         width: 80mm; margin: 0; padding: 0;
         background: #fff; color: #000;
         font-family: Arial, Helvetica, sans-serif;
-        font-size: 11px; font-weight: 700; line-height: 1.15;
+        /* Normal weight by default — bold everywhere was printing too dark/smudgy on the
+           thermal head. Only Gross Total, NET PAYABLE, and Amount Due stay bold (700). */
+        font-size: 11px; font-weight: 400; line-height: 1.15;
         /* Forces solid, dark ink instead of a lightly anti-aliased grey on the thermal head. */
         -webkit-font-smoothing: none;
         -moz-osx-font-smoothing: grayscale;
@@ -11802,12 +11811,12 @@
          dropping any line of data — nothing here reduces what gets printed, only how much
          blank space surrounds it. */
       hr { border: none; border-top: 1px dashed #000; margin: 3px 0; }
-      .r-title { text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 2px; word-break: break-word; }
-      .r-center { text-align: center; font-size: 11px; font-weight: 700; line-height: 1.15; margin: 1px 0; word-break: break-word; }
+      .r-title { text-align: center; font-weight: 400; font-size: 14px; margin-bottom: 2px; word-break: break-word; }
+      .r-center { text-align: center; font-size: 11px; font-weight: 400; line-height: 1.15; margin: 1px 0; word-break: break-word; }
       /* Label/value rows — real <table>, not flexbox, so columns can never overlap or drift.
          No borders here; a long value wraps inside its own 42% column instead of being cut. */
       table.r-table { width: 100%; max-width: 100%; border-collapse: collapse; table-layout: fixed; margin: 0 0 2px; }
-      table.r-table td { padding: 2px 2px; vertical-align: top; font-size: 11px; font-weight: 700; line-height: 1.15; word-break: break-word; }
+      table.r-table td { padding: 2px 2px; vertical-align: top; font-size: 11px; font-weight: 400; line-height: 1.15; word-break: break-word; }
       table.r-table td.r-label { width: 58%; text-align: left; padding-right: 4px; }
       /* padding-right pulls the amount in from the physical edge instead of sitting flush
          against it — that's what was getting shaved off by the printer's own margin of error. */
@@ -11818,11 +11827,11 @@
          receipt's own <hr> markup, not per-row table borders. */
       table:not(.r-table) { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; margin: 2px 0 3px; }
       table:not(.r-table) th, table:not(.r-table) td {
-        border: none; padding: 2px 2px; text-align: left; font-size: 11px; font-weight: 700; line-height: 1.15;
+        border: none; padding: 2px 2px; text-align: left; font-size: 11px; font-weight: 400; line-height: 1.15;
         overflow: hidden; word-break: break-word; overflow-wrap: break-word; vertical-align: top;
       }
       table:not(.r-table) thead th { border-bottom: 1px solid #000; }
-      table:not(.r-table) th { font-size: 11px; font-weight: 800; text-transform: uppercase; }
+      table:not(.r-table) th { font-size: 11px; font-weight: 400; text-transform: uppercase; }
       /* 5 columns sized for an 80mm roll (~300px usable width) — #, Player, Time (Start+End
          stacked in one cell), Dur., Price. Widths sum to exactly 100%. Player/Time trimmed
          slightly and Price widened so TIME and PRICE always fit without truncation. */
@@ -11831,9 +11840,6 @@
       table:not(.r-table) th:nth-child(3), table:not(.r-table) td:nth-child(3) { width: 28%; }  /* Time */
       table:not(.r-table) th:nth-child(4), table:not(.r-table) td:nth-child(4) { width: 14%; }  /* Dur. */
       table:not(.r-table) th:nth-child(5), table:not(.r-table) td:nth-child(5) { width: 25%; text-align: right; padding-right: 1mm; } /* Price */
-      /* Player name + phone-number line — kept on its own line with breathing room above so it
-         never visually overlaps the row's name line or the next row below it. */
-      table:not(.r-table) td:nth-child(2) .r-phone { display: block; margin-top: 1px; line-height: 1.15; font-size: 10px; font-weight: 700; }
       tr { page-break-inside: avoid; break-inside: avoid; }
       /* Payment/QR box — the only actual image on the printed slip. Kept at 130x130px with a
          generous white-space quiet zone around it — thermal scanners/phone cameras need a
@@ -11846,7 +11852,8 @@
         display: block; margin: 0 auto; padding: 4px; background: #fff;
         image-rendering: pixelated; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;
       }
-      .r-qr-caption { font-size: 11px; font-weight: 800; text-align: center; margin-top: 4px; }
+      .r-qr-caption { font-size: 11px; font-weight: 400; text-align: center; margin-top: 4px; }
+      /* "Amount Due" is one of the three important totals kept bold (per requirement). */
       .r-qr-amount { font-size: 11px; font-weight: 700; text-align: center; margin-top: 1px; }
     `;
 
