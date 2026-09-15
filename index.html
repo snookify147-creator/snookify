@@ -11816,20 +11816,15 @@
            future shaded/branded elements printing exactly as designed. */
         -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;
       }
-      /* HARD BLACK-TEXT SAFETY NET — this is the actual fix for "some words/lines print
-         faint". The receipt body's HTML (built in openReceiptModal() etc.) is shared between
-         the on-screen modal preview AND this isolated print iframe. On screen a few rows use
-         inline style="color:var(--text-muted)" / var(--info) / var(--accent-gold) for visual
-         hierarchy — those CSS custom properties are declared on the MAIN document's :root and
-         are never defined inside this standalone iframe document, so the color they resolve to
-         is unpredictable there. A thermal head only has one ink; anything that isn't solid
-         black gets rendered as a light halftone/dither by the print pipeline, which is exactly
-         what reads as "faint" text on the printout even though the same line looks fine on
-         screen. Forcing every element to pure #000000 here — with !important so it wins over
-         any inline color style — guarantees full-strength ink on every line, regardless of
-         what color the markup happens to specify. Visual hierarchy (totals, labels vs values)
-         is carried by font-weight/font-size instead of color everywhere in this stylesheet. */
-      *, *::before, *::after { color: #000000 !important; }
+      /* HARD BLACK-TEXT + MAX-WEIGHT SAFETY NET. Forces every element to pure #000000 AND
+         font-weight:800, both !important, so neither can be undercut by an inline style or by
+         a CSS variable (e.g. var(--text-muted)) that isn't defined inside this isolated print
+         iframe. This is what makes text print dark/heavy on a thermal head regardless of what
+         weight/color the source markup happens to specify. Note: 'Courier New' (and most
+         monospace system fonts) only ship true 400/700 weights — browsers clamp 800 to the
+         nearest available weight (bold/700), they don't synthesize a heavier-than-bold face.
+         700 is still the darkest/boldest this font family can render. */
+      *, *::before, *::after { color: #000000 !important; font-weight: 800 !important; }
       html, body {
         width: ${THERMAL_PAPER_WIDTH}; margin: 0; padding: 0;
         background: #fff; color: #000;
@@ -11839,82 +11834,90 @@
            fallbacks in case 'Courier New' isn't installed on the print server/PC — still a
            fixed-pitch face, never lets the browser silently substitute a proportional font. */
         font-family: 'Courier New', Courier, 'Lucida Console', 'Consolas', monospace;
-        /* Normal weight by default — bold everywhere was printing too dark/smudgy on the
-           thermal head. Only Gross Total, NET PAYABLE, Amount Due, and the highlighted
-           player-breakdown figures stay bold (700), which is enough weight contrast for a
-           thermal head without smudging the rest of the slip. */
-        font-size: 11px; font-weight: 400;
-        /* 1.35 line-height (was 1.2) — a tight line-height on a monospace face at 11px is
-           what let ascenders/descenders from adjacent lines touch, reading as "letters
-           joined together" on the thermal printout. Explicit normal letter-spacing keeps
-           glyph pitch at the font's own metrics instead of compressing. */
-        line-height: 1.35;
+        /* Base body copy at 15px (up from 11px) — large enough that individual glyphs survive
+           a low-DPI thermal head without a stroke dropping out / a letter "breaking". Bumped
+           to 800 weight (max the font offers) for maximum ink coverage per glyph. */
+        font-size: 15px; font-weight: 800 !important;
+        /* 1.5 line-height (up from 1.35) — bigger + bolder glyphs have taller ascenders/
+           descenders, so line-height had to grow with them or adjacent lines start touching
+           again ("letters joined together"). Explicit normal letter-spacing keeps glyph pitch
+           at the font's own metrics instead of compressing. */
+        line-height: 1.5;
         letter-spacing: normal;
-        /* Anti-aliased glyph edges (smoother rendering) with exact color reproduction forced
-           above via print-color-adjust. */
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        text-rendering: optimizeLegibility;
+        /* Anti-aliasing OFF and optimizeSpeed instead of optimizeLegibility: anti-aliased
+           glyph edges are partially gray, which a thermal head can render as a lighter,
+           thinner-looking stroke; disabling smoothing forces the renderer to commit each
+           pixel fully on or off, which prints as a darker, heavier glyph on thermal paper. */
+        -webkit-font-smoothing: none !important;
+        text-rendering: optimizeSpeed !important;
       }
       /* Strict safe width derived from THERMAL_SAFE_WIDTH above: the printable strip on most
          80mm/58mm thermal heads is narrower than the paper itself, so a full-width box was
          pushing the right-hand column past the head's actual print zone and getting hard-clipped.
          The safe width + margin:0 auto keeps everything inside the head's real printable area
-         and centers it on the page instead of pinning it to the left edge. */
-      .receipt-container { width: ${THERMAL_SAFE_WIDTH}; max-width: ${THERMAL_SAFE_WIDTH}; padding: 0 2mm; margin: 0 auto; }
-      /* Compact vertical rhythm: every section separator, row, and heading below caps its
-         own margin/padding at 2-3px so the slip's HEIGHT (and paper used) shrinks without
-         dropping any line of data — nothing here reduces what gets printed, only how much
-         blank space surrounds it. */
+         and centers it on the page instead of pinning it to the left edge. Side padding bumped
+         slightly (2mm -> 2.5mm) to give the now-larger/bolder glyphs a touch more breathing
+         room from the physical edge of the printable strip. */
+      .receipt-container { width: ${THERMAL_SAFE_WIDTH}; max-width: ${THERMAL_SAFE_WIDTH}; padding: 0 2.5mm; margin: 0 auto; }
+      /* Vertical rhythm loosened slightly from the previous compact version (2-3px) to 3-4px —
+         still tight enough to keep the roll short, but enough to keep the bigger/bolder rows
+         from crowding each other. */
       /* Solid, not dashed — a dashed 1px rule is exactly what a thermal head reproduces as a
          "broken"/interrupted line: at 180-203dpi the gaps between dashes don't reliably survive
          the raster pass, so the separator either vanishes in patches or prints unevenly. A
          solid hairline always prints as one unbroken line. */
-      hr { border: none; border-top: 1px solid #000; margin: 3px 0; }
-      .r-title { text-align: center; font-weight: 400; font-size: 14px; line-height: 1.35; letter-spacing: normal; margin-bottom: 2px; word-break: break-word; overflow-wrap: anywhere; }
-      .r-center { text-align: center; font-size: 11px; font-weight: 400; line-height: 1.35; letter-spacing: normal; margin: 1px 0; word-break: break-word; overflow-wrap: anywhere; }
+      hr { border: none; border-top: 1px solid #000; margin: 4px 0; }
+      /* Main heading ("SNOOKIFY") — largest text on the slip. */
+      .r-title { text-align: center; font-size: 18px; line-height: 1.4; letter-spacing: normal; margin-bottom: 3px; word-break: break-word; overflow-wrap: anywhere; }
+      /* Centered sub-lines ("Table Receipt / Invoice", "Thank you for visiting!", etc). */
+      .r-center { text-align: center; font-size: 15px; line-height: 1.5; letter-spacing: normal; margin: 2px 0; word-break: break-word; overflow-wrap: anywhere; }
       /* Label/value rows — real <table>, not flexbox, so columns can never overlap or drift.
          No borders here; a long value wraps inside its own 42% column instead of being cut. */
-      table.r-table { width: 100%; max-width: 100%; border-collapse: collapse; table-layout: fixed; margin: 0 0 2px; }
-      table.r-table td { padding: 2px 2px; vertical-align: top; font-size: 11px; font-weight: 400; line-height: 1.35; letter-spacing: normal; word-break: break-word; overflow-wrap: anywhere; }
-      table.r-table td.r-label { width: 58%; text-align: left; padding-right: 4px; }
+      table.r-table { width: 100%; max-width: 100%; border-collapse: collapse; table-layout: fixed; margin: 0 0 3px; }
+      table.r-table td { padding: 3px 2px; vertical-align: top; font-size: 15px; line-height: 1.5; letter-spacing: normal; word-break: break-word; overflow-wrap: anywhere; }
+      table.r-table td.r-label { width: 58%; text-align: left; padding-right: 5px; }
       /* padding-right pulls the amount in from the physical edge instead of sitting flush
          against it — that's what was getting shaved off by the printer's own margin of error. */
-      table.r-table td.r-value { width: 42%; text-align: right; padding-right: 1mm; }
+      table.r-table td.r-value { width: 42%; text-align: right; padding-right: 1.2mm; }
       /* Item/frame breakdown tables (already real <table> markup from the app). No grid lines
          in the body at all — rows sit flush against each other. Only a single thin solid line
          under the header row separates column titles from the data; section breaks are the
-         receipt's own <hr> markup, not per-row table borders. */
-      table:not(.r-table) { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; margin: 2px 0 3px; }
+         receipt's own <hr> markup, not per-row table borders. Kept at the lower end of the
+         requested 14-15px range (14px) — this table has the tightest columns on the slip (the
+         "#" column is only ~8% of the 72mm safe width), so it's the one place a full 15px bold
+         glyph is most likely to wrap awkwardly; every other element uses 15px+. */
+      table:not(.r-table) { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; margin: 3px 0 4px; }
       table:not(.r-table) th, table:not(.r-table) td {
-        border: none; padding: 2px 2px; text-align: left; font-size: 11px; font-weight: 400; line-height: 1.35; letter-spacing: normal;
+        border: none; padding: 3px 2px; text-align: left; font-size: 14px; line-height: 1.45; letter-spacing: normal;
         overflow: hidden; word-break: break-word; overflow-wrap: anywhere; vertical-align: top;
       }
       table:not(.r-table) thead th { border-bottom: 1px solid #000; }
-      table:not(.r-table) th { font-size: 11px; font-weight: 400; text-transform: uppercase; letter-spacing: normal; }
-      /* 5 columns sized for an 80mm roll (~300px usable width) — #, Player, Time (Start+End
-         stacked in one cell), Dur., Price. Widths sum to exactly 100%. Player/Time trimmed
-         slightly and Price widened so TIME and PRICE always fit without truncation. */
-      table:not(.r-table) th:nth-child(1), table:not(.r-table) td:nth-child(1) { width: 7%; }   /* # */
+      table:not(.r-table) th { font-size: 14px; text-transform: uppercase; letter-spacing: normal; }
+      /* 5 columns sized for an 80mm roll — #, Player, Time (Start+End stacked in one cell),
+         Dur., Price. Widths sum to exactly 100%. "#" widened slightly (7% -> 8%) and "Time"
+         trimmed to match (28% -> 27%) versus the previous pass, since bold 14px digits need a
+         touch more room in the narrowest column than the old normal-weight 11px ones did. */
+      table:not(.r-table) th:nth-child(1), table:not(.r-table) td:nth-child(1) { width: 8%; }   /* # */
       table:not(.r-table) th:nth-child(2), table:not(.r-table) td:nth-child(2) { width: 26%; }  /* Player */
-      table:not(.r-table) th:nth-child(3), table:not(.r-table) td:nth-child(3) { width: 28%; }  /* Time */
+      table:not(.r-table) th:nth-child(3), table:not(.r-table) td:nth-child(3) { width: 27%; }  /* Time */
       table:not(.r-table) th:nth-child(4), table:not(.r-table) td:nth-child(4) { width: 14%; }  /* Dur. */
-      table:not(.r-table) th:nth-child(5), table:not(.r-table) td:nth-child(5) { width: 25%; text-align: right; padding-right: 1mm; } /* Price */
+      table:not(.r-table) th:nth-child(5), table:not(.r-table) td:nth-child(5) { width: 25%; text-align: right; padding-right: 1.2mm; } /* Price */
       tr { page-break-inside: avoid; break-inside: avoid; }
       /* Payment/QR box — the only actual image on the printed slip. Kept at 130x130px with a
          generous white-space quiet zone around it — thermal scanners/phone cameras need a
          clean margin around a QR's finder patterns to lock on. image-rendering keeps the
          printed dot pattern crisp instead of a soft/anti-aliased blur, which is what actually
          makes it scan on the first try. Do not shrink this further than 130px. */
-      .r-qr-block { text-align: center; margin: 6px auto 4px; padding: 6px 0 2px; border-top: 1px solid #000; width: 100%; }
+      .r-qr-block { text-align: center; margin: 7px auto 4px; padding: 6px 0 2px; border-top: 1px solid #000; width: 100%; }
       .r-qr-block img {
         width: 130px; height: 130px; max-width: 130px; max-height: 130px;
         display: block; margin: 0 auto; padding: 4px; background: #fff;
         image-rendering: pixelated; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;
       }
-      .r-qr-caption { font-size: 11px; font-weight: 400; text-align: center; line-height: 1.35; letter-spacing: normal; margin-top: 4px; }
-      /* "Amount Due" is one of the three important totals kept bold (per requirement). */
-      .r-qr-amount { font-size: 11px; font-weight: 700; text-align: center; line-height: 1.35; letter-spacing: normal; margin-top: 1px; }
+      .r-qr-caption { font-size: 15px; text-align: center; line-height: 1.5; letter-spacing: normal; margin-top: 4px; }
+      /* "Amount Due" — one of the three key totals — bumped into the 16-18px heading/total
+         range so it reads clearly at a glance rather than blending into the body copy. */
+      .r-qr-amount { font-size: 17px; text-align: center; line-height: 1.5; letter-spacing: normal; margin-top: 2px; }
     `;
 
     // Print — the receipt modal's primary button. Saving is not this button's job: every
